@@ -5,20 +5,17 @@ Created on 7 juin 2013
 '''
 import threading;
 
-class Server(object):
+class Server(threading.Thread):
     '''
     classdocs
     '''
 
-    
 
     def __init__(self):
         '''
         Constructor
         '''
-        
     
-    class Listener(threading.Thread):
-        def __init__(self):
-            
-        
+    
+    
+    
