@@ -4,6 +4,7 @@ Created on 7 juin 2013
 @author: francois
 '''
 import threading
+from probe.messages import *
 
 class Client(threading.Thread):
     '''
@@ -14,6 +15,7 @@ class Client(threading.Thread):
         '''
         Constructor
         '''
+        
     
     
     
