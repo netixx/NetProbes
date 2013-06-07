@@ -9,5 +9,5 @@ class Consts:
     classdocs
     '''
 
-    PORT_NUMBER = 10000;
+    PORT_NUMBER = 5000;
         
