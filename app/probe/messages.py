@@ -9,7 +9,8 @@ class Message(object):
     classdocs
     Message sent from one probe to another
     '''
-
+    def __init__(self):
+        pass
 
 class Add(Message):
     '''
@@ -17,10 +18,11 @@ class Add(Message):
     '''
 
 
-    def __init__(self):
+    def __init__(self, sourceIp):
         '''
         Constructor
         '''
+        self.sourceIp = sourceIp
 
 class Transfer(Message):
     '''
@@ -28,10 +30,11 @@ class Transfer(Message):
     '''
 
 
-    def __init__(self):
+    def __init__(self, source):
         '''
         Constructor
         '''
+        self.source = source
         
 class Hello(Message):
     '''
@@ -39,10 +42,11 @@ class Hello(Message):
     '''
 
 
-    def __init__(self):
+    def __init__(self, source):
         '''
         Constructor
         '''
+        self.source = source
 
 class Do(Message):
     '''
@@ -62,11 +66,14 @@ class Bye(Message):
     '''
 
 
-    def __init__(self):
+    def __init__(self, source):
         '''
         Constructor
         '''
+        self.source = source
         
+        
+
 class Prepare(Message):
     '''
     classdocs
