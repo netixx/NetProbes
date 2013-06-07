@@ -5,9 +5,9 @@ Created on 7 juin 2013
 '''
 
 class Action(object):
-    priority = 1
+    
     def __init__(self):
-        pass
+        self.priority = 1
     
     
 class Add(Action):
