@@ -55,14 +55,12 @@ class Client(threading.Thread):
         while not self.stop:
             
             if not self.messagePile.isEmpty():
-                
                 message = self.messagePile.pop()
                 
                 try:
                     self.sendMessage(message)
                 except:
                     print("Error occured sending a message")
-                
                 
                 #if conn.getresponse().status != 200 :
                 #    self.messagePile.add( message )
