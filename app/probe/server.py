@@ -16,9 +16,6 @@ class Server(Thread):
     '''
 
     def __init__(self):
-        '''
-        Constructor
-        '''
         #the list of actions to be done
         self.actionQueue = PriorityQueue()
         self.listener = __class__.Listener(self)
@@ -65,7 +62,8 @@ class Server(Thread):
             
             def __init__(self, request, client_address, server_socket):
                 SimpleHTTPRequestHandler.__init__(self, request, client_address, server_socket)
-
+            
+            
             def do_POST(self):
                 '''
                     Handle a request on our server

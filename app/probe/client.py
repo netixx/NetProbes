@@ -25,7 +25,14 @@ class Client(threading.Thread):
         self.dicoConnection[probeID].connect()
         
     
+    def delProbe(self, probeID):
+        self.dicoIPID.pop(probeID)
+        self.dicoConnection[probeID].close()
+        self.dicoConnection.pop(probeID)
+    
     def quit(self):
+        for probeId in self.dicoConnection.keys():
+            self.delProbe(probeId)
         self.stop = True
     
     
