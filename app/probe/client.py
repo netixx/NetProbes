@@ -3,8 +3,7 @@ Created on 7 juin 2013
 
 @author: francois
 '''
-import threading, heapq, http
-from probe.consts import *
+import threading, http.client
 from consts import Consts
 from priorityQueue import PriorityQueue
 
@@ -31,29 +30,40 @@ class Client(threading.Thread):
     def send(self, message):
         self.messagePile.add(message)
     
+    ''' Opens a connection to the given probe '''
+    def connection(self, probeID):
+        return http.client.HTTPConnection( self.dicoIPID[probeID], Consts.PORT_NUMBER )
+    
+    
+    def sendMessage(self, message):
+        if message.__class__.__name__ is "Add" :
+            print("test")
+            bodyContent = "ADD " + message.probeID + " " + message.probeIP
+            for probeID in self.dicoIPID:
+                conn = self.connection(probeID)
+                print("POST -> " + bodyContent )
+                conn.request( "POST", "", body=bodyContent )
+                
+        if message.__class__.__name__ is "Transfer":
+            bodyContent = "TRANSF " + message.content
+            conn = self.connection( message.targetID )
+            conn.request( "POST", "", body=bodyContent )
+        
+    
     
     def run(self):
         while not self.stop:
-            if len(self.messagePile) > 0:
+            
+            if not self.messagePile.isEmpty():
                 
                 message = self.messagePile.pop()
-                                
-                if message.__class__.__name__ == "Add" :
-                    bodyContent = "ADD " + message.probeID + " " + message.probeIP
-                    for conn in self.dicoConnection:
-                        conn.request( "POST", "", body=bodyContent )
                 
-                if message.__class__.__name__ == "Transfer":
-                    bodyContent = "TRANSF " + message.content
-                    conn = self.dicoConnection.get( message.targetID )
-                    conn.request( "POST", "", body=bodyContent )
+                try:
+                    self.sendMessage(message)
+                except:
+                    print("Error occured sending a message")
+                
                 
                 #if conn.getresponse().status != 200 :
-                #    heapq.heappush( self.messagePile, (message.priority, message) )
-                    
-                    
-                    
-                    
-                    
-                    
+                #    self.messagePile.add( message )
                     

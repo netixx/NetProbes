@@ -4,22 +4,23 @@ Created on 7 juin 2013
 @author: francois
 '''
 
-from client import *
-from server import Server
-from messages import *
+from client import Client
+from messages import Add
 
 if __name__ == '__main__':
     pass
 
 
-
 c = Client()
 c.start()
+
 c.addProbe("localhost",  "moi" )
 
-msg = Add( "moi", "newProbe", "fakeIP" );
-c.
+msg = Add( "newProbe", "fakeIP" );
+c.send(msg)
 
+while not c.messagePile.isEmpty():
+    pass
 c.quit()
 c.join()
-print("test")
+print("fin")

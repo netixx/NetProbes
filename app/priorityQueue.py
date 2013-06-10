@@ -22,7 +22,13 @@ class PriorityQueue(object):
         heapq.heappush(self.content, (entry.priority, entry))
         
     def pop(self):
-        return heapq.heappop(self.content).index(1)
+        return heapq.heappop(self.content)[1]
     
     def readFirst(self):
-        return self.content[0].index(1)
+        return self.content[0][1]
+    
+    def length(self):
+        return len(self.content)
+    
+    def isEmpty(self):
+        return len(self.content) == 0
