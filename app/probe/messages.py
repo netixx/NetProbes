@@ -9,7 +9,9 @@ class Message(object):
     classdocs
     Message sent from one probe to another
     '''
-
+    
+    priority = 1
+    
     def __init__(self, targetId):
         self.targetId = targetId;
         
