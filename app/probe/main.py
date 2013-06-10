@@ -28,9 +28,9 @@ try :
     server = Server()
     server.start()
     
-    c = Client()
-    c.start()
+#     c = Client()
+#     c.start()
 except KeyboardInterrupt :
     server.quit()
-    c.quit()
+#     c.quit()
 
