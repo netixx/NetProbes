@@ -9,6 +9,7 @@ from socketserver import ThreadingMixIn
 from threading import Thread
 from queue import PriorityQueue
 from actions import *
+import pickle
 
 class Server(Thread):
     '''
@@ -26,7 +27,6 @@ class Server(Thread):
     
     def addTask(self, action):
         assert isinstance(action, Action)
-        print(action.priority)
         self.actionQueue.put_nowait((action.priority, action))
         
     def getTask(self):
@@ -68,9 +68,12 @@ class Server(Thread):
                 '''
                     Handle a request on our server
                 '''
+                args = self.rfile.read()
+                print(args)
+                self.server.addTask(pickle.loads(args))
                 print("handle request")
-                self.server.server.addTask(Add("127.0.0.1", "id"));
-#                 SimpleHTTPRequestHandler.do_POST(self);
+                self.server.addTask(Add("127.0.0.1", "id"));
+
             def do_GET(self):
                 print("Get request")
 
