@@ -6,15 +6,15 @@ Created on 7 juin 2013
 from consts import Consts
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
-from threading import Thread
+from threading import Thread,Event
 from queue import PriorityQueue
 from actions import *
 import pickle
+import urllib
+from messages import Message
+import messagetoaction as MTA
 
 class Server(Thread):
-    '''
-    classdocs
-    '''
 
     def __init__(self):
         #the list of actions to be done
@@ -23,6 +23,7 @@ class Server(Thread):
         #init the thread
         Thread.__init__(self)
         self.setName("Server")
+        self.isUp = Event()
         
     
     def addTask(self, action):
@@ -36,20 +37,24 @@ class Server(Thread):
         self.actionQueue.task_done()
     
     def run(self):
-        self.listener.start();
+        self.listener.start()
+        self.isUp.set()
 
     def quit(self):
-        self.listener.server_close()
+        self.listener.close()
 
+    def treatMessage(self, message):
+        assert isinstance(message, Message)
+        self.addTask(MTA.toAction(message))
 
-
-    class Listener(ThreadingMixIn,HTTPServer):
+    class Listener(ThreadingMixIn,HTTPServer, Thread):
         
         def __init__(self, server):
             HTTPServer.__init__(self,("", Consts.PORT_NUMBER), __class__.RequestHandler)
             self.server = server
+            Thread.__init__(self)
             
-        def start(self):
+        def run(self):
             self.serve_forever();
 
         def close(self):
@@ -65,16 +70,16 @@ class Server(Thread):
             
             
             def do_POST(self):
-                '''
-                    Handle a request on our server
-                '''
-                args = self.rfile.read()
-                print(args)
-                self.server.addTask(pickle.loads(args))
-                print("handle request")
-                self.server.addTask(Add("127.0.0.1", "id"));
-
-            def do_GET(self):
-                print("Get request")
-
-                
+                contentLength = self.headers.get("content-length")
+                #read content
+                args = self.rfile.read(int(contentLength))
+                #convert from bytes to string
+                args = str(args,Consts.POST_MESSAGE_ENCODING)
+                # parse our string to a dictionary
+                args = urllib.parse.parse_qs(args, keep_blank_values = True, strict_parsing=True, encoding=Consts.POST_MESSAGE_ENCODING)
+                # get our object as string and transform it to bytes
+                message = bytes(args.get(Consts.POST_MESSAGE_KEYWORD)[0], Consts.POST_MESSAGE_ENCODING)
+                # transform our bytes into an object
+                message = pickle.loads(message)
+                # give the message to our server so that it is treated
+                self.server.server.treatMessage(message)

@@ -79,8 +79,6 @@ class Abort(Message):
     def __init__(self, targetId):
         Message.___init__(self, targetId)
 
-
-
 class Over(Message):
     ''' Means "I no longer need you for this test, forget about it, resume answering to other messages" '''
     def __init__(self, targetId):

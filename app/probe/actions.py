@@ -19,7 +19,7 @@ class Add(Action):
         self.idSonde = idSonde
     
 
-class Transfert(Action):
+class Transfer(Action):
     def __init__(self, message, idSonde):
         Action.__init__(self)
         self.message = message

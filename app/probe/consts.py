@@ -10,4 +10,11 @@ class Consts:
     '''
 
     PORT_NUMBER = 5000;
-        
+    POST_MESSAGE_KEYWORD = "@message"
+    POST_MESSAGE_ENCODING = "latin-1"
+
+
+
+class Params:
+    DEBUG = True
+    

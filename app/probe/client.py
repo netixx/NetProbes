@@ -17,6 +17,7 @@ class Client(threading.Thread):
         self.stop = False
         self.dicoIPID = {}
         self.dicoConnection = {}
+        self.setName("Client")
     
     
     def addProbe(self, probeIP, probeID):
@@ -41,12 +42,16 @@ class Client(threading.Thread):
     
     
     def sendMessage(self, message):
-        params = urllib.parse.urlencode({'@message': pickle.dumps( message, -1) } )
-        headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
-        
+        #serialize our message
+        serializedMessage = pickle.dumps( message, 3)
+        #put it in a dictionnary
+        params = {Consts.POST_MESSAGE_KEYWORD : serializedMessage }
+        #transform dictionnary into string
+        params = urllib.parse.urlencode(params, doseq = True, encoding=Consts.POST_MESSAGE_ENCODING)
+        #set the header as header for POST
+        headers = {"Content-type": "application/x-www-form-urlencoded;charset="+ Consts.POST_MESSAGE_ENCODING, "Accept": "text/plain"}
         conn = self.dicoConnection[message.targetId]
         conn.request("POST", "", params, headers)
-
 #         response = conn.getresponse()
 #         
 #         if response.status != 200 :
