@@ -18,7 +18,7 @@ import urllib
 
 '''
     Server thread listens on the given port to a POST request containing a serialisation of a Message object
-    It then transforms this Message into a corresponding Action that is aded to the Queue of actions that the server must execute
+    It then transforms this Message into a corresponding Action that is added to the Queue of actions that the server must execute
 '''
 class Server(Thread):
 
@@ -33,7 +33,7 @@ class Server(Thread):
 
     def addTask(self, action):
         assert isinstance(action, Action)
-        self.actionQueue.put_nowait((action.priority, action))
+        self.actionQueue.put((action.priority, action))
         
     def getTask(self):
         return self.actionQueue.get()[1]

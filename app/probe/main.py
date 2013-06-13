@@ -19,10 +19,11 @@ server.isUp.wait()
 
 c = Client()
 c.start()
+input("envoyer les messages");
 
-p = Probe("id", "127.0.0.1")
+p = Probe("gaspard", "10.0.0.148")
 ProbeStorage.addProbe(p)
-c.send(Add("id", "newProbe", "fakeIP"))
+c.send(Add("gaspard", "nouveau", "10.0.0.142"))
 
 # c.quit()
 # c.join()

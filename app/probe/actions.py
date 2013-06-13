@@ -10,14 +10,17 @@ class Action(object):
         #low prioriy 
         self.priority = 1
     
-
-
 class Add(Action):
     def __init__(self, ipSonde, idSonde):
         Action.__init__(self)
         self.ipSonde = ipSonde
         self.idSonde = idSonde
     
+    def getIpSonde(self):
+        return self.ipSonde
+
+    def getIdSonde(self):
+        return self.idSonde
 
 class Transfer(Action):
     def __init__(self, message, idSonde):
