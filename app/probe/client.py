@@ -33,6 +33,13 @@ class Client(Thread):
         assert isinstance(message, Message)
         cls.messagePile.put(message)
     
+    @classmethod
+    def broadcast(cls, message):
+        for probeId in ProbeStorage.keys():
+            msg = message.deepcopy()
+            msg.setTarget(probeId)
+            cls.messagePile.put(msg)
+        
     def run(self):
         while not self.stop:
             
