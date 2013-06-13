@@ -16,7 +16,10 @@ import pickle
 import urllib
 
 
-
+'''
+    Server thread listens on the given port to a POST request containing a serialisation of a Message object
+    It then transforms this Message into a corresponding Action that is aded to the Queue of actions that the server must execute
+'''
 class Server(Thread):
 
     def __init__(self):

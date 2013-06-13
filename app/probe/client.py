@@ -3,13 +3,19 @@ Created on 7 juin 2013
 
 @author: francois
 '''
-import http.client, urllib, pickle
+import urllib, pickle
 from threading import Thread
-from consts import Consts
+from consts import Consts,Params
 from queue import Queue
 from messages import Message
 from probes import ProbeStorage
+from exceptions import NoSuchProbe
 
+'''
+    Client Thread : talks to the Server through http
+    Server can be local (localhost) or remote
+    Connection is established as a Probe is added to ProbeStorage through ProbeStorage.addProbe through http on the port given by Consts.PORT_NUMBER
+'''
 class Client(Thread):
     messagePile = Queue()
 
@@ -19,14 +25,13 @@ class Client(Thread):
         self.setName("Client")
     
     def quit(self):
-        for probeId in ProbeStorage.dicoConnection.keys():
-            ProbeStorage.delProbe(probeId)
+        ProbeStorage.closeAllConnections()
         self.stop = True
     
-    @staticmethod
-    def send(message):
+    @classmethod
+    def send(cls, message):
         assert isinstance(message, Message)
-        Client.messagePile.put(message)
+        cls.messagePile.put(message)
     
     def run(self):
         while not self.stop:
@@ -51,8 +56,12 @@ class Client(Thread):
         params = urllib.parse.urlencode(params, doseq = True, encoding=Consts.POST_MESSAGE_ENCODING)
         #set the header as header for POST
         headers = {"Content-type": "application/x-www-form-urlencoded;charset="+ Consts.POST_MESSAGE_ENCODING, "Accept": "text/plain"}
-        conn = ProbeStorage.dicoConnection[message.targetId]
-        conn.request("POST", "", params, headers)
+        try :
+            conn = ProbeStorage.getProbeById(message.targetId).getConnection()
+            conn.request("POST", "", params, headers)
+        except NoSuchProbe:
+            if Params.DEBUG:
+                print("The probe you requested to send a message to : '" + message.targetId + "', is currently unkown to me.")
 #         response = conn.getresponse()
 #         
 #         if response.status != 200 :

@@ -9,7 +9,7 @@ class Consts:
     classdocs
     '''
 
-    PORT_NUMBER = 5000;
+    PORT_NUMBER = 5000
     POST_MESSAGE_KEYWORD = "@message"
     POST_MESSAGE_ENCODING = "latin-1"
 
@@ -17,4 +17,8 @@ class Consts:
 
 class Params:
     DEBUG = True
+
+
+class Identification:
     
+    PROBE_ID = 1122334455667788

@@ -6,11 +6,14 @@ Created on 13 juin 2013
 from threading import RLock
 import http.client;
 from consts import Consts
+from exceptions import NoSuchProbe
 
-
+'''
+    Stores all the Probes currently known by the current probe in a dictionnary
+    Addition and deletion are thread safe implemented
+    Contains the local probe (the probe of the computer it's running on)
+'''
 class ProbeStorage(object):
-    dicoIPID = {}
-    dicoConnection = {}
     connectedProbes = {}
     connectedProbesLock = RLock()
         
@@ -20,34 +23,45 @@ class ProbeStorage(object):
     @classmethod
     def delProbe(c, probeID):
         with c.connectedProbesLock:
-            c.dicoIPID.pop(probeID)
-            c.dicoConnection[probeID].close()
-            c.dicoConnection.pop(probeID)
+            c.connectedProbes[probeID].getConnection().close()
+            c.connectedProbes.pop(probeID)
 
     @classmethod
     def addProbe(c, probe):
         assert isinstance(probe, Probe)
         with c.connectedProbesLock:
-            c.dicoIPID[probe.getId()] = probe.getIp()
-            c.dicoConnection[probe.getId()] = http.client.HTTPConnection(probe.getIp(), Consts.PORT_NUMBER)
-            c.dicoConnection[probe.getId()].connect()
-            c.connectedProbes[probe.getId] = probe
+            c.connectedProbes[probe.getId()] = probe
 
     @classmethod
     def getProbeById(c, probeId):
         with c.connectedProbesLock:
-            return c.connectedProbes.get(probeId)
+            try :
+                return c.connectedProbes[probeId]
+            except KeyError:
+                raise NoSuchProbe
 
+    @classmethod
+    def closeAllConnections(cls):
+        for probeId in cls.connectedProbes.keys():
+            cls.delProbe(probeId)
 
+'''
+    Represents a probe
+'''
 class Probe(object):
 
     def __init__(self, ID, IP, status="connected"):
         self.IP = IP
         self.ID = ID
         self.status = status
+        self.connection = http.client.HTTPConnection(self.getIp(), Consts.PORT_NUMBER)
+        self.connection.connect();
         
     def getIp(self):
         return self.IP
 
     def getId(self):
         return self.ID
+
+    def getConnection(self):
+        return self.connection
