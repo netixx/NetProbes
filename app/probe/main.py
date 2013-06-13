@@ -7,6 +7,8 @@ Created on 7 juin 2013
 from client import Client
 from messages import Add
 from server import Server
+from probes import ProbeStorage, Probe
+
 
 if __name__ == '__main__':
     pass
@@ -17,13 +19,12 @@ server.isUp.wait()
 
 c = Client()
 c.start()
- 
-c.addProbe("localhost",  "moi" )
-c.addProbe("localhost",  "aussiMoi" )
-c.send( Add( "moi", "newProbe", "fakeIP" ) )
 
+p = Probe("id", "localhost")
+ProbeStorage.addProbe(p)
+c.send(Add("id", "newProbe", "fakeIP"))
 
-c.quit()
-c.join()
+# c.quit()
+# c.join()
 
 # print("done")

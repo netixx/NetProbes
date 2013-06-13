@@ -6,13 +6,16 @@ Created on 7 juin 2013
 from consts import Consts
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
-from threading import Thread,Event
+from threading import Thread,Event,RLock
 from queue import PriorityQueue
 from actions import *
-import pickle
-import urllib
 from messages import Message
 import messagetoaction as MTA
+from probes import Probe
+import pickle
+import urllib
+
+
 
 class Server(Thread):
 
@@ -24,8 +27,7 @@ class Server(Thread):
         Thread.__init__(self)
         self.setName("Server")
         self.isUp = Event()
-        
-    
+
     def addTask(self, action):
         assert isinstance(action, Action)
         self.actionQueue.put_nowait((action.priority, action))
@@ -67,7 +69,6 @@ class Server(Thread):
             
             def __init__(self, request, client_address, server_socket):
                 SimpleHTTPRequestHandler.__init__(self, request, client_address, server_socket)
-            
             
             def do_POST(self):
                 contentLength = self.headers.get("content-length")
