@@ -7,13 +7,12 @@ from consts import Consts
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from threading import Thread,Event,RLock
-from queue import PriorityQueue
-from actions import *
 from messages import Message
 import messagetoaction as MTA
 from probes import Probe
 import pickle
 import urllib
+from actionmanager import ActionMan
 
 
 '''
@@ -23,23 +22,12 @@ import urllib
 class Server(Thread):
 
     def __init__(self):
-        #the list of actions to be done
-        self.actionQueue = PriorityQueue()
         self.listener = __class__.Listener(self)
         #init the thread
         Thread.__init__(self)
         self.setName("Server")
         self.isUp = Event()
-
-    def addTask(self, action):
-        assert isinstance(action, Action)
-        self.actionQueue.put((action.priority, action))
-        
-    def getTask(self):
-        return self.actionQueue.get()[1]
     
-    def taskDone(self):
-        self.actionQueue.task_done()
     
     def run(self):
         self.listener.start()
@@ -50,7 +38,7 @@ class Server(Thread):
 
     def treatMessage(self, message):
         assert isinstance(message, Message)
-        self.addTask(MTA.toAction(message))
+        ActionMan.addTask(MTA.toAction(message))
 
     class Listener(ThreadingMixIn,HTTPServer, Thread):
         
@@ -66,7 +54,7 @@ class Server(Thread):
             self.server_close();
             
         def addTask(self,action):
-            self.server.addTask(action)
+            ActionMan.addTask(action)
         
         class RequestHandler(SimpleHTTPRequestHandler):
             
