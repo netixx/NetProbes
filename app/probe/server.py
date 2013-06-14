@@ -36,7 +36,7 @@ class Server(Thread):
     
     @classmethod
     def addTask(cls, action):
-        consts.debug("Server : Queued new Action" + action)
+        consts.debug("Server : Queued new Action" + action.__clas__.__name__)
         assert isinstance(action, Action)
         cls.actionQueue.put((action.priority, action))
     
@@ -59,7 +59,7 @@ class Server(Thread):
         self.actionQueue.join()
 
     def treatMessage(self, message):
-        consts.debug("Server : treating message " + message)
+        consts.debug("Server : treating message " + message.__class__.__name__)
         assert isinstance(message, Message)
         Server.addTask(MTA.toAction(message))
 
