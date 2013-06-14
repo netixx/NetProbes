@@ -42,11 +42,12 @@ class Client(Thread):
     
     @classmethod
     def broadcast(cls, message):
+        debug("Broadcasting the message : " + message.__class__.__name__)
         for probeId in ProbeStorage.connectedProbes.keys():
             msg = copy.deepcopy(message)
             msg.setTarget(probeId)
-            cls.messagePile.put(msg)
-        
+            cls.send(msg)
+                
     def run(self):
         self.isUp.set()
         debug("Client starts running")
