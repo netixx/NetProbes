@@ -42,7 +42,7 @@ class Client(Thread):
     
     @classmethod
     def broadcast(cls, message):
-        debug("Broadcasting the message : " + message.__class__.__name__)
+        debug("Client : Broadcasting the message : " + message.__class__.__name__)
         for probeId in ProbeStorage.connectedProbes.keys():
             msg = copy.deepcopy(message)
             msg.setTarget(probeId)
@@ -50,7 +50,7 @@ class Client(Thread):
                 
     def run(self):
         self.isUp.set()
-        debug("Client : starts running")
+        debug("Client : starting the client")
         while not self.stop:
             
             if not Client.messagePile.empty():
@@ -76,7 +76,7 @@ class Client(Thread):
         try :
             conn = ProbeStorage.getProbeById(message.targetId).getConnection()
             conn.request("POST", "", params, headers)
-            debug("Client : Message : " + message.__class__.__name__ + " -> sent")
+            debug("Client : Message : " + message.__class__.__name__ + " has been sent")
         except NoSuchProbe:
             debug("The probe you requested to send a message to : '" + message.targetId + "', is currently unkown to me.")
 #         response = conn.getresponse()
