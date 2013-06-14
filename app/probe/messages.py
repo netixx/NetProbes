@@ -4,7 +4,6 @@ Created on 7 juin 2013
 @author: francois
 '''
 
-import pickle
 
 class Message(object):
     '''  Super class to implement a message between probes  '''
@@ -54,7 +53,7 @@ class Transfer(Message):
     ''' Means  "Please send this message for me" '''
     def __init__(self, targetId, message):
         Message.__init__(self, targetId)
-        self.message = pickle.dumps( message )
+        self.message = message
 
 
 

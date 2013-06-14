@@ -13,8 +13,6 @@ from probes import Probe
 import pickle
 import urllib
 from actions import Action
-from actionmanager import ActionMan
-from actions import Action
 from queue import PriorityQueue
 
 '''
