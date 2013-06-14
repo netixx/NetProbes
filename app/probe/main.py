@@ -10,6 +10,7 @@ from server import Server
 from probes import ProbeStorage, Probe
 from commanderServer import CommanderServer
 from consts import Params
+from actionmanager import ActionMan
 
 if __name__ == '__main__':
     pass
@@ -18,6 +19,8 @@ server = Server()
 server.start()
 server.isUp.wait()
 
+a = ActionMan()
+a.start()
 
 if Params.COMMANDER:
     commander = CommanderServer()
@@ -27,6 +30,9 @@ if Params.COMMANDER:
 c = Client()
 c.start()
 c.isUp.wait()
+
+
+
 # c.send( Add("id", "probeid", "probeip") )
 # c.quit()
 # c.join()
