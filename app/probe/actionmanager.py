@@ -45,7 +45,9 @@ class ActionMan(Thread):
         debug("ActionMan : managing Add task")
         
         ProbeStorage.addProbe( Probe(action.getIdSonde(), action.getIpSonde() ) );
-        Client.send( Hello(action.getIdSonde(), Identification.PROBE_ID, ProbeStorage.numberOfConnections() ) );
+        
+        if action.getHello():
+            Client.send( Hello(action.getIdSonde(), Identification.PROBE_ID, ProbeStorage.numberOfConnections() ) );
         
     
     
