@@ -101,7 +101,7 @@ class Server(Thread):
                 self.server.server.treatMessage(message)
             
             def do_GET(self):
-                consts.debug("Server : handling get request, giving my ID : " + Identification.PROBE_ID)
+                consts.debug("Server : handling get request, giving my ID : " + str(Identification.PROBE_ID))
                 myId = str(Identification.PROBE_ID).encode(Consts.POST_MESSAGE_ENCODING)
                 #answer with your id
                 self.send_response(200)

@@ -72,12 +72,12 @@ class CommanderServer(Thread):
             def handleMessage(self, message):
                 consts.debug("CommanderServer : handling constructed message")
                 if(isinstance(message, Add)):
-                    consts.debug("CommanderServer : trying to add probe with ip" + message.targetIp)
+                    consts.debug("CommanderServer : trying to add probe with ip " + str(message.targetIp))
                     connection = http.client.HTTPConnection(message.targetIp, Consts.PORT_NUMBER);
                     connection.connect()
                     connection.request("GET", "", "", {})
                     probeId = connection.getresponse().read()
-                    consts.debug("CommanderServer : Id of probe with ip " + message.targetIp + " is " + probeId)
+                    consts.debug("CommanderServer : Id of probe with ip " + str(message.targetIp) + " is " + str(probeId))
                     connection.close()
                     addMessage = m.Add(Identification.PROBE_ID, probeId, message.targetIp)
                     Client.broadcast(addMessage)
