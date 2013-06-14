@@ -36,7 +36,7 @@ class ActionMan(Thread):
     def run(self):
         while not self.stop:
             task = Server.getTask()
-            ActionMan.globals()[ActionMan.manager.get(task.__class__.__name__)](task)
+            getattr(Test, ActionMan.manager.get(task.__class__.__name__))(task)
     
     
     @staticmethod
