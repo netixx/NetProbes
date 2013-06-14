@@ -9,114 +9,115 @@ from curses import wrapper
 import time
 from curses.textpad import Textbox
 from threading import Thread
+from commands import Parser, Command
 
-DISPLAY_WIDTH = 100
-COMMAND_LINE_NUMBER = 3
-REFRESH_TIME = 5
-probes = []
-isRunning = True
+class Cli(Thread):
+    DISPLAY_WIDTH = 100
+    COMMAND_LINE_NUMBER = 3
+    REFRESH_TIME = 5
 
-# wins and boxes
-status = None
-commandInput = None
-text = None
-probesPanel = None
 
-def initPanels(stdscr):
-    global DISPLAY_WIDTH
-    DISPLAY_WIDTH = curses.COLS - 1;
+    def __init___(self):
+        self.probes = []
+        self.isRunning = True
+        # wins and boxes
+        self.status = None
+        self.commandInput = None
+        self.text = None
+        self.probesPanel = None
+        Thread.__init__(self)
+        # assures we end correctly
 
-    global text
-    text = stdscr.subwin(1, DISPLAY_WIDTH, 0, 0)
-    text.addstr(0, 0, "Enter a command :")
-    text.refresh()
+        # end session
+        # curses.endwin()
     
-    global commandInput
-    commandInput = stdscr.subwin(COMMAND_LINE_NUMBER - 2, DISPLAY_WIDTH, 1, 0)
-    commandInput.refresh()
+    def run(self):
+        try:
+            wrapper(self.main)
+        finally:
+            self.isRunning = False
+
+    def initPanels(self, stdscr):
+        Cli.DISPLAY_WIDTH = curses.COLS - 1;
     
-    global status
-    status = stdscr.subwin(1, DISPLAY_WIDTH, COMMAND_LINE_NUMBER - 1, 0)
-    updateStatus("Waiting for command ...")
+        self.text = stdscr.subwin(1, Cli.DISPLAY_WIDTH, 0, 0)
+        self.text.addstr(0, 0, "Enter a command :")
+        self.text.refresh()
 
-    global probesPanel
-    probesPanel = stdscr.subwin(curses.LINES - 1 - COMMAND_LINE_NUMBER, DISPLAY_WIDTH, COMMAND_LINE_NUMBER, 0)
-    probesPanel.refresh()
+        self.commandInput = stdscr.subwin(Cli.COMMAND_LINE_NUMBER - 2, Cli.DISPLAY_WIDTH, 1, 0)
+        self.commandInput.refresh()
 
-    # move the cursor at the right place
-    stdscr.move(1, 0)
+        self.status = stdscr.subwin(1, Cli.DISPLAY_WIDTH, Cli.COMMAND_LINE_NUMBER - 1, 0)
+        self.updateStatus("Waiting for command ...")
 
-def main(stdscr):
-    try:
-        global isRunning
-        global commandInput
-    #   stdscr = curses.initscr()
-        # Clear screen
-        stdscr.clear()
-        # remove the cursor
-        curses.curs_set(True)
-        # remove echo from touched keys
-        # curses.noecho()
-        initPanels(stdscr)
+        self.probesPanel = stdscr.subwin(curses.LINES - 1 - Cli.COMMAND_LINE_NUMBER, Cli.DISPLAY_WIDTH, Cli.COMMAND_LINE_NUMBER, 0)
+        self.probesPanel.refresh()
 
-        box = Textbox(commandInput)
-    #     stdscr.refresh()
-        th = Thread(target=refreshProbes)
-        th.start()
-        stdscr.refresh()
+        # move the cursor at the right place
+        stdscr.move(1, 0)
 
-        while(True):
+    def main(self, stdscr):
+        try:
+        #   stdscr = curses.initscr()
+            # Clear screen
+            stdscr.clear()
+            # remove the cursor
+            curses.curs_set(True)
+            # remove echo from touched keys
+            # curses.noecho()
+            self.initPanels(stdscr)
+
+            box = Textbox(self.commandInput)
+        #     stdscr.refresh()
+            th = Thread(target=self.refreshProbes)
+            th.start()
             stdscr.refresh()
-            box.edit()
-            doCommand(box.gather())
-    #         commandInput.refresh()
 
-        # listen without entering enter
-        # curses.cbreak())
-    finally:
-        isRunning = False
-        th.join()
-        # let curses handle special keys
-        stdscr.keypad(True)
-        stdscr.refresh()
-        stdscr.getkey()
+            while(self.isRunning):
+                stdscr.refresh()
+                box.edit()
+                self.doCommand(box.gather())
+        #         commandInput.refresh()
 
-def refreshProbes():
-    global probesPanel
-    global isRunning
-    while(isRunning):
-        drawProbes(fetchProbes())
-        probesPanel.refresh()
-        time.sleep(REFRESH_TIME)
+            # listen without entering enter
+            # curses.cbreak())
+        finally:
+            self.isRunning = False
+            th.join()
+            # let curses handle special keys
+            stdscr.keypad(True)
+            stdscr.refresh()
+            stdscr.getkey()
 
-def fetchProbes():
-    return []
 
-# get an area where all the probes can be painted
-def drawProbes(probes):
-    global probesPanel
-    i = COMMAND_LINE_NUMBER + 1
-    for probe in probes:
-        probesPanel.addstr(i, 0, probe)
-        probesPanel.cleartoeol()
-        i += 1
-    return probesPanel;
+    def refreshProbes(self):
+        while(self.isRunning):
+            self.drawProbes(self.fetchProbes())
+            self.probesPanel.refresh()
+            time.sleep(Cli.REFRESH_TIME)
 
-def updateStatus(newStatus):
-    global status
-    status.addstr(0, 0, newStatus)
-    status.clrtobot()
-    status.refresh()
+    def fetchProbes(self):
+        return []
 
-def doCommand(command):
-    updateStatus("Executing command : " + command)
-#     print(command)
-    time.sleep(10)
-    updateStatus("Command done...")
+    # get an area where all the probes can be painted
+    def drawProbes(self, probes):
+        i = Cli.COMMAND_LINE_NUMBER + 1
+        for probe in probes:
+            self.probesPanel.addstr(i, 0, probe)
+            self.probesPanel.cleartoeol()
+            i += 1
+        return self.probesPanel;
 
-# assures we end correctly
-wrapper(main)
-isRunning = False
-# end session
-# curses.endwin()
+    def updateStatus(self, newStatus):
+        self.status.addstr(0, 0, newStatus)
+        self.status.clrtobot()
+        self.status.refresh()
 
+    def doCommand(self, command):
+        self.updateStatus("Executing command : " + command)
+    #     print(command)
+        time.sleep(3)
+        cmd = Command(Parser(command))
+        cmd.start()
+        cmd.join()
+        self.updateStatus("Command done...")
