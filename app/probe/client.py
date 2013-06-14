@@ -35,7 +35,7 @@ class Client(Thread):
     
     @classmethod
     def broadcast(cls, message):
-        for probeId in ProbeStorage.keys():
+        for probeId in ProbeStorage.connectedProbes.keys():
             msg = message.deepcopy()
             msg.setTarget(probeId)
             cls.messagePile.put(msg)

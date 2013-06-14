@@ -15,24 +15,20 @@ import datetime
 import http.client
 import messages as m
 from client import Client
-class CommanderServer(Thread):
-    '''
-    classdocs
-    '''
 
+class CommanderServer(Thread):
 
     def __init__(self):
         Thread.__init__(self)
+        self.listener = CommanderServer.Listener()
 
     def run(self):
-        pass
-
+        self.listener.start()
 
     class Listener(ThreadingMixIn, HTTPServer, Thread):
 
-        def __init__(self, server):
-            HTTPServer.__init__(self, ("", Consts.PORT_NUMBER), __class__.RequestHandler)
-            self.server = server
+        def __init__(self):
+            HTTPServer.__init__(self, ("", Consts.COMMANDER_PORT_NUMBER), __class__.RequestHandler)
             Thread.__init__(self)
 
         def run(self):
@@ -58,7 +54,7 @@ class CommanderServer(Thread):
                 message = bytes(args.get(Consts.POST_MESSAGE_KEYWORD)[0], Consts.POST_MESSAGE_ENCODING)
                 # transform our bytes into an object
                 message = pickle.loads(message)
-                self.handle(message)
+                self.handleMessage(message)
 
             def do_GET(self):
                 message = "Commander server running, state your command ...".encode(Consts.POST_MESSAGE_ENCODING)
@@ -71,18 +67,15 @@ class CommanderServer(Thread):
                 self.wfile.write(message)
 
             
-            def handle(self, message):
-                assert isinstance(message, CommanderMessage)
-                if( isinstance(message, Add)):
-                    connection = http.client.HTTPConnection(message.getIp(), Consts.PORT_NUMBER);
+            def handleMessage(self, message):
+                if(isinstance(message, Add)):
+                    connection = http.client.HTTPConnection(message.targetIp, Consts.PORT_NUMBER);
                     connection.connect()
-                    connection.request("GET", "", "", "")
+                    connection.request("GET", "", "", {})
                     probeId = connection.getresponse().read()
                     connection.close()
-                    addMessage = m.Add(Identification.PROBE_ID, probeId, message.getIp())
+                    addMessage = m.Add(Identification.PROBE_ID, probeId, message.targetIp)
                     Client.broadcast(addMessage)
-                    
-class CommanderMessage(object):
-    def __init__(self):
-        pass
+
+
 

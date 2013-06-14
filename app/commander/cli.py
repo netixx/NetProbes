@@ -10,26 +10,31 @@ import time
 from curses.textpad import Textbox
 from threading import Thread
 from commands import Parser, Command
+from http.client import HTTPConnection
+from consts import Consts
+
 
 class Cli(Thread):
     DISPLAY_WIDTH = 100
     COMMAND_LINE_NUMBER = 3
     REFRESH_TIME = 5
 
-
-    def __init___(self):
+    def __init__(self, probeIp):
+        Thread.__init__(self)
         self.probes = []
+        self.setName("Cli")
         self.isRunning = True
         # wins and boxes
         self.status = None
         self.commandInput = None
         self.text = None
         self.probesPanel = None
-        Thread.__init__(self)
         # assures we end correctly
-
+        self.connection = HTTPConnection(probeIp, Consts.COMMANDER_PORT_NUMBER)
+        self.connection.connect()
         # end session
         # curses.endwin()
+
     
     def run(self):
         try:
@@ -116,8 +121,8 @@ class Cli(Thread):
     def doCommand(self, command):
         self.updateStatus("Executing command : " + command)
     #     print(command)
-        time.sleep(3)
-        cmd = Command(Parser(command))
+        time.sleep(1)
+        cmd = Command(Parser(command), self)
         cmd.start()
         cmd.join()
         self.updateStatus("Command done...")
