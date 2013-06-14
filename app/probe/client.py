@@ -30,13 +30,13 @@ class Client(Thread):
         self.isUp = Event()
     
     def quit(self):
-        debug("Killing the Client")
+        debug("Client : Killing the Client")
         ProbeStorage.closeAllConnections()
         self.stop = True
     
     @classmethod
     def send(cls, message):
-        debug("Giving a message to the client")
+        debug("Client : Giving a message to the client")
         assert isinstance(message, Message)
         cls.messagePile.put(message)
     
@@ -50,7 +50,7 @@ class Client(Thread):
                 
     def run(self):
         self.isUp.set()
-        debug("Client starts running")
+        debug("Client : starts running")
         while not self.stop:
             
             if not Client.messagePile.empty():
@@ -64,7 +64,7 @@ class Client(Thread):
                 #    self.messagePile.add( message )
 
     def sendMessage(self, message):
-        debug("Sending the message : " + message.__class__.__name__)
+        debug("Client : Sending the message : " + message.__class__.__name__)
         #serialize our message
         serializedMessage = pickle.dumps( message, 3)
         #put it in a dictionnary
@@ -76,10 +76,9 @@ class Client(Thread):
         try :
             conn = ProbeStorage.getProbeById(message.targetId).getConnection()
             conn.request("POST", "", params, headers)
-            debug("Message : " + message.__class__.__name__ + " -> sent")
+            debug("Client : Message : " + message.__class__.__name__ + " -> sent")
         except NoSuchProbe:
-            if Params.DEBUG:
-                print("The probe you requested to send a message to : '" + message.targetId + "', is currently unkown to me.")
+            debug("The probe you requested to send a message to : '" + message.targetId + "', is currently unkown to me.")
 #         response = conn.getresponse()
 #         
 #         if response.status != 200 :

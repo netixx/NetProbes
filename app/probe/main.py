@@ -24,9 +24,9 @@ if Params.COMMANDER:
     commander.start();
 
 # ProbeStorage.addProbe( Probe("id", "10.0.0.1" ) )
-# c = Client()
-# c.start()
-# c.isUp.wait()
+c = Client()
+c.start()
+c.isUp.wait()
 # c.send( Add("id", "probeid", "probeip") )
 # c.quit()
 # c.join()
