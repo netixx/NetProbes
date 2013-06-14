@@ -2,6 +2,13 @@
 Created on 7 juin 2013
 
 @author: francois
+
+Add
+Hello
+
+
+
+
 '''
 
 
@@ -10,6 +17,7 @@ class Message(object):
     def __init__(self, targetId):
         self.targetId = targetId;
     
+
 
 
 '''----- Network discovery messages -----'''
@@ -32,7 +40,7 @@ class Hello(Message):
         
 
 class Hi(Message):
-    '''  Means "Hi, I have now met you and all your friends have contacted me" ''' 
+    '''  Means "Hi, I have now met you" ''' 
     def __init__(self, targetId, myId):
         Message.___init__(self, targetId)
         self.myId = myId

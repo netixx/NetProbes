@@ -2,6 +2,12 @@
 Created on 7 juin 2013
 
 @author: francois
+
+Add
+Remove
+Tranfer
+Do
+Quit
 '''
 
 class Action(object):
@@ -10,8 +16,6 @@ class Action(object):
         #low prioriy 
         self.priority = 1
     
-
-
 
 class Add(Action):
     def __init__(self, ipSonde, idSonde):

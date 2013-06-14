@@ -41,7 +41,7 @@ class ActionMan(Thread):
     def manageAdd(action):
         assert isinstance(action, a.Add)
         ProbeStorage.addProbe( Probe(action.getIdSonde(), action.getIpSonde() ) );
-        Client.send( Hello(action.getIdSonde(), Identification.PROBE_ID, ProbeStorage.numberOfConnections ) );
+        Client.send( Hello(action.getIdSonde(), Identification.PROBE_ID, ProbeStorage.numberOfConnections() ) );
         
     
     
