@@ -18,17 +18,23 @@ class Action(object):
     
 
 class Add(Action):
-    def __init__(self, ipSonde, idSonde):
+    def __init__(self, ipSonde, idSonde, hello=False):
         Action.__init__(self)
         self.ipSonde = ipSonde
         self.idSonde = idSonde
+        self.doHello = hello
     
     def getIpSonde(self):
         return self.ipSonde
 
     def getIdSonde(self):
         return self.idSonde
-
+    
+    def setHello(self, doHello):
+        self.doHello = doHello
+    
+    def getHello(self):
+        return self.doHello
 
 
 class Transfer(Action):

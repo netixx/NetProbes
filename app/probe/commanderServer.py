@@ -79,7 +79,7 @@ class CommanderServer(Thread):
                     probeId = connection.getresponse().read()
                     consts.debug("CommanderServer : Id of probe with ip " + str(message.targetIp) + " is " + str(probeId))
                     connection.close()
-                    addMessage = m.Add(Identification.PROBE_ID, probeId, message.targetIp)
+                    addMessage = m.Add(Identification.PROBE_ID, probeId, message.targetIp, hello=True)
                     
                     Client.broadcast(addMessage)
                     

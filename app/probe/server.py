@@ -36,7 +36,7 @@ class Server(Thread):
     
     @classmethod
     def addTask(cls, action):
-        consts.debug("Server : Queued new Action" + action.__class__.__name__)
+        consts.debug("Server : Queued new Action " + action.__class__.__name__)
         assert isinstance(action, Action)
         cls.actionQueue.put((action.priority, action))
     

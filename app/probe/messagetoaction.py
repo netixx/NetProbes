@@ -10,7 +10,8 @@ import consts
 messages = {"Add" : "toAdd",
             "Transfer" : "toTransfer",
             "Do" : "toDo",
-            "Bye" : "toBye"}
+            "Bye" : "toBye",
+            "Hello" : "toHello"}
 
 def toAction(message):
     consts.debug("Message to Action : transforming message into action")
@@ -36,3 +37,6 @@ def toBye(byeMessage):
     assert isinstance(byeMessage, m.Bye)
     return Remove(byeMessage.myId)
 
+def toHello(message):
+    assert isinstance(message, m.Hello)
+    return Add(message.probeIP, message.probeID, hello=False)
