@@ -21,7 +21,7 @@ def toAction(message):
 
 def toAdd(addMessage):
     assert isinstance(addMessage,m.Add)
-    return Add(addMessage.probeIP, addMessage.probeID)
+    return Add(addMessage.probeIP, addMessage.probeID, hello=addMessage.getHello())
 
 
 def toTransfer(transferMessage):

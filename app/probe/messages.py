@@ -26,11 +26,14 @@ class Message(object):
 
 class Add(Message):
     ''' Mean "Go introduce yourself to this new probe" '''
-    def __init__(self, targetId, probeID, probeIP):
+    def __init__(self, targetId, probeID, probeIP, hello=False):
         Message.__init__(self, targetId)
         self.probeID = probeID
         self.probeIP = probeIP
+        self.doHello = hello
     
+    def getHello(self):
+        return self.doHello
 
 class Hello(Message):
     '''  Means " Hello, my name is myId and our network is this big,
