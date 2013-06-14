@@ -6,7 +6,7 @@ Created on 7 juin 2013
 from consts import Consts
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
-from threading import Thread,Event,RLock
+from threading import Thread, Event
 from messages import Message
 import messagetoaction as MTA
 from probes import Probe
@@ -14,7 +14,8 @@ import pickle
 import urllib
 from actions import Action
 from actionmanager import ActionMan
-
+from actions import Action
+from queue import PriorityQueue
 
 '''
     Server thread listens on the given port to a POST request containing a serialisation of a Message object
@@ -51,6 +52,7 @@ class Server(Thread):
 
     def quit(self):
         self.listener.close()
+        self.actionQueue.join()
 
     def treatMessage(self, message):
         assert isinstance(message, Message)
