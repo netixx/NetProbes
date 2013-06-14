@@ -20,13 +20,28 @@ from actionmanager import ActionMan
     It then transforms this Message into a corresponding Action that is added to the Queue of actions that the server must execute
 '''
 class Server(Thread):
-
+    
+    #the list of actions to be done
+    actionQueue = PriorityQueue()
+    
     def __init__(self):
         self.listener = __class__.Listener(self)
         #init the thread
         Thread.__init__(self)
         self.setName("Server")
         self.isUp = Event()
+    
+    
+    @classmethod
+    def addTask(cls, action):
+        assert isinstance(action, Action)
+        cls.actionQueue.put((action.priority, action))
+    
+    @classmethod
+    def getTask(cls):
+        result = cls.actionQueue.get(True)[1]
+        cls.actionQueue.task_done()
+        return result
     
     
     def run(self):
