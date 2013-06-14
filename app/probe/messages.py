@@ -36,7 +36,7 @@ class Hello(Message):
     '''  Means " Hello, my name is myId and our network is this big,
                 please reply when all my friends have contacted you" ''' 
     def __init__(self, targetId, myId, networkSize):
-        Message.___init__(self, targetId)
+        Message.__init__(self, targetId)
         self.myId = myId
         self.networkSize = networkSize
         
@@ -44,7 +44,7 @@ class Hello(Message):
 class Hi(Message):
     '''  Means "Hi, I have now met you" ''' 
     def __init__(self, targetId, myId):
-        Message.___init__(self, targetId)
+        Message.__init__(self, targetId)
         self.myId = myId
         
 
