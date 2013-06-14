@@ -6,12 +6,12 @@ Created on 13 juin 2013
 
 from threading import Thread
 import actions as a
-from probe.probes import Probe, ProbeStorage
+from probes import Probe, ProbeStorage
 from client import Client
 from consts import *
 from messages import Hello, Bye
 from test import Test
-
+from server import Server
 
 manager = { "Add" : "manageAdd",
             "Remove" : "manageRemove",
@@ -29,12 +29,12 @@ class ActionMan(Thread):
         self.stop = False
     
     def quit(self):
-        debug("Killing ActionMan !")
+        debug("Action Manager : Killing ActionMan !")
         self.stop = True
     
     def run(self):
         while not self.stop:
-            task = ActionMan.getTask()
+            task = Server.getTask()
             globals()[manager.get(task.__class__.__name__)](task)
     
     
@@ -80,10 +80,3 @@ class ActionMan(Thread):
         Client.broadcast( Bye(Identification.PROBE_ID) )
         ''' Other commands to close all connections, etc '''
         
-        
-        
-            
-            
-    
-    
-    
