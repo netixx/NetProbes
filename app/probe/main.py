@@ -8,7 +8,8 @@ from client import Client
 from messages import Add
 from server import Server
 from probes import ProbeStorage, Probe
-
+from commanderServer import CommanderServer
+from consts import Params
 
 if __name__ == '__main__':
     pass
@@ -19,11 +20,10 @@ server.isUp.wait()
 
 c = Client()
 c.start()
-input("envoyer les messages");
 
-p = Probe("gaspard", "10.0.0.148")
-ProbeStorage.addProbe(p)
-c.send(Add("gaspard", "nouveau", "10.0.0.142"))
+if Params.COMMANDER:
+    commander = CommanderServer()
+    commander.start();
 
 # c.quit()
 # c.join()

@@ -12,7 +12,7 @@ class Consts:
     PORT_NUMBER = 5000
     POST_MESSAGE_KEYWORD = "@message"
     POST_MESSAGE_ENCODING = "latin-1"
-
+    COMMANDER_PORT_NUMER = 5010
 
 
 class Params:
