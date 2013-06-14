@@ -5,13 +5,19 @@ Created on 13 juin 2013
 '''
 
 from threading import Thread
-from queue import PriorityQueue
-from actions import Action
+import actions as a
+from probe.probes import *
+from client import Client
+from consts import Identification
+from messages import Hello
 
+
+manager = {"Add" : "manageAdd",
+            "Transfer" : "manageTransfer",
+            "Do" : "manageDo"}
 
 class ActionMan(Thread):
     
-
     
     def __init__(self):
         #init the thread
@@ -24,13 +30,29 @@ class ActionMan(Thread):
     
     def run(self):
         while not self.stop:
-            self.manageAction( ActionMan.getTask() )
+            task = ActionMan.getTask()
+            globals()[manager.get(task.__class__.__name__)](task)
+    
+    
+    @staticmethod
+    def manageAdd(action):
+        assert isinstance(action, a.Add)
+        ProbeStorage.add( Probe(action.getIdSonde(), action.getIpSonde() ) );
+        Client.send( Hello(action.getIdSonde(), Identification.PROBE_ID, ProbeStorage.numberOfConnections ) );
         
     
-    ''' Main function : Here is the code to handle the actions '''
-    def manageAction(self, action):
+    @staticmethod
+    def manageTransfer(action):
+        assert isinstance(action, a.Transfer)
+        Client.send( action.message )
+    
+    
+    @staticmethod
+    def manageDo(action):
+        assert isinstance(action, a.Do)
         pass
-
+        
+        
         
         
             

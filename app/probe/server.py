@@ -12,6 +12,7 @@ import messagetoaction as MTA
 from probes import Probe
 import pickle
 import urllib
+from actions import Action
 from actionmanager import ActionMan
 
 
@@ -53,7 +54,7 @@ class Server(Thread):
 
     def treatMessage(self, message):
         assert isinstance(message, Message)
-        ActionMan.addTask(MTA.toAction(message))
+        Server.addTask(MTA.toAction(message))
 
     class Listener(ThreadingMixIn,HTTPServer, Thread):
         
@@ -69,7 +70,7 @@ class Server(Thread):
             self.server_close();
             
         def addTask(self,action):
-            ActionMan.addTask(action)
+            Server.addTask(action)
         
         class RequestHandler(SimpleHTTPRequestHandler):
             
