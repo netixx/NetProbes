@@ -4,7 +4,7 @@ Created on 14 juin 2013
 @author: francois
 '''
 
-from consts import Consts, Identification
+from consts import Consts, Identification,Params
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from threading import Thread, Event
@@ -15,6 +15,7 @@ import datetime
 import http.client
 import messages as m
 from client import Client
+import consts
 
 class CommanderServer(Thread):
 
@@ -43,6 +44,7 @@ class CommanderServer(Thread):
                 SimpleHTTPRequestHandler.__init__(self, request, client_address, server_socket)
 
             def do_POST(self):
+                consts.debug("CommanderServer : Handling a command")
                 contentLength = self.headers.get("content-length")
                 # read content
                 args = self.rfile.read(int(contentLength))
@@ -68,14 +70,17 @@ class CommanderServer(Thread):
 
             
             def handleMessage(self, message):
+                consts.debug("CommanderServer : handling constructed message")
                 if(isinstance(message, Add)):
+                    consts.debug("CommanderServer : trying to add probe with ip" + message.targetIp)
                     connection = http.client.HTTPConnection(message.targetIp, Consts.PORT_NUMBER);
                     connection.connect()
                     connection.request("GET", "", "", {})
                     probeId = connection.getresponse().read()
+                    consts.debug("CommanderServer : Id of probe with ip " + message.targetIp + " is " + probeId)
                     connection.close()
                     addMessage = m.Add(Identification.PROBE_ID, probeId, message.targetIp)
                     Client.broadcast(addMessage)
-
+                    
 
 

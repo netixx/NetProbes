@@ -9,5 +9,5 @@ from cli import Cli
 if __name__ == '__main__':
     pass
 
-commander = Cli("127.0.0.1")
+commander = Cli("10.0.0.2")
 commander.start()

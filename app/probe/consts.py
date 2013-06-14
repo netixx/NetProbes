@@ -20,5 +20,9 @@ class Params:
     COMMANDER = True
 
 class Identification:
-    
     PROBE_ID = 1122334455667788
+
+
+def debug(message):
+    if (Params.DEBUG):
+        print(message)

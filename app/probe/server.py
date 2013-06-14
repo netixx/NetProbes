@@ -3,6 +3,7 @@ Created on 7 juin 2013
 
 @author: francois
 '''
+import consts
 from consts import Consts, Identification
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
@@ -35,25 +36,30 @@ class Server(Thread):
     
     @classmethod
     def addTask(cls, action):
+        consts.debug("Server : Queued new Action" + action)
         assert isinstance(action, Action)
         cls.actionQueue.put((action.priority, action))
     
     @classmethod
     def getTask(cls):
+        consts.debug("Server : Polled new action from queue")
         result = cls.actionQueue.get(True)[1]
         cls.actionQueue.task_done()
         return result
     
     
     def run(self):
+        consts.debug("Server : starting server")
         self.listener.start()
         self.isUp.set()
 
     def quit(self):
+        consts.debug("Server : closing server")
         self.listener.close()
         self.actionQueue.join()
 
     def treatMessage(self, message):
+        consts.debug("Server : treating message " + message)
         assert isinstance(message, Message)
         Server.addTask(MTA.toAction(message))
 
@@ -79,6 +85,7 @@ class Server(Thread):
                 SimpleHTTPRequestHandler.__init__(self, request, client_address, server_socket)
             
             def do_POST(self):
+                consts.debug("Server : handling POST request from another probe")
                 contentLength = self.headers.get("content-length")
                 #read content
                 args = self.rfile.read(int(contentLength))
@@ -94,6 +101,7 @@ class Server(Thread):
                 self.server.server.treatMessage(message)
             
             def do_GET(self):
+                consts.debug("Server : handling get request, giving my ID : " + Identification.PROBE_ID)
                 myId = str(Identification.PROBE_ID).encode(Consts.POST_MESSAGE_ENCODING)
                 #answer with your id
                 self.send_response(200)
