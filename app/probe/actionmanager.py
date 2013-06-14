@@ -10,6 +10,7 @@ from probe.probes import *
 from client import Client
 from consts import Identification
 from messages import Hello
+from test import Test
 
 
 manager = {"Add" : "manageAdd",
@@ -41,6 +42,17 @@ class ActionMan(Thread):
         Client.send( Hello(action.getIdSonde(), Identification.PROBE_ID, ProbeStorage.numberOfConnections ) );
         
     
+    
+    @staticmethod
+    def manageRemove(action):
+        assert isinstance(action, a.Do)
+    
+    
+    @staticmethod
+    def manageBye(action):
+        assert isinstance(action, a.Add)
+        pass
+    
     @staticmethod
     def manageTransfer(action):
         assert isinstance(action, a.Transfer)
@@ -52,6 +64,11 @@ class ActionMan(Thread):
         assert isinstance(action, a.Do)
         pass
         
+    @staticmethod
+    def manageQuit(action):
+        assert isinstance(action, a.Do) 
+        
+
         
         
         

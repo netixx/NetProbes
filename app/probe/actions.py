@@ -13,9 +13,6 @@ class Action(object):
 
 
 
-
-
-
 class Add(Action):
     def __init__(self, ipSonde, idSonde):
         Action.__init__(self)
@@ -44,4 +41,24 @@ class Do(Action):
         Action.__init__(self)
         self.ip = IP
         self.codeTest = codeTest
+    
+
+
+class Quit(Action):
+    def __init__(self):
+        Action.__init__(self)
+        self.priority = 0  # high priority
+
+
+class Remove(Action):
+    def __init__(self, idSonde):
+        Action.__init__(self)
+        self.idSonde = idSonde
+    
+    def getIdSonde(self):
+        return self.idSonde
+
+
+
+
     
