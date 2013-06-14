@@ -52,7 +52,7 @@ class Bye(Message):
     ''' Means "Sorry, I'm leaving, forget me" '''
     ''' Could also mean "This probe has left, forget it" '''
     def __init__(self, targetId, myId):
-        Message.___init__(self, targetId)
+        Message.__init__(self, targetId)
         self.myId = myId
 
 
@@ -72,32 +72,32 @@ class Transfer(Message):
 class Prepare(Message):
     ''' Means "Get ready for the given test, stop processing other messages and answer when you're ready" '''
     def __init__(self, targetId):
-        Message.___init__(self, targetId)
+        Message.__init__(self, targetId)
     
 
 
 class Ready(Message):
     ''' Means "I'm ready to perform your test, I won't answer to other messages" '''
     def __init__(self, targetId):
-        Message.___init__(self, targetId)
+        Message.__init__(self, targetId)
 
 
 
 class Abort(Message):
     ''' Means "Never mind, this test is cancelled, forget about it, resume answering to other messages" '''
     def __init__(self, targetId):
-        Message.___init__(self, targetId)
+        Message.__init__(self, targetId)
 
 class Over(Message):
     ''' Means "I no longer need you for this test, forget about it, resume answering to other messages" '''
     def __init__(self, targetId):
-        Message.___init__(self, targetId)
+        Message.__init__(self, targetId)
 
 
 class Result(Message):
     ''' Means "You initiated a test, here are the results" '''
     def __init__(self, targetId):
-        Message.___init__(self, targetId)
+        Message.__init__(self, targetId)
 
 
 
