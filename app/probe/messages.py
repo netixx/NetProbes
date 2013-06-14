@@ -17,6 +17,8 @@ class Message(object):
     def __init__(self, targetId):
         self.targetId = targetId;
     
+    def setTarget(self, targetId):
+        self.targetId = targetId
 
 
 
