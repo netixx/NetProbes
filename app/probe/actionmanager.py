@@ -6,16 +6,18 @@ Created on 13 juin 2013
 
 from threading import Thread
 import actions as a
-from probe.probes import *
+from probe.probes import Probe, ProbeStorage
 from client import Client
 from consts import Identification
-from messages import Hello
+from messages import Hello, Bye
 from test import Test
 
 
-manager = {"Add" : "manageAdd",
+manager = { "Add" : "manageAdd",
+            "Remove" : "manageRemove",
             "Transfer" : "manageTransfer",
-            "Do" : "manageDo"}
+            "Do" : "manageDo",
+            "Quit" : "manageQuit" }
 
 class ActionMan(Thread):
     
@@ -38,7 +40,7 @@ class ActionMan(Thread):
     @staticmethod
     def manageAdd(action):
         assert isinstance(action, a.Add)
-        ProbeStorage.add( Probe(action.getIdSonde(), action.getIpSonde() ) );
+        ProbeStorage.addProbe( Probe(action.getIdSonde(), action.getIpSonde() ) );
         Client.send( Hello(action.getIdSonde(), Identification.PROBE_ID, ProbeStorage.numberOfConnections ) );
         
     
@@ -46,12 +48,8 @@ class ActionMan(Thread):
     @staticmethod
     def manageRemove(action):
         assert isinstance(action, a.Do)
+        ProbeStorage.delProbe( action.getIdSonde() );
     
-    
-    @staticmethod
-    def manageBye(action):
-        assert isinstance(action, a.Add)
-        pass
     
     @staticmethod
     def manageTransfer(action):
@@ -62,13 +60,13 @@ class ActionMan(Thread):
     @staticmethod
     def manageDo(action):
         assert isinstance(action, a.Do)
-        pass
+        ''' Manage tests here '''
         
     @staticmethod
     def manageQuit(action):
         assert isinstance(action, a.Do) 
-        
-
+        Client.broadcast( Bye(Identification.PROBE_ID) )
+        ''' Other commands to close all connections, etc '''
         
         
         

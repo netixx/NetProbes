@@ -8,7 +8,8 @@ import messages as m
 
 messages = {"Add" : "toAdd",
             "Transfer" : "toTransfer",
-            "Do" : "toDo"}
+            "Do" : "toDo",
+            "Bye" : "toBye"}
 
 def toAction(message):
     assert isinstance(message, m.Message)
@@ -19,7 +20,12 @@ def toAdd(addMessage):
     return Add(addMessage.probeIP, addMessage.probeID)
 
 def toTransfer(transferMessage):
+    assert isinstance(transferMessage,m.Transfer)
     return Transfer()
 
 def toDo(doMessage):
     return Do()
+
+def toBye(byeMessage):
+    assert isinstance(byeMessage, m.Bye)
+    return Quit()
