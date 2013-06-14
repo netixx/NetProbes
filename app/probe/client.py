@@ -10,7 +10,7 @@ from queue import Queue
 from messages import Message
 from probes import ProbeStorage
 from exceptions import NoSuchProbe
-
+import copy
 
 
 '''
@@ -43,7 +43,7 @@ class Client(Thread):
     @classmethod
     def broadcast(cls, message):
         for probeId in ProbeStorage.connectedProbes.keys():
-            msg = message.deepcopy()
+            msg = copy.deepcopy(message)
             msg.setTarget(probeId)
             cls.messagePile.put(msg)
         
