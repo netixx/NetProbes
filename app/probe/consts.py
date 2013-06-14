@@ -17,7 +17,7 @@ class Consts:
 
 class Params:
     DEBUG = True
-
+    COMMANDER = True
 
 class Identification:
     

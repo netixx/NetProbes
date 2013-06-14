@@ -3,7 +3,7 @@ Created on 7 juin 2013
 
 @author: francois
 '''
-from consts import Consts
+from consts import Consts, Identification
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from threading import Thread, Event
@@ -14,7 +14,7 @@ import pickle
 import urllib
 from actions import Action
 from queue import PriorityQueue
-
+import datetime
 '''
     Server thread listens on the given port to a POST request containing a serialisation of a Message object
     It then transforms this Message into a corresponding Action that is added to the Queue of actions that the server must execute
@@ -91,3 +91,13 @@ class Server(Thread):
                 message = pickle.loads(message)
                 # give the message to our server so that it is treated
                 self.server.server.treatMessage(message)
+            
+            def do_GET(self):
+                myId = str(Identification.PROBE_ID).encode(Consts.POST_MESSAGE_ENCODING)
+                #answer with your id
+                self.send_response(200)
+                self.send_header("Content-type", "text/plain")
+                self.send_header("Content-Length", len(myId))
+                self.send_header("Last-Modified", str(datetime.datetime.now()))
+                self.end_headers()
+                self.wfile.write(myId)
