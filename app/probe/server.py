@@ -9,7 +9,7 @@ from socketserver import ThreadingMixIn
 from threading import Thread, Event
 from messages import Message
 import messagetoaction as MTA
-from probes import Probe
+from probes import Probe, ProbeStorage
 import pickle
 import urllib
 from actions import Action
@@ -30,6 +30,7 @@ class Server(Thread):
         Thread.__init__(self)
         self.setName("Server")
         self.isUp = Event()
+        ProbeStorage.addProbe(Probe(Identification.PROBE_ID, "localhost"))
     
     
     @classmethod

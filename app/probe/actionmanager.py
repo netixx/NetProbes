@@ -8,7 +8,7 @@ from threading import Thread
 import actions as a
 from probe.probes import Probe, ProbeStorage
 from client import Client
-from consts import Identification
+from consts import *
 from messages import Hello, Bye
 from test import Test
 
@@ -29,6 +29,7 @@ class ActionMan(Thread):
         self.stop = False
     
     def quit(self):
+        debug("Killing ActionMan !")
         self.stop = True
     
     def run(self):
@@ -40,6 +41,8 @@ class ActionMan(Thread):
     @staticmethod
     def manageAdd(action):
         assert isinstance(action, a.Add)
+        debug("ActionMan : managing Add task")
+        
         ProbeStorage.addProbe( Probe(action.getIdSonde(), action.getIpSonde() ) );
         Client.send( Hello(action.getIdSonde(), Identification.PROBE_ID, ProbeStorage.numberOfConnections() ) );
         
@@ -48,23 +51,32 @@ class ActionMan(Thread):
     @staticmethod
     def manageRemove(action):
         assert isinstance(action, a.Do)
+        debug("ActionMan : managing Remove task")
+        
         ProbeStorage.delProbe( action.getIdSonde() );
     
     
     @staticmethod
     def manageTransfer(action):
         assert isinstance(action, a.Transfer)
+        if (Params.DEBUG):
+            print("ActionMan : managing Transfer task")
+        
         Client.send( action.message )
     
     
     @staticmethod
     def manageDo(action):
         assert isinstance(action, a.Do)
+        debug("ActionMan : managing Do task")
+        
         ''' Manage tests here '''
         
     @staticmethod
     def manageQuit(action):
-        assert isinstance(action, a.Do) 
+        assert isinstance(action, a.Do)
+        debug("ActionMan : managing Remove task")
+        
         Client.broadcast( Bye(Identification.PROBE_ID) )
         ''' Other commands to close all connections, etc '''
         

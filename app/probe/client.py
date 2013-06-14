@@ -4,12 +4,14 @@ Created on 7 juin 2013
 @author: francois
 '''
 import urllib, pickle
-from threading import Thread
-from consts import Consts,Params
+from threading import Thread, Event
+from consts import Consts,Params, debug
 from queue import Queue
 from messages import Message
 from probes import ProbeStorage
 from exceptions import NoSuchProbe
+
+
 
 '''
     Client Thread : talks to the Server through http
@@ -18,18 +20,23 @@ from exceptions import NoSuchProbe
 '''
 class Client(Thread):
     messagePile = Queue()
-
+    
+    
+    
     def __init__(self):
         Thread.__init__(self)
         self.stop = False
         self.setName("Client")
+        self.isUp = Event()
     
     def quit(self):
+        debug("Killing the Client")
         ProbeStorage.closeAllConnections()
         self.stop = True
     
     @classmethod
     def send(cls, message):
+        debug("Giving a message to the client")
         assert isinstance(message, Message)
         cls.messagePile.put(message)
     
@@ -41,11 +48,12 @@ class Client(Thread):
             cls.messagePile.put(msg)
         
     def run(self):
+        self.isUp.set()
+        debug("Client starts running")
         while not self.stop:
             
             if not Client.messagePile.empty():
                 message = Client.messagePile.get()
-                
                 #try:
                 self.sendMessage(message)
                 #except:
@@ -55,6 +63,7 @@ class Client(Thread):
                 #    self.messagePile.add( message )
 
     def sendMessage(self, message):
+        debug("Sending the message : " + message.__class__.__name__)
         #serialize our message
         serializedMessage = pickle.dumps( message, 3)
         #put it in a dictionnary
@@ -66,6 +75,7 @@ class Client(Thread):
         try :
             conn = ProbeStorage.getProbeById(message.targetId).getConnection()
             conn.request("POST", "", params, headers)
+            debug("Message : " + message.__class__.__name__ + " -> sent")
         except NoSuchProbe:
             if Params.DEBUG:
                 print("The probe you requested to send a message to : '" + message.targetId + "', is currently unkown to me.")
