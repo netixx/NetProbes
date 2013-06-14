@@ -13,14 +13,15 @@ from messages import Hello, Bye
 from test import Test
 from server import Server
 
-manager = { "Add" : "manageAdd",
+
+
+class ActionMan(Thread):
+
+    manager = { "Add" : "manageAdd",
             "Remove" : "manageRemove",
             "Transfer" : "manageTransfer",
             "Do" : "manageDo",
             "Quit" : "manageQuit" }
-
-class ActionMan(Thread):
-    
     
     def __init__(self):
         #init the thread
@@ -35,7 +36,7 @@ class ActionMan(Thread):
     def run(self):
         while not self.stop:
             task = Server.getTask()
-            globals()[manager.get(task.__class__.__name__)](task)
+            globals()[ActionMan.manager.get(task.__class__.__name__)](task)
     
     
     @staticmethod
