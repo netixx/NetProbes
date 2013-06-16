@@ -3,44 +3,35 @@ Created on 7 juin 2013
 
 @author: francois
 '''
-
+from threading import Thread
 import curses
-from curses import wrapper
 import time
 from curses.textpad import Textbox
-from threading import Thread
-from commands import Parser, Command
-from http.client import HTTPConnection
-from consts import Consts
+from interface import Interface
 
-
-class Cli(Thread):
+class Cli(Interface):
     DISPLAY_WIDTH = 100
     COMMAND_LINE_NUMBER = 3
     REFRESH_TIME = 5
 
     def __init__(self, probeIp):
-        Thread.__init__(self)
-        self.probes = []
-        self.setName("Cli")
+        Interface.__init__(self, probeIp)
         self.isRunning = True
         # wins and boxes
         self.status = None
         self.commandInput = None
         self.text = None
         self.probesPanel = None
-        # assures we end correctly
-        self.connection = HTTPConnection(probeIp, Consts.COMMANDER_PORT_NUMBER)
-        self.connection.connect()
+         # assures we end correctly
         # end session
-        # curses.endwin()
+#         curses.endwin()
 
-    
     def run(self):
         try:
-            wrapper(self.main)
+            curses.wrapper(self.main)
         finally:
             self.isRunning = False
+           
 
     def initPanels(self, stdscr):
         Cli.DISPLAY_WIDTH = curses.COLS - 1;
@@ -74,7 +65,7 @@ class Cli(Thread):
 
             box = Textbox(self.commandInput)
         #     stdscr.refresh()
-            th = Thread(target=self.refreshProbes)
+            th = Thread(target=self.refreshProbes, name="Probe-Refresh", daemon=True)
             th.start()
             stdscr.refresh()
 
@@ -101,9 +92,6 @@ class Cli(Thread):
             self.probesPanel.refresh()
             time.sleep(Cli.REFRESH_TIME)
 
-    def fetchProbes(self):
-        return []
-
     # get an area where all the probes can be painted
     def drawProbes(self, probes):
         i = Cli.COMMAND_LINE_NUMBER + 1
@@ -117,12 +105,3 @@ class Cli(Thread):
         self.status.addstr(0, 0, newStatus)
         self.status.clrtobot()
         self.status.refresh()
-
-    def doCommand(self, command):
-        self.updateStatus("Executing command : " + command)
-    #     print(command)
-        time.sleep(1)
-        cmd = Command(Parser(command), self)
-        cmd.start()
-        cmd.join()
-        self.updateStatus("Command done...")
