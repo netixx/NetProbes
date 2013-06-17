@@ -11,6 +11,7 @@ import pickle
 from consts import Consts
 import urllib
 from http.client import HTTPConnection
+from probedisp import Probe
 
 class Interface(object):
 
@@ -26,7 +27,7 @@ class Interface(object):
 
 
     def fetchProbes(self):
-        return []
+        return [Probe("id", "10.0.0.2"), Probe("id 2", "10.0.0.2")]
 
     def doCommand(self, command):
         self.updateStatus("Executing command : " + command)
