@@ -9,13 +9,15 @@ import time
 from curses.textpad import Textbox
 from interface import Interface
 
-class Cli(Interface):
+class Cli(Interface, Thread):
     DISPLAY_WIDTH = 100
     COMMAND_LINE_NUMBER = 3
     REFRESH_TIME = 5
 
     def __init__(self, probeIp):
         Interface.__init__(self, probeIp)
+        Thread.__init__(self)
+        self.setName("Cli")
         self.isRunning = True
         # wins and boxes
         self.status = None

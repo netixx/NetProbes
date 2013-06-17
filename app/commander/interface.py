@@ -12,17 +12,16 @@ from consts import Consts
 import urllib
 from http.client import HTTPConnection
 
-class Interface(Thread):
+class Interface(object):
 
     def __init__(self, ip):
-        Thread.__init__(self)
         self.targetIp = ip
-        self.setName("Graphical interface")
-        try :
-            self.connection = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
-            self.connection.connect()
-        except:
-            pass
+#         self.setName("Graphical interface")
+#         try :
+#             self.connection = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
+#             self.connection.connect()
+#         except:
+#             pass
         self.probes = []
 
 
@@ -34,10 +33,12 @@ class Interface(Thread):
     #     print(command)
         time.sleep(1)
         cmd = Command(Parser(command), self)
-        cmd.start()
-        cmd.join()
+#         cmd.start()
+#         cmd.join()
         self.updateStatus("Command done...")
 
+    def updateStatus(self, status):
+        pass
 
 '''
     Parses a command from user input into
@@ -56,7 +57,6 @@ class Parser(object):
     def getParams(self):
         if (len(self.aCommand) > 2):
             return self.aCommand[2:]
-
 
 class Command(Thread):
 
