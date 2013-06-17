@@ -16,6 +16,9 @@ import http.client
 import messages as m
 from client import Client
 import consts
+import urllib.parse
+from probes import ProbeStorage
+import probedisp as pd
 
 class CommanderServer(Thread):
 
@@ -59,7 +62,12 @@ class CommanderServer(Thread):
                 self.handleMessage(message)
 
             def do_GET(self):
-                message = "Commander server running, state your command ...".encode(Consts.POST_MESSAGE_ENCODING)
+                getPath = urllib.parse.urlparse(self.path).path
+                if (getPath == "probes"):
+                    probes = ProbeStorage.getAllProbes()
+                    message = pickle.dumps([pd.Probe(probe.getId(), probe.getIp()) for probe in probes])
+                else :
+                    message = "Commander server running, state your command ...".encode(Consts.POST_MESSAGE_ENCODING)
                 # answer with your id
                 self.send_response(200)
                 self.send_header("Content-type", "text/plain")

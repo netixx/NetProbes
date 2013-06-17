@@ -18,24 +18,25 @@ class Interface(object):
     def __init__(self, ip):
         self.targetIp = ip
 #         self.setName("Graphical interface")
-#         try :
-#             self.connection = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
-#             self.connection.connect()
-#         except:
-#             pass
-        self.probes = []
-
+        try :
+            self.connection = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
+            self.connection.connect()
+        except:
+            pass
 
     def fetchProbes(self):
-        return [Probe("id", "10.0.0.2"), Probe("id 2", "10.0.0.2")]
+        self.connection.request("GET", "probes", "", {})
+        response = self.connection.getresponse()
+        pi = response.read(int(response.getheader('content-length')))
+        return pickle.loads(pi)
+#         return [Probe("id", "10.0.0.2"), Probe("id 2", "10.0.0.2")]
 
     def doCommand(self, command):
         self.updateStatus("Executing command : " + command)
-    #     print(command)
         time.sleep(1)
         cmd = Command(Parser(command), self)
-#         cmd.start()
-#         cmd.join()
+        cmd.start()
+        cmd.join()
         self.updateStatus("Command done...")
 
     def updateStatus(self, status):

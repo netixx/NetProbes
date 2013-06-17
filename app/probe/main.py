@@ -3,6 +3,11 @@ Created on 7 juin 2013
 
 @author: francois
 '''
+import os
+import sys
+
+directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(directory + "/../common")
 
 from client import Client
 from messages import Add
@@ -11,11 +16,7 @@ from probes import ProbeStorage, Probe
 from commanderServer import CommanderServer
 from consts import Params
 from actionmanager import ActionMan
-import os
-import sys
 
-directory = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(directory + "/../common")
 
 if __name__ == '__main__':
     server = Server()

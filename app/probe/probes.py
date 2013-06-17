@@ -42,13 +42,18 @@ class ProbeStorage(object):
 
     @classmethod
     def closeAllConnections(cls):
-        for probeId in cls.connectedProbes.keys():
-            cls.delProbe(probeId)
+        with cls.connectedProbesLock:
+            for probeId in cls.connectedProbes.keys():
+                cls.delProbe(probeId)
     
     @classmethod
     def numberOfConnections(cls):
         return len(cls.connectedProbes)
     
+    @classmethod
+    def getAllProbes(cls):
+        with cls.connectedProbesLock:
+            return cls.connectedProbes.values()
 
 
 '''
