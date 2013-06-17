@@ -5,13 +5,14 @@ Created on 16 juin 2013
 '''
 from threading import Thread
 import time
-import argparse
+import shlex
 from commanderMessages import Add
 import pickle
 from consts import Consts
 import urllib
 from http.client import HTTPConnection
 from probedisp import Probe
+from exceptions import NoSuchCommand
 
 class Interface(object):
 
@@ -34,10 +35,14 @@ class Interface(object):
     def doCommand(self, command):
         self.updateStatus("Executing command : " + command)
         time.sleep(1)
-        cmd = Command(Parser(command), self)
-        cmd.start()
-        cmd.join()
-        self.updateStatus("Command done...")
+        try:
+            cmd = Command(Parser(command), self)
+            cmd.start()
+            cmd.join()
+            self.updateStatus("Command done...")
+        except ValueError, NoSuchCommand:
+            self.updateStatus("Command is false or unkown")
+
 
     def updateStatus(self, status):
         pass
@@ -48,7 +53,9 @@ class Interface(object):
 class Parser(object):
 
     def __init__(self, command):
-        self.aCommand = command.split()
+        self.aCommand = shlex.split(command)
+        if len(self.aCommand < 2):
+            raise ValueError("The argument supplied must at least have 2 words")
 
     def getCommand(self):
         return self.aCommand[0]
@@ -59,6 +66,8 @@ class Parser(object):
     def getParams(self):
         if (len(self.aCommand) > 2):
             return self.aCommand[2:]
+
+        return None
 
 class Command(Thread):
 
@@ -73,7 +82,7 @@ class Command(Thread):
         message = None
         if (command == "add"):
             message = Add(self.parser.getTarget())
-
+            
         if (message != None):
             # serialize our message
             serializedMessage = pickle.dumps(message, 3)
@@ -85,3 +94,5 @@ class Command(Thread):
             headers = {"Content-type": "application/x-www-form-urlencoded;charset=" + Consts.POST_MESSAGE_ENCODING, "Accept": "text/plain"}
 #             try :
             self.interface.connection.request("POST", "", params, headers)
+        else:
+            raise NoSuchCommand()
