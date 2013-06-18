@@ -9,26 +9,28 @@ import time
 from curses.textpad import Textbox
 from interface import Interface
 
-class Cli(Interface, Thread):
+class Cli(Interface):
     DISPLAY_WIDTH = 100
+    FIELDS_DISPLAY_WIDTH = [30 , 20]
     COMMAND_LINE_NUMBER = 3
     REFRESH_TIME = 5
+    HEADING = ("Probe Id", "Probe Ip")
 
     def __init__(self, probeIp):
         Interface.__init__(self, probeIp)
-        Thread.__init__(self)
-        self.setName("Cli")
+#         Thread.__init__(self)
+#         self.setName("Cli")
         self.isRunning = True
         # wins and boxes
         self.status = None
         self.commandInput = None
         self.text = None
         self.probesPanel = None
-         # assures we end correctly
+        # assures we end correctly
         # end session
 #         curses.endwin()
 
-    def run(self):
+    def start(self):
         try:
             curses.wrapper(self.main)
         finally:
@@ -96,10 +98,26 @@ class Cli(Interface, Thread):
 
     # get an area where all the probes can be painted
     def drawProbes(self, probes):
-        i = Cli.COMMAND_LINE_NUMBER + 1
+        i = 0
+        self.probesPanel.addstr(i, 0, "-"*self.DISPLAY_WIDTH)
+        i += 1
+        x = 0
+        for idx, val in enumerate(self.FIELDS_DISPLAY_WIDTH):
+            self.probesPanel.addstr(i, x, "| " + self.HEADING[idx])
+            x += val
+
+        self.probesPanel.addstr(i, self.DISPLAY_WIDTH - 1, "|")
+        i += 1
+
+        self.probesPanel.addstr(i, 0, "-"*self.DISPLAY_WIDTH)
+        i += 1
+
         for probe in probes:
-            self.probesPanel.addstr(i, 0, probe)
-            self.probesPanel.cleartoeol()
+            prid = str(probe.getId())
+            ip = probe.getIp()
+            self.probesPanel.addstr(i, 0, "| " + prid)
+            self.probesPanel.addstr(i, Cli.FIELDS_DISPLAY_WIDTH[0], "| " + ip)
+            self.probesPanel.addstr(i, self.DISPLAY_WIDTH - 1, "|")
             i += 1
         return self.probesPanel;
 

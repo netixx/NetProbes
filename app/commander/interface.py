@@ -40,7 +40,7 @@ class Interface(object):
             cmd.start()
             cmd.join()
             self.updateStatus("Command done...")
-        except ValueError, NoSuchCommand:
+        except (ValueError, NoSuchCommand):
             self.updateStatus("Command is false or unkown")
 
 
@@ -54,7 +54,7 @@ class Parser(object):
 
     def __init__(self, command):
         self.aCommand = shlex.split(command)
-        if len(self.aCommand < 2):
+        if (len(self.aCommand) < 2):
             raise ValueError("The argument supplied must at least have 2 words")
 
     def getCommand(self):
