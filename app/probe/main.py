@@ -14,11 +14,17 @@ from messages import Add
 from server import Server
 from probes import ProbeStorage, Probe
 from commanderServer import CommanderServer
-from consts import Params
+from consts import Params, Identification
 from actionmanager import ActionMan
-
+import argparse
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Starts the commander for a probe')
+    parser.add_argument('-id', '--probe-id', metavar='interface', type=int,
+                   help='Enter an int that represent the id of the probe', default=11223344556677)
+
+    args = parser.parse_args()
+    Identification.PROBE_ID = args.probe_id
     server = Server()
     server.start()
     server.isUp.wait()
