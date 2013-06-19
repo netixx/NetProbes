@@ -14,12 +14,15 @@ from http.client import HTTPConnection
 from probedisp import Probe
 from exceptions import NoSuchCommand
 import argparse
+from threading import Event
 
 class Interface(object):
     targetIp = "127.0.0.1"
-    
+    PROBE_REFRESH_TIME = 10
     def __init__(self, ip):
         self.targetIp = ip
+        self.isRunning = True
+        self.fetchTrigger = Event()
 #         self.setName("Graphical interface")
         try :
             self.connection = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
@@ -36,7 +39,7 @@ class Interface(object):
 
     def doCommand(self, command):
         self.updateStatus("Executing command : " + command)
-        time.sleep(1)
+        time.sleep(0.5)
         try:
             cmd = Command(Parser(command), self)
             cmd.start()
@@ -45,6 +48,14 @@ class Interface(object):
         except (ValueError, NoSuchCommand):
             self.updateStatus("Command is false or unkown")
 
+
+    def triggerUpdater(self):
+        while(self.isRunning):
+            self.fetchTrigger.set()
+            time.sleep(self.PROBE_REFRESH_TIME)
+
+    def triggerFetch(self):
+        self.fetchTrigger.set()
 
     def updateStatus(self, status):
         pass

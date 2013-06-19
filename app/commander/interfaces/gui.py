@@ -10,7 +10,7 @@ from tkinter.ttk import Treeview
 import time
 
 class Gui(Interface):
-    PROBE_REFRESH = 10
+
     TREE_COLUMNS = ("Probe id", "Probe ip")
     
     def __init__(self, ip):
@@ -48,24 +48,31 @@ class Gui(Interface):
         
         th = Thread(target=self.updateProbes, name="Probe updater", daemon=True)
         th.start()
+        thtrigger = Thread(target=self.triggerUpdater, name="Trigger", daemon=True)
+        thtrigger.start()
         self.mainWin.mainloop()
         self.isRunning=False
+        self.triggerFetch()
         th.join()
+        thtrigger.join()
 
     def doCommand(self, event):
-        return super().doCommand(self.command.get())
+        super().doCommand(self.command.get())
+        self.triggerFetch()
+        self.command.set("")
 
     def updateStatus(self, status):
         self.status.set(status)
         
     def updateProbes(self):
         while(self.isRunning):
+            self.fetchTrigger.clear()
             probes = self.probesToItems(self.fetchProbes())
             self.probesDisplay.set_children("")
             for item in probes:
                 self.probesDisplay.insert('', 'end', values=item)
 #             self.probesDisplay.set_children('', probes)
-            time.sleep(Gui.PROBE_REFRESH)
+            self.fetchTrigger.wait()
     
     @classmethod
     def probesToItems(cls, probes):
@@ -73,5 +80,6 @@ class Gui(Interface):
 
 
     def quit(self):
+        self.triggerFetch()
         self.isRunning = False
         self.mainWin.quit()
