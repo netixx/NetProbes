@@ -35,14 +35,24 @@ class Add(Message):
     def getHello(self):
         return self.doHello
 
+
 class Hello(Message):
-    '''  Means " Hello, my name is myId and our network is this big,
-                please reply when all my friends have contacted you" ''' 
-    def __init__(self, targetId, myId, networkSize):
+    '''  Means " Hello, my name is myId" ''' 
+    def __init__(self, targetId, myId):
         Message.__init__(self, targetId)
         self.myId = myId
-        self.networkSize = networkSize
+        self.remoteIP = None
         
+    def setRemoteIP(self, remoteIP):
+        self.remoteIP = remoteIP
+        
+    def getRemoteIP(self):
+        return self.remoteIP
+    
+    def getRemoteID(self):
+        return self.myId
+    
+    
 
 class Hi(Message):
     '''  Means "Hi, I have now met you" ''' 

@@ -47,7 +47,7 @@ class ActionMan(Thread):
         ProbeStorage.addProbe( Probe(action.getIdSonde(), action.getIpSonde() ) );
         
         if action.getHello():
-            Client.send( Hello(action.getIdSonde(), Identification.PROBE_ID, ProbeStorage.numberOfConnections() ) );
+            Client.send( Hello(action.getIdSonde(), Identification.PROBE_ID ) );
         
     
     
