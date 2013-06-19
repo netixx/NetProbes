@@ -50,6 +50,9 @@ class Server(Thread):
     def taskDone(cls):
         cls.actionQueue.task_done()
         
+    @classmethod
+    def allTaskDone(cls):
+        cls.actionQueue.join()
     
     def run(self):
         consts.debug("Server : starting server")

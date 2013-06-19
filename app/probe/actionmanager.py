@@ -75,4 +75,7 @@ class ActionMan(Thread):
         ''' Other commands to close all connections, etc '''
         Client.allMessagesSent()
         ProbeStorage.closeAllConnections()
+        debug("ActionMan : All connections closed")
+        Server.allTaskDone()
         ProbeStorage.addProbe(Probe(str(Identification.PROBE_ID), "localhost"))
+        debug("ActionMan : readded the localhost probe")
