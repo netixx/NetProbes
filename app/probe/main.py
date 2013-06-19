@@ -20,7 +20,7 @@ import argparse
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Starts the commander for a probe')
-    parser.add_argument('-id', '--probe-id', metavar='interface', type=int,
+    parser.add_argument('-id', '--probe-id', metavar='interface',
                    help='Enter an int that represent the id of the probe', default=11223344556677)
 
     args = parser.parse_args()

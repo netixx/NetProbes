@@ -31,7 +31,7 @@ class Server(Thread):
         Thread.__init__(self)
         self.setName("Server")
         self.isUp = Event()
-        ProbeStorage.addProbe(Probe(Identification.PROBE_ID, "localhost"))
+        ProbeStorage.addProbe(Probe(str(Identification.PROBE_ID), "localhost"))
     
     
     @classmethod
