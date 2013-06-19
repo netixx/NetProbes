@@ -43,7 +43,8 @@ class ProbeStorage(object):
     @classmethod
     def closeAllConnections(cls):
         with cls.connectedProbesLock:
-            for probeId in cls.connectedProbes.keys():
+            aux = cls.connectedProbes.keys()
+            for probeId in aux:
                 cls.delProbe(probeId)
     
     @classmethod
