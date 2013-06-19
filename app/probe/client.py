@@ -80,7 +80,7 @@ class Client(Thread):
             debug("Client : Message : " + message.__class__.__name__ + " has been sent")
         except NoSuchProbe:
             debug("The probe you requested to send a message to : '" + message.targetId + "', is currently unkown to me.")
-#         response = conn.getresponse()
+        response = conn.getresponse()
 #         
 #         if response.status != 200 :
 #             self.send(message)

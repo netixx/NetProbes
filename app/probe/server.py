@@ -100,6 +100,14 @@ class Server(Thread):
                 message = pickle.loads(message)
                 if (isinstance(message, Hello)):
                     message.setRemoteIP(self.client_address[0])
+
+                self.send_response(200)
+                self.send_header("Content-type", "text/plain")
+                self.send_header("Content-Length", len("ok"))
+                self.send_header("Last-Modified", str(datetime.datetime.now()))
+                self.end_headers()
+                self.wfile.write("ok".encode())
+
                 # give the message to our server so that it is treated
                 self.server.server.treatMessage(message)
             

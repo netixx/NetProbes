@@ -52,7 +52,6 @@ class Interface(object):
 '''
     Parses a command from user input into
 '''
-    # todo : refactor
 class Parser(object):
 
     def __init__(self, command):
@@ -99,13 +98,12 @@ class Command(Thread):
         Thread.__init__(self)
         self.parser = parser
         self.interface = interface
+        self.setName('Command')
 
     # does the command
     def run(self):
         command = self.parser.getCommand()
         message = None
-        print(command)
-        # todo : refactor
         if (command == "add"):
             message = Add(self.parser.getTarget())
         

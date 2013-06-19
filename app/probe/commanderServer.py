@@ -20,6 +20,7 @@ import urllib.parse
 from probes import ProbeStorage
 import probedisp as pd
 
+
 class CommanderServer(Thread):
 
     def __init__(self):
@@ -60,6 +61,11 @@ class CommanderServer(Thread):
                 # transform our bytes into an object
                 message = pickle.loads(message)
                 self.send_response(200)
+                self.send_header("Content-type", "text/plain")
+                self.send_header("Content-Length", len("ok"))
+                self.send_header("Last-Modified", str(datetime.datetime.now()))
+                self.end_headers()
+                self.wfile.write("ok".encode())
                 self.handleMessage(message)
 
             def do_GET(self):
@@ -86,7 +92,7 @@ class CommanderServer(Thread):
                     connection = http.client.HTTPConnection(message.targetIp, Consts.PORT_NUMBER);
                     connection.connect()
                     connection.request("GET", "", "", {})
-                    probeId = connection.getresponse().read()
+                    probeId = connection.getresponse().read().decode()
                     consts.debug("CommanderServer : Id of probe with ip " + str(message.targetIp) + " is " + str(probeId))
                     connection.close()
                     
