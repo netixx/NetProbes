@@ -59,6 +59,7 @@ class CommanderServer(Thread):
                 message = bytes(args.get(Consts.POST_MESSAGE_KEYWORD)[0], Consts.POST_MESSAGE_ENCODING)
                 # transform our bytes into an object
                 message = pickle.loads(message)
+                self.send_response(200)
                 self.handleMessage(message)
 
             def do_GET(self):

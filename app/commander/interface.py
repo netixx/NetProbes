@@ -59,7 +59,7 @@ class Parser(object):
         self.command = None
         args = argparse.ArgumentParser(description="Parses the user command")
         args.add_argument('-t', '--target-probe', metavar='target-ip', help="Ip of the target", default=Interface.targetIp)
-        subp = args.add_subparsers()
+        subp = args.add_subparsers(dest='subparser_name')
         subp1 = subp.add_parser('add')
         subp1.add_argument('ip', metavar='ip',
                     help='The ip you want to add')
@@ -70,6 +70,7 @@ class Parser(object):
                     help='The message you want to send to the probe')
         subp2.set_defaults(func=self.setDo)
         self.aCommand = args.parse_args(shlex.split(command))
+        self.aCommand.func()
         self.errors = args.format_usage()
 #         if (len(self.aCommand) < 2):
 #             raise ValueError("The argument supplied must at least have 2 words")
@@ -103,6 +104,7 @@ class Command(Thread):
     def run(self):
         command = self.parser.getCommand()
         message = None
+        print(command)
         # todo : refactor
         if (command == "add"):
             message = Add(self.parser.getTarget())
@@ -121,6 +123,6 @@ class Command(Thread):
             headers = {"Content-type": "application/x-www-form-urlencoded;charset=" + Consts.POST_MESSAGE_ENCODING, "Accept": "text/plain"}
 #             try :
             self.interface.connection.request("POST", "", params, headers)
-            self.interface.connection.getResponse()
+            self.interface.connection.getresponse()
         else:
             raise NoSuchCommand()
