@@ -71,7 +71,7 @@ class ActionMan(Thread):
     def manageQuit(action):
         assert isinstance(action, a.Quit)
         debug("ActionMan : managing Quit task")
-        Client.broadcast( Bye("", Identification.PROBE_ID) )
+        Client.broadcast( Bye("", Identification.PROBE_ID), toMyself = False )
         ''' Other commands to close all connections, etc '''
         Client.allMessagesSent()
         ProbeStorage.closeAllConnections()
