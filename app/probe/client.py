@@ -53,11 +53,9 @@ class Client(Thread):
         self.isUp.set()
         debug("Client : starting the client")
         while not Client.stop or not Client.messagePile.empty():
-            
-            if not Client.messagePile.empty():
-                message = Client.messagePile.get()
+            message = Client.messagePile.get()
                 #try:
-                self.sendMessage(message)
+            self.sendMessage(message)
                 #except:
                 #    print("Error occured sending a message")
                 
