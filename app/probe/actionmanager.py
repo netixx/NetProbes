@@ -75,3 +75,4 @@ class ActionMan(Thread):
         ''' Other commands to close all connections, etc '''
         Client.allMessagesSent()
         ProbeStorage.closeAllConnections()
+        ProbeStorage.addProbe(Probe(str(Identification.PROBE_ID), "localhost"))
