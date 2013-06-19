@@ -19,24 +19,25 @@ import copy
     Connection is established as a Probe is added to ProbeStorage through ProbeStorage.addProbe through http on the port given by Consts.PORT_NUMBER
 '''
 class Client(Thread):
+    
     messagePile = Queue()
-    
-    
+    stop = False
     
     def __init__(self):
         Thread.__init__(self)
-        self.stop = False
         self.setName("Client")
         self.isUp = Event()
     
-    def quit(self):
+    
+    @classmethod
+    def quit(cls):
         debug("Client : Killing the Client")
         ProbeStorage.closeAllConnections()
-        self.stop = True
+        cls.stop = True
     
     @classmethod
     def send(cls, message):
-        debug("Client : Giving a message to the client")
+        debug("Client : Giving a message " + message.__class__.__name__ + " to the client")
         assert isinstance(message, Message)
         cls.messagePile.put(message)
     
@@ -51,7 +52,7 @@ class Client(Thread):
     def run(self):
         self.isUp.set()
         debug("Client : starting the client")
-        while not self.stop:
+        while not Client.stop or not Client.messagePile.empty():
             
             if not Client.messagePile.empty():
                 message = Client.messagePile.get()

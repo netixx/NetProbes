@@ -52,7 +52,8 @@ class Server(Thread):
         consts.debug("Server : starting server")
         self.listener.start()
         self.isUp.set()
-
+        
+    
     def quit(self):
         consts.debug("Server : closing server")
         self.listener.close()

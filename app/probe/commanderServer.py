@@ -97,8 +97,8 @@ class CommanderServer(Thread):
                 
                 if(isinstance(message,Delete)):
                     consts.debug("CommanderServer : trying to delete probe with ID " + str(message.targetId))
-                    byeMessage = m.Bye("", message.targetId)
-                    Client.broadcast(byeMessage)
+                    byeMessage = m.Bye(message.targetId, message.targetId)
+                    Client.send(byeMessage)
 
 
 

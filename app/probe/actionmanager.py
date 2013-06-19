@@ -55,7 +55,6 @@ class ActionMan(Thread):
     def manageRemove(action):
         assert isinstance(action, a.Do)
         debug("ActionMan : managing Remove task")
-        
         ProbeStorage.delProbe( action.getIdSonde() );
     
     
@@ -70,8 +69,8 @@ class ActionMan(Thread):
     @staticmethod
     def manageQuit(action):
         assert isinstance(action, a.Do)
-        debug("ActionMan : managing Remove task")
+        debug("ActionMan : managing Quit task")
         
-        Client.broadcast( Bye(Identification.PROBE_ID) )
+        Client.broadcast( Bye("", Identification.PROBE_ID) )
         ''' Other commands to close all connections, etc '''
-        
+        Client.quit()

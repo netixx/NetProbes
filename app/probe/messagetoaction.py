@@ -36,10 +36,6 @@ def toDo(doMessage):
     return Do()
 
 
-def toBye(byeMessage):
-    assert isinstance(byeMessage, m.Bye)
-    return Remove(byeMessage.myId)
-
 def toHello(message):
     assert isinstance(message, m.Hello)
     return Add(message.getRemoteIP(), message.getRemoteID(), hello=False)
