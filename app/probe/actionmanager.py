@@ -54,7 +54,7 @@ class ActionMan(Thread):
     
     @staticmethod
     def manageRemove(action):
-        assert isinstance(action, a.Do)
+        assert isinstance(action, a.Remove)
         debug("ActionMan : managing Remove task")
         ProbeStorage.delProbe( action.getIdSonde() );
     
