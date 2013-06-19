@@ -67,8 +67,3 @@ class Remove(Action):
     
     def getIdSonde(self):
         return self.idSonde
-
-
-
-
-    

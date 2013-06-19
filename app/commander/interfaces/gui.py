@@ -69,7 +69,7 @@ class Gui(Interface):
     
     @classmethod
     def probesToItems(cls, probes):
-        return [(probe.getId(), probe.getIp()) for probe in probes]
+        return [(str(probe.getId()), probe.getIp()) for probe in probes]
 
 
     def quit(self):

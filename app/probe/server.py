@@ -98,8 +98,7 @@ class Server(Thread):
                 # transform our bytes into an object
                 message = pickle.loads(message)
                 if (isinstance(message, Hello)):
-                    message.setRemoteIp(self.client_address)
-
+                    message.setRemoteIP(self.client_address[0])
                 # give the message to our server so that it is treated
                 self.server.server.treatMessage(message)
             

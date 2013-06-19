@@ -62,6 +62,7 @@ class CommanderServer(Thread):
                 self.handleMessage(message)
 
             def do_GET(self):
+                consts.debug("CommanderServer : Giving the probes")
                 getPath = urllib.parse.urlparse(self.path).path
                 if (getPath == "probes"):
                     probes = ProbeStorage.getAllProbes()
