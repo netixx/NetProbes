@@ -45,7 +45,7 @@ class ActionMan(Thread):
         assert isinstance(action, a.Add)
         debug("ActionMan : managing Add task")
         
-        ProbeStorage.addProbe( Probe(action.getIdSonde(), action.getIpSonde() ) );
+        ProbeStorage.addProbe(Probe(action.getIdSonde(), action.getIpSonde()));
         
         if action.getHello():
             Client.send( Hello(action.getIdSonde(), Identification.PROBE_ID ) );
@@ -71,9 +71,7 @@ class ActionMan(Thread):
     def manageQuit(action):
         assert isinstance(action, a.Quit)
         debug("ActionMan : managing Quit task")
-        
         Client.broadcast( Bye("", Identification.PROBE_ID) )
         ''' Other commands to close all connections, etc '''
-        Client.quit()
-        
-        
+        Client.allMessagesSent()
+        ProbeStorage.closeAllConnections()

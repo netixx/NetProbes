@@ -55,6 +55,10 @@ class ProbeStorage(object):
         with cls.connectedProbesLock:
             return cls.connectedProbes.values()
 
+    @classmethod
+    def getKeys(cls):
+        with cls.connectedProbesLock:
+            return cls.connectedProbes.keys()
 
 '''
     Represents a probe

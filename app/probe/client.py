@@ -44,11 +44,12 @@ class Client(Thread):
     @classmethod
     def broadcast(cls, message, toMyself = True):
         debug("Client : Broadcasting the message : " + message.__class__.__name__)
-        for probeId in ProbeStorage.connectedProbes.keys():
-            if probeId != Identification.PROBE_ID or toMyself :
-                msg = copy.deepcopy(message)
-                msg.setTarget(probeId)
-                cls.send(msg)
+        with ProbeStorage.connectedProbesLock:
+            for probeId in ProbeStorage.getKeys():
+                if probeId != Identification.PROBE_ID or toMyself :
+                    msg = copy.deepcopy(message)
+                    msg.setTarget(probeId)
+                    cls.send(msg)
                 
     def run(self):
         self.isUp.set()
@@ -85,3 +86,6 @@ class Client(Thread):
 #         if response.status != 200 :
 #             self.send(message)
 
+    @classmethod
+    def allMessagesSent(cls):
+        cls.messagePile.join()

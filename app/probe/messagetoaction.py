@@ -27,8 +27,10 @@ def toAdd(addMessage):
 def toBye(byeMessage):
     assert isinstance(byeMessage,m.Bye)
     if byeMessage.getLeavingID() == consts.Identification.PROBE_ID:
+        consts.debug("Message to Action : Probe quit message")
         return Quit()
     else:
+        consts.debug("Message to Action : remove probe message")
         return Remove( byeMessage.getLeavingID() )
 
 
