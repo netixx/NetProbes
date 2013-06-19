@@ -75,3 +75,5 @@ class ActionMan(Thread):
         Client.broadcast( Bye("", Identification.PROBE_ID) )
         ''' Other commands to close all connections, etc '''
         Client.quit()
+        
+        

@@ -57,6 +57,7 @@ class Client(Thread):
             message = Client.messagePile.get()
                 #try:
             self.sendMessage(message)
+            Client.messagePile.task_done()
                 #except:
                 #    print("Error occured sending a message")
                 
