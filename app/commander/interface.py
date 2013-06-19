@@ -56,8 +56,7 @@ class Interface(object):
 class Parser(object):
 
     def __init__(self, command):
-        self.isAdd = False
-        self.isDo = False
+        self.command = None
         args = argparse.ArgumentParser(description="Parses the user command")
         args.add_argument('-t', '--target-probe', metavar='target-ip', help="Ip of the target", default=Interface.targetIp)
         subp = args.add_subparsers()
