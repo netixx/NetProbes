@@ -6,7 +6,7 @@ Created on 16 juin 2013
 from threading import Thread
 import time
 import shlex
-from commanderMessages import Add, Do
+from commanderMessages import Add, Do, Delete
 import pickle
 from consts import Consts
 import urllib
@@ -28,7 +28,7 @@ class Interface(object):
             pass
 
     def fetchProbes(self):
-        self.connection.request("GET", "probes", "", {})
+        self.connection.request("GET", "/probes", "", {})
         response = self.connection.getresponse()
         pi = response.read(int(response.getheader('content-length')))
         return pickle.loads(pi)
@@ -68,6 +68,11 @@ class Parser(object):
         subp2.add_argument('test', metavar='test',
                     help='The message you want to send to the probe')
         subp2.set_defaults(func=self.setDo)
+
+        subp3 = subp.add_parser('remove')
+        subp3.add_argument('id', metavar='id',
+                    help='The id of the probe you wish to remove')
+        subp3.set_defaults(func=self.setRemove)
         self.aCommand = args.parse_args(shlex.split(command))
         self.aCommand.func()
         self.errors = args.format_usage()
@@ -92,6 +97,10 @@ class Parser(object):
     def setDo(self):
         self.command = "do"
 
+    def setRemove(self):
+        self.command = "remove"
+
+
 class Command(Thread):
 
     def __init__(self, parser, interface):
@@ -109,6 +118,9 @@ class Command(Thread):
         
         if (command == "do"):
             message = Do(self.parser.getTarget(), self.parser.getParams().test)
+        
+        if (command == "remove"):
+            message = Delete(self.parser.getParams().id)
 
         if (message != None):
             # serialize our message

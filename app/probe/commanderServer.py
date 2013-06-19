@@ -71,7 +71,7 @@ class CommanderServer(Thread):
             def do_GET(self):
                 consts.debug("CommanderServer : Giving the probes")
                 getPath = urllib.parse.urlparse(self.path).path
-                if (getPath == "probes"):
+                if (getPath == "/probes"):
                     probes = ProbeStorage.getAllProbes()
                     message = pickle.dumps([pd.Probe(probe.getId(), probe.getIp()) for probe in probes])
                 else :
