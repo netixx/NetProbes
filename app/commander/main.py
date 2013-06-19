@@ -2,6 +2,7 @@
 Created on 14 juin 2013
 
 @author: francois
+@todo: refresh à volonté
 '''
 
 import argparse

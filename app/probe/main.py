@@ -2,6 +2,9 @@
 Created on 7 juin 2013
 
 @author: francois
+@todo: catcher connexions impossibles
+@todo : gérer les do
+@todo :ecrire les tests
 '''
 import os
 import sys
