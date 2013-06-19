@@ -39,4 +39,4 @@ def toBye(byeMessage):
 
 def toHello(message):
     assert isinstance(message, m.Hello)
-    return Add(message.probeIP, message.probeID, hello=False)
+    return Add(message.getRemoteIp(), message.getRemoteId(), hello=False)

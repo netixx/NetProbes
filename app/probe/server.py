@@ -8,7 +8,7 @@ from consts import Consts, Identification
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from threading import Thread, Event
-from messages import Message
+from messages import Message,Hello
 import messagetoaction as MTA
 from probes import Probe, ProbeStorage
 import pickle
@@ -97,6 +97,9 @@ class Server(Thread):
                 message = bytes(args.get(Consts.POST_MESSAGE_KEYWORD)[0], Consts.POST_MESSAGE_ENCODING)
                 # transform our bytes into an object
                 message = pickle.loads(message)
+                if (isinstance(message, Hello)):
+                    message.setRemoteIp(self.client_address)
+
                 # give the message to our server so that it is treated
                 self.server.server.treatMessage(message)
             
