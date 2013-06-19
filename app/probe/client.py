@@ -5,7 +5,7 @@ Created on 7 juin 2013
 '''
 import urllib, pickle
 from threading import Thread, Event
-from consts import Consts,Params, debug
+from consts import Consts,Params, debug, Identification
 from queue import Queue
 from messages import Message
 from probes import ProbeStorage
@@ -42,12 +42,13 @@ class Client(Thread):
         cls.messagePile.put(message)
     
     @classmethod
-    def broadcast(cls, message):
+    def broadcast(cls, message, toMyself = True):
         debug("Client : Broadcasting the message : " + message.__class__.__name__)
         for probeId in ProbeStorage.connectedProbes.keys():
-            msg = copy.deepcopy(message)
-            msg.setTarget(probeId)
-            cls.send(msg)
+            if probeId != Identification.PROBE_ID or toMyself :
+                msg = copy.deepcopy(message)
+                msg.setTarget(probeId)
+                cls.send(msg)
                 
     def run(self):
         self.isUp.set()
