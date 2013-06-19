@@ -44,9 +44,12 @@ class Server(Thread):
     def getTask(cls):
         consts.debug("Server : Polled new action from queue")
         result = cls.actionQueue.get(True)[1]
-        cls.actionQueue.task_done()
         return result
     
+    @classmethod
+    def taskDone(cls):
+        cls.actionQueue.task_done()
+        
     
     def run(self):
         consts.debug("Server : starting server")

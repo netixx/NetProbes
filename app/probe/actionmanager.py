@@ -37,6 +37,7 @@ class ActionMan(Thread):
         while not self.stop:
             task = Server.getTask()
             getattr(ActionMan, ActionMan.manager.get(task.__class__.__name__))(task)
+            Server.taskDone()
     
     
     @staticmethod
