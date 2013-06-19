@@ -62,21 +62,13 @@ class Hi(Message):
         
 
 class Bye(Message):
-    ''' Means "Sorry, I'm leaving, forget me" '''
-    ''' Could also mean "This probe has left, forget it" '''
-    def __init__(self, targetId, myId):
+    ''' Means "This probe is leaving, forget it" '''
+    def __init__(self, targetId, leavingId):
         Message.__init__(self, targetId)
-        self.myId = myId
-
-
-
-'''----- Internal communication messages -----'''
-
-class Transfer(Message):
-    ''' Means  "Please send this message for me" '''
-    def __init__(self, targetId, message):
-        Message.__init__(self, targetId)
-        self.message = message
+        self.leavingId = leavingId
+        
+    def getLeavingID(self):
+        return self.leavingId
 
 
 

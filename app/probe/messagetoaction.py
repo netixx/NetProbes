@@ -24,9 +24,12 @@ def toAdd(addMessage):
     return Add(addMessage.probeIP, addMessage.probeID, hello=addMessage.getHello())
 
 
-def toTransfer(transferMessage):
-    assert isinstance(transferMessage,m.Transfer)
-    return Transfer()
+def toBye(byeMessage):
+    assert isinstance(byeMessage,m.Bye)
+    if byeMessage.getLeavingID() == consts.Identification.PROBE_ID:
+        return Quit()
+    else:
+        return Remove( byeMessage.getLeavingID() )
 
 
 def toDo(doMessage):

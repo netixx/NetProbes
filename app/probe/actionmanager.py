@@ -60,21 +60,13 @@ class ActionMan(Thread):
     
     
     @staticmethod
-    def manageTransfer(action):
-        assert isinstance(action, a.Transfer)
-        if (Params.DEBUG):
-            print("ActionMan : managing Transfer task")
-        
-        Client.send( action.message )
-    
-    
-    @staticmethod
     def manageDo(action):
         assert isinstance(action, a.Do)
         debug("ActionMan : managing Do task")
         
         ''' Manage tests here '''
         
+    
     @staticmethod
     def manageQuit(action):
         assert isinstance(action, a.Do)

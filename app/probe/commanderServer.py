@@ -8,7 +8,7 @@ from consts import Consts, Identification,Params
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from threading import Thread, Event
-from commanderMessages import CommanderMessage,Add
+from commanderMessages import CommanderMessage,Add, Delete
 import pickle
 import urllib
 import datetime
@@ -88,9 +88,17 @@ class CommanderServer(Thread):
                     probeId = connection.getresponse().read()
                     consts.debug("CommanderServer : Id of probe with ip " + str(message.targetIp) + " is " + str(probeId))
                     connection.close()
-                    addMessage = m.Add(Identification.PROBE_ID, probeId, message.targetIp, hello=True)
                     
+                    addMessage = m.Add("", probeId, message.targetIp, hello=True)
+                    #addMessage = m.Add(Identification.PROBE_ID, probeId, message.targetIp, hello=True)
                     Client.broadcast(addMessage)
                     
+                
+                if(isinstance(message,Delete)):
+                    consts.debug("CommanderServer : trying to delete probe with ID " + str(message.targetId))
+                    byeMessage = m.Bye("", message.targetId)
+                    Client.broadcast(byeMessage)
+
+
 
 

@@ -14,12 +14,13 @@ class Add(object):
         self.targetIp = targetIp
 
 
-class Transfer(CommanderMessage):
-    def __init__(self, targetId, message):
-        CommanderMessage.__init__(self, targetId)
-        self.message = message
-
 class Do(CommanderMessage):
     def __init__(self, targetId, test):
         CommanderMessage.__init__(self, targetId)
         self.test = test
+
+
+class Delete(CommanderMessage):
+    def __init__(self, targetId):
+        CommanderMessage.__init__(self, targetId)
+    

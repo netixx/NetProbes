@@ -37,12 +37,6 @@ class Add(Action):
         return self.doHello
 
 
-class Transfer(Action):
-    def __init__(self, message, idSonde):
-        Action.__init__(self)
-        self.message = message
-        self.IdSonde = idSonde
-    
     
 
 class Do(Action):
