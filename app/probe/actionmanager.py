@@ -69,7 +69,7 @@ class ActionMan(Thread):
     
     @staticmethod
     def manageQuit(action):
-        assert isinstance(action, a.Do)
+        assert isinstance(action, a.Quit)
         debug("ActionMan : managing Quit task")
         
         Client.broadcast( Bye("", Identification.PROBE_ID) )
