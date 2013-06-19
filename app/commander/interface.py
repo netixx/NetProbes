@@ -105,7 +105,7 @@ class Command(Thread):
         command = self.parser.getCommand()
         message = None
         if (command == "add"):
-            message = Add(self.parser.getTarget())
+            message = Add(self.parser.aCommand.ip)
         
         if (command == "do"):
             message = Do(self.parser.getTarget(), self.parser.getParams().test)
