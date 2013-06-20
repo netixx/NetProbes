@@ -14,7 +14,7 @@ from http.client import HTTPConnection
 from probedisp import Probe
 from exceptions import NoSuchCommand
 import argparse
-from threading import Event
+from threading import Event, Timer
 
 class Interface(object):
     targetIp = "127.0.0.1"
@@ -39,14 +39,15 @@ class Interface(object):
 
     def doCommand(self, command):
         self.updateStatus("Executing command : " + command)
-        time.sleep(0.5)
+        time.sleep(0.3)
         try:
             cmd = Command(Parser(command), self)
             cmd.start()
             cmd.join()
             self.updateStatus("Command done...")
         except (ValueError, NoSuchCommand):
-            self.updateStatus("Command is false or unkown")
+            pass
+#             self.updateStatus("Command is false or unkown")
 
 
     def triggerUpdater(self):
@@ -59,80 +60,82 @@ class Interface(object):
 
     def updateStatus(self, status):
         pass
+    
 
 '''
-    Parses a command from user input into
+    Parses a command from user input into a commanderMessage
 '''
 class Parser(object):
 
     def __init__(self, command):
-        self.command = None
+        self.message = None
+        self.errors = None
         args = argparse.ArgumentParser(description="Parses the user command")
         args.add_argument('-t', '--target-probe', metavar='target-ip', help="Ip of the target", default=Interface.targetIp)
         subp = args.add_subparsers(dest='subparser_name')
+
+        # parser for the add command
         subp1 = subp.add_parser('add')
         subp1.add_argument('ip', metavar='ip',
                     help='The ip you want to add')
         subp1.set_defaults(func=self.setAdd)
 
+        # parser for the do command
         subp2 = subp.add_parser('do')
         subp2.add_argument('test', metavar='test',
                     help='The message you want to send to the probe')
         subp2.set_defaults(func=self.setDo)
 
+        # parse for the remove command
         subp3 = subp.add_parser('remove')
         subp3.add_argument('id', metavar='id',
                     help='The id of the probe you wish to remove')
         subp3.set_defaults(func=self.setRemove)
-        self.aCommand = args.parse_args(shlex.split(command))
-        self.aCommand.func()
-        self.errors = args.format_usage()
+
+        try:
+            self.command = args.parse_args(shlex.split(command))
+            self.command.func()
+        except (argparse.ArgumentError, SystemExit):
+            self.errors = args.format_usage()
 #         if (len(self.aCommand) < 2):
 #             raise ValueError("The argument supplied must at least have 2 words")
 
-    def getCommand(self):
-        return self.command
-
-    def getTarget(self):
-        return self.aCommand.target_probe
-
     def getParams(self):
-        return self.aCommand
+        return self.command
 
     def getErrors(self):
         return self.errors
 
     def setAdd(self):
-        self.command = "add"
+        self.message = Add(self.command.ip)
 
     def setDo(self):
-        self.command = "do"
+        self.message = Do(self.command.target_probe, self.command.test)
 
     def setRemove(self):
-        self.command = "remove"
+        self.message = Delete(self.command.id)
 
+    def getMessage(self):
+        return self.message
 
+'''
+    Runs the command of the user (in a new Thread)
+'''
 class Command(Thread):
 
     def __init__(self, parser, interface):
         Thread.__init__(self)
-        self.parser = parser
         self.interface = interface
+        self.parser = parser
+        if (parser.getErrors() != None):
+            self.interface.updateStatus(self.parser.errors)
+            raise NoSuchCommand()
+
         self.setName('Command')
 
     # does the command
     def run(self):
-        command = self.parser.getCommand()
-        message = None
-        if (command == "add"):
-            message = Add(self.parser.aCommand.ip)
-        
-        if (command == "do"):
-            message = Do(self.parser.getTarget(), self.parser.getParams().test)
-        
-        if (command == "remove"):
-            message = Delete(self.parser.getParams().id)
-
+        message = self.parser.getMessage()
         if (message != None):
             # serialize our message
             serializedMessage = pickle.dumps(message, 3)
@@ -142,8 +145,10 @@ class Command(Thread):
             params = urllib.parse.urlencode(params, doseq=True, encoding=Consts.POST_MESSAGE_ENCODING)
             # set the header as header for POST
             headers = {"Content-type": "application/x-www-form-urlencoded;charset=" + Consts.POST_MESSAGE_ENCODING, "Accept": "text/plain"}
-#             try :
-            self.interface.connection.request("POST", "", params, headers)
-            self.interface.connection.getresponse()
+            try :
+                self.interface.connection.request("POST", "", params, headers)
+                self.interface.connection.getresponse()
+            except :
+                pass
         else:
             raise NoSuchCommand()

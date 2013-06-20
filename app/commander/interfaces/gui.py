@@ -63,6 +63,7 @@ class Gui(Interface):
 
     def updateStatus(self, status):
         self.status.set(status)
+        self.mainWin.update_idletasks()
         
     def updateProbes(self):
         while(self.isRunning):
