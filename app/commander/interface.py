@@ -61,6 +61,9 @@ class Interface(object):
     def updateStatus(self, status):
         pass
     
+    def addResult(self, result):
+        pass
+
 
 '''
     Parses a command from user input into a commanderMessage

@@ -12,12 +12,13 @@ import time
 class Gui(Interface):
 
     TREE_COLUMNS = ("Probe id", "Probe ip")
-    
+    RESULT_DIPLAY_HEIGHT = 10
     def __init__(self, ip):
         self.mainWin = Tk()
         self.command = StringVar(self.mainWin)
         self.status = StringVar(self.mainWin, value="Waiting for command ...")
         self.text = StringVar(self.mainWin, value="Enter a command :")
+        self.result = None
         self.probesDisplay = None
         Interface.__init__(self, ip)
         self.mainWin.title("Commander for probe with ip : " + ip)
@@ -35,7 +36,7 @@ class Gui(Interface):
         txtInput.grid(row=0, column=1, sticky=E + W)
         txtInput.bind("<Return>", self.doCommand)
 
-        txtStatus = Label(self.mainWin, textvariable=self.status)
+        txtStatus = Label(self.mainWin, textvariable=self.status, wraplength=600, justify=CENTER)
         txtStatus.grid(row=1, columnspan=2, sticky=N + S + E + W)
 #         txtStatus.pack(expand=1, fill=X, side=TOP)
         self.probesDisplay = Treeview(self.mainWin, columns=Gui.TREE_COLUMNS, show="headings")
@@ -43,6 +44,11 @@ class Gui(Interface):
 #         self.probesDisplay.heading(1, text="Probe id")
 #         self.probesDisplay.heading(2, text="Probe ip")
 #         aProbes.pack(expand=1, fill=BOTH, side=TOP)
+
+        self.result = Text(self.mainWin, textvariable=self.result, height=self.RESULT_DIPLAY_HEIGHT, wrap=WORD)
+        self.result.configure(state=DISABLED)
+        self.result.grid(row=3, columnspan=2, sticky=N + S + E + W)
+        self.addResult("Awaiting results .... ")
         self.mainWin.grid_rowconfigure(2, weight=1)
         self.mainWin.grid_columnconfigure(1, weight=1)
         
@@ -65,6 +71,17 @@ class Gui(Interface):
         self.status.set(status)
         self.mainWin.update_idletasks()
         
+    def addResult(self, result):
+        self.result.configure(state=NORMAL)
+        self.result.insert(END, result + "\n")
+        self.result.configure(state=DISABLED)
+
+    def setResult(self, result):
+        self.result.configure(state=NORMAL)
+        self.result.set(result)
+        self.result.configure(state=DISABLED)
+
+
     def updateProbes(self):
         while(self.isRunning):
             self.fetchTrigger.clear()
