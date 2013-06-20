@@ -21,8 +21,11 @@ import urllib.parse
 from probes import ProbeStorage
 import probedisp as pd
 from server import Server
+from queue import Queue
 
 class CommanderServer(Thread):
+
+    resultsQueue = Queue()
 
     def __init__(self):
         Thread.__init__(self)
@@ -30,6 +33,14 @@ class CommanderServer(Thread):
 
     def run(self):
         self.listener.start()
+
+    @classmethod
+    def addResult(cls, result):
+        cls.resultsQueue.put(result)
+
+    @classmethod
+    def getResult(cls):
+        return cls.resultsQueue.get()
 
     class Listener(ThreadingMixIn, HTTPServer, Thread):
 
@@ -75,6 +86,9 @@ class CommanderServer(Thread):
                 if (getPath == "/probes"):
                     probes = ProbeStorage.getAllProbes()
                     message = pickle.dumps([pd.Probe(probe.getId(), probe.getIp()) for probe in probes])
+                if (getPath == "/results"):
+                    # blocant!
+                    message = CommanderServer.getResult()
                 else :
                     message = "Commander server running, state your command ...".encode(Consts.POST_MESSAGE_ENCODING)
                 # answer with your id
