@@ -3,7 +3,7 @@ Created on 13 juin 2013
 
 @author: francois
 '''
-from probe.test import Test
+from probe.tests import Test
 
 class Unicast(Test):
     '''

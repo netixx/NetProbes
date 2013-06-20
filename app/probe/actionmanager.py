@@ -10,12 +10,16 @@ from probes import Probe, ProbeStorage
 from client import Client
 from consts import *
 from messages import Hello, Bye
-from test import Test
+from test import Test, TestManager
 from server import Server
-import importlib
-
+import tests
 
 class ActionMan(Thread):
+
+    '''
+        thread that does the tests
+    '''
+    testThread = None
 
     manager = { "Add" : "manageAdd",
             "Remove" : "manageRemove",
@@ -64,15 +68,19 @@ class ActionMan(Thread):
         assert isinstance(action, a.Do)
         debug("ActionMan : managing Do task")
         # intanciate the right test
-        mod = importlib.import_module("tests." + action.getTest())
-        test = getattr(mod, action.getTest().capitalize())(action.getOptions())
-        debug("ActionMan : Starting test " + test.__class__.__name__)
-        test.start()
+        debug("ActionMan : Starting test " + action.getTest())
+        test = tests.testFactory(action.getTest())
+        test = test(action.getOptions())
+        TestManager.initTest(test)
         debug("ActionMan : Test Over " + test.__class__.__name__)
         result = test.getResult()
         debug("ActionMan : Result of the test is a follows : \n" + result)
         # @todo : send result to whoever!
     
+    @staticmethod
+    def managePrepare(action):
+        pass
+
     @staticmethod
     def manageQuit(action):
         assert isinstance(action, a.Quit)

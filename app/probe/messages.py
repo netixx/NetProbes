@@ -48,7 +48,7 @@ class Hello(Message):
     def getRemoteID(self):
         return self.myId
     
-    
+# @todo: supprimer ??
 class Hi(Message):
     '''  Means "Hi, I have now met you" ''' 
     def __init__(self, targetId, myId):
@@ -68,36 +68,49 @@ class Bye(Message):
 
 
 '''----- Messages to manage tests -----'''
+class TestMessage(Message):
+    def __init__(self, targetId, testId):
+        super().__init__(self, targetId)
+        self.testId = testId
 
-class Prepare(Message):
+    def getTestId(self):
+        return self.testId
+
+class TesterMessage(TestMessage):
+    pass
+
+class Prepare(TesterMessage):
     ''' Means "Get ready for the given test, stop processing other messages and answer when you're ready" '''
-    def __init__(self, targetId):
-        Message.__init__(self, targetId)
-    
+    def __init__(self, targetId, testId):
+        super().__init__(self, targetId, testId)
 
+class Over(TesterMessage):
+    ''' Means "Test is over, give me your report" '''
+    def __init__(self, targetId, testId):
+        super().__init__(self, targetId, testId)
 
-class Ready(Message):
-    ''' Means "I'm ready to perform your test, I won't answer to other messages" '''
-    def __init__(self, targetId):
-        Message.__init__(self, targetId)
-
-
-
-class Abort(Message):
+class Abort(TesterMessage):
     ''' Means "Never mind, this test is cancelled, forget about it, resume answering to other messages" '''
-    def __init__(self, targetId):
-        Message.__init__(self, targetId)
+    def __init__(self, targetId, testId):
+        super().__init__(self, targetId, testId)
+        
+'''
+    An answer from the probe beeing tested
+'''
+class TesteeAnswer(TestMessage):
+    pass
 
-class Over(Message):
-    ''' Means "I no longer need you for this test, forget about it, resume answering to other messages" '''
-    def __init__(self, targetId):
-        Message.__init__(self, targetId)
+class Ready(TesteeAnswer):
+    ''' Means "I'm ready to perform your test, I won't answer to other messages" '''
+    def __init__(self, targetId, testId):
+        super().__init__(self, targetId, testId)
 
 
-class Result(Message):
+class Result(TesteeAnswer):
     ''' Means "You initiated a test, here are the results" '''
-    def __init__(self, targetId):
-        Message.__init__(self, targetId)
+    def __init__(self, targetId, testId, report):
+        super().__init__(self, targetId, testId)
+        self.report = report
 
 
 

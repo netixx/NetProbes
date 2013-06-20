@@ -10,3 +10,5 @@ Created on 13 juin 2013
 class NoSuchProbe(Exception):
     pass
 
+class TestInProgress(Exception):
+    pass

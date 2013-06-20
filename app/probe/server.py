@@ -8,7 +8,7 @@ from consts import Consts, Identification
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from threading import Thread, Event
-from messages import Message,Hello
+from messages import Message, Hello, TesterMessage, TesteeAnswer
 import messagetoaction as MTA
 from probes import Probe, ProbeStorage
 import pickle
@@ -16,6 +16,7 @@ import urllib
 from actions import Action
 from queue import PriorityQueue
 import datetime
+from tests import TestManager, TestResponder
 '''
     Server thread listens on the given port to a POST request containing a serialisation of a Message object
     It then transforms this Message into a corresponding Action that is added to the Queue of actions that the server must execute
@@ -68,7 +69,13 @@ class Server(Thread):
     def treatMessage(self, message):
         consts.debug("Server : treating message " + message.__class__.__name__)
         assert isinstance(message, Message)
-        Server.addTask(MTA.toAction(message))
+        # if probe is in test mode, give the message right to the TestManager!
+        if (isinstance(message, TesteeAnswer)):
+            TestManager.handleMessage(message)
+        elif (isinstance(message, TesterMessage)):
+            TestResponder.handleMessage(message)
+        else:
+            Server.addTask(MTA.toAction(message))
 
     class Listener(ThreadingMixIn,HTTPServer, Thread):
         
