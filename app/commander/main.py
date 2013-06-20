@@ -27,4 +27,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     commander = interfaceFactory(args.interface_type[0], args.ip_probe[0])
+#     try:
     commander.start()
+#     except KeyboardInterrupt:
+#         commander.quit()

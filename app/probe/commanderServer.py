@@ -81,14 +81,17 @@ class CommanderServer(Thread):
                 self.handleMessage(message)
 
             def do_GET(self):
-                consts.debug("CommanderServer : Giving the probes")
+                consts.debug("CommanderServer : handling get Request")
                 getPath = urllib.parse.urlparse(self.path).path
                 if (getPath == "/probes"):
+                    consts.debug("CommanderServer : Giving the probes")
                     probes = ProbeStorage.getAllProbes()
                     message = pickle.dumps([pd.Probe(probe.getId(), probe.getIp()) for probe in probes])
-                if (getPath == "/results"):
+                elif (getPath == "/results"):
+                    consts.debug("CommanderServer : Asked for results")
                     # blocant!
                     message = CommanderServer.getResult()
+                    consts.debug("CommanderServer : Giving the results")
                 else :
                     message = "Commander server running, state your command ...".encode(Consts.POST_MESSAGE_ENCODING)
                 # answer with your id

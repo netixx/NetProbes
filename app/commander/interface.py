@@ -14,28 +14,39 @@ from http.client import HTTPConnection
 from probedisp import Probe
 from exceptions import NoSuchCommand
 import argparse
-from threading import Event, Timer
+from threading import Event
+from http.client import CannotSendRequest
 
 class Interface(object):
     targetIp = "127.0.0.1"
     PROBE_REFRESH_TIME = 10
+    RESULTS_REFRESH_TIME = 20
+
     def __init__(self, ip):
         self.targetIp = ip
         self.isRunning = True
-        self.fetchTrigger = Event()
+        self.doFetchProbes = Event()
+        self.doFetchResults = Event()
 #         self.setName("Graphical interface")
         try :
             self.connection = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
             self.connection.connect()
         except:
-            pass
+            self.updateStatus("Connection to probe impossible, commands cannot be executed")
+            raise
 
-    def fetchProbes(self):
-        self.connection.request("GET", "/probes", "", {})
-        response = self.connection.getresponse()
-        pi = response.read(int(response.getheader('content-length')))
-        return pickle.loads(pi)
-#         return [Probe("id", "10.0.0.2"), Probe("id 2", "10.0.0.2")]
+        try:
+            self.connectionProbes = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
+            self.connectionProbes.connect()
+        except:
+            raise
+
+        try :
+            self.connectionResults = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
+            self.connectionResults.connect()
+        except:
+            self.addResult("Connection to the probe impossible, results cannot be fetched")
+            raise
 
     def doCommand(self, command):
         self.updateStatus("Executing command : " + command)
@@ -49,14 +60,42 @@ class Interface(object):
             pass
 #             self.updateStatus("Command is false or unkown")
 
+    def updateProbes(self):
+        pass
 
-    def triggerUpdater(self):
+    def updateResults(self):
+        pass
+
+    def probeFetcherScheduler(self):
         while(self.isRunning):
-            self.fetchTrigger.set()
+            self.triggerFetchProbes()
             time.sleep(self.PROBE_REFRESH_TIME)
 
-    def triggerFetch(self):
-        self.fetchTrigger.set()
+    def triggerFetchProbes(self):
+        self.doFetchProbes.set()
+
+    def resultFetcherScheduler(self):
+        while(self.isRunning):
+            self.triggerFetchResult()
+            time.sleep(self.RESULTS_REFRESH_TIME)
+
+    def triggerFetchResult(self):
+        self.doFetchResults.set()
+
+    def fetchProbes(self):
+        self.doFetchProbes.clear()
+        self.connectionProbes.request("GET", "/probes", "", {})
+        response = self.connectionProbes.getresponse()
+        pi = response.read(int(response.getheader('content-length')))
+        return pickle.loads(pi)
+#         return [Probe("id", "10.0.0.2"), Probe("id 2", "10.0.0.2")]
+
+    def fetchResults(self):
+        self.doFetchResults.clear()
+        self.connectionResults.request("GET", "/results", "", {})
+        response = self.connectionResults.getresponse()
+        return response.read(int(response.getheader('content-length')))
+
 
     def updateStatus(self, status):
         pass
@@ -64,6 +103,10 @@ class Interface(object):
     def addResult(self, result):
         pass
 
+    def quit(self):
+        self.connection.close()
+        self.connectionProbes.close()
+        self.connectionResults.close()
 
 '''
     Parses a command from user input into a commanderMessage
@@ -140,18 +183,23 @@ class Command(Thread):
     def run(self):
         message = self.parser.getMessage()
         if (message != None):
-            # serialize our message
-            serializedMessage = pickle.dumps(message, 3)
-            # put it in a dictionnary
-            params = {Consts.POST_MESSAGE_KEYWORD : serializedMessage}
-            # transform dictionnary into string
-            params = urllib.parse.urlencode(params, doseq=True, encoding=Consts.POST_MESSAGE_ENCODING)
-            # set the header as header for POST
-            headers = {"Content-type": "application/x-www-form-urlencoded;charset=" + Consts.POST_MESSAGE_ENCODING, "Accept": "text/plain"}
-            try :
-                self.interface.connection.request("POST", "", params, headers)
-                self.interface.connection.getresponse()
-            except :
-                pass
+            tryAgain = True
+            while(tryAgain):
+                # serialize our message
+                serializedMessage = pickle.dumps(message, 3)
+                # put it in a dictionnary
+                params = {Consts.POST_MESSAGE_KEYWORD : serializedMessage}
+                # transform dictionnary into string
+                params = urllib.parse.urlencode(params, doseq=True, encoding=Consts.POST_MESSAGE_ENCODING)
+                # set the header as header for POST
+                headers = {"Content-type": "application/x-www-form-urlencoded;charset=" + Consts.POST_MESSAGE_ENCODING, "Accept": "text/plain"}
+                try :
+                    self.interface.connection.request("POST", "", params, headers)
+                    self.interface.connection.getresponse()
+                    tryAgain = False
+                except CannotSendRequest:
+                    # retry later
+                    tryAgain = True
+                    time.sleep(2)
         else:
             raise NoSuchCommand()
