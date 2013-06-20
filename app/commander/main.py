@@ -17,7 +17,6 @@ def interfaceFactory(intOption, ip):
     mod = importlib.import_module("interfaces." + intOption)
     return getattr(mod, intOption.capitalize())(ip)
                                 
-
 # executed when called but not when imported
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Starts the commander for a probe')

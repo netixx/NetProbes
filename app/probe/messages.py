@@ -5,10 +5,6 @@ Created on 7 juin 2013
 
 Add
 Hello
-
-
-
-
 '''
 
 
@@ -53,7 +49,6 @@ class Hello(Message):
         return self.myId
     
     
-
 class Hi(Message):
     '''  Means "Hi, I have now met you" ''' 
     def __init__(self, targetId, myId):

@@ -12,7 +12,7 @@ from consts import *
 from messages import Hello, Bye
 from test import Test
 from server import Server
-
+import importlib
 
 
 class ActionMan(Thread):
@@ -63,9 +63,15 @@ class ActionMan(Thread):
     def manageDo(action):
         assert isinstance(action, a.Do)
         debug("ActionMan : managing Do task")
-        
-        ''' Manage tests here '''
-        
+        # intanciate the right test
+        mod = importlib.import_module("tests." + action.getTest())
+        test = getattr(mod, action.getTest().capitalize())(action.getOptions())
+        debug("ActionMan : Starting test " + test.__class__.__name__)
+        test.start()
+        debug("ActionMan : Test Over " + test.__class__.__name__)
+        result = test.getResult()
+        debug("ActionMan : Result of the test is a follows : \n" + result)
+        # @todo : send result to whoever!
     
     @staticmethod
     def manageQuit(action):

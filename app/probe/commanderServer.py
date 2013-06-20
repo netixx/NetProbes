@@ -8,7 +8,8 @@ from consts import Consts, Identification,Params
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from threading import Thread, Event
-from commanderMessages import CommanderMessage,Add, Delete
+from commanderMessages import CommanderMessage, Add, Delete, Do
+import actions as a
 import pickle
 import urllib
 import datetime
@@ -19,7 +20,7 @@ import consts
 import urllib.parse
 from probes import ProbeStorage
 import probedisp as pd
-
+from server import Server
 
 class CommanderServer(Thread):
 
@@ -105,6 +106,10 @@ class CommanderServer(Thread):
                     consts.debug("CommanderServer : trying to delete probe with ID " + str(message.targetId))
                     byeMessage = m.Bye(message.targetId, message.targetId)
                     Client.send(byeMessage)
+
+                if(isinstance(message, Do)):
+                    consts.debug("CommanderServer : trying to do a test" + message.test)
+                    Server.addTask(a.Do(message.test, message.testOptions))
 
 
 

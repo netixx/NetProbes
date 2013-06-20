@@ -11,20 +11,56 @@ Created on 13 juin 2013
 '''
 class Test(object):
 
-    def __init__(self):
-        pass
+    def __init__(self, options):
+        self.parseOptions(options)
+        self.result = None
 
+    '''
+        Parse the options for the current test
+    '''
+    def parseOption(self, options):
+        self.options=option
+
+    '''
+        Tell the target probes to prepare for the test
+    '''
+    def doPrepare(self):
+        pass
+    
+    '''
+        Does the actual test
+    '''
     def doTest(self):
         pass
 
-    def doPrepare(self):
-        pass
-
-    def doResult(self):
-        pass
-
+    '''
+        Tells the target probes that test is over
+    '''
     def doOver(self):
         pass
+
+    '''
+        Generate the result of the test
+        Should populate self.result
+    '''
+    def doResult(self):
+        pass
+    
+
+    '''
+        Start the testing process
+    '''
+    def start(self):
+        self.doPrepare()
+        self.doTest()
+        self.doOver()
+        self.doResult()
+
+    '''
+        returns the result of the test
+    '''
+    def getResult(self):
+        return self.result
 
 
 

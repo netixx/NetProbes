@@ -15,9 +15,10 @@ class Add(object):
 
 
 class Do(CommanderMessage):
-    def __init__(self, targetId, test):
+    def __init__(self, targetId, test, testOptions):
         CommanderMessage.__init__(self, targetId)
         self.test = test
+        self.testOptions = testOptions
 
 
 class Delete(CommanderMessage):

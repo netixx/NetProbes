@@ -41,12 +41,16 @@ class Add(Action):
 
 class Do(Action):
     priority = 2
-    def __init__(self, codeTest, IP):
+    def __init__(self, testClass, testOptions):
         Action.__init__(self)
-        self.ip = IP
-        self.codeTest = codeTest
-    
+        self.testClass = testClass
+        self.testOptions = testOptions
 
+    def getTest(self):
+        return self.testClass
+
+    def getOptions(self):
+        return self.testOptions
 
 class Quit(Action):
     def __init__(self):
