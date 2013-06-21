@@ -90,11 +90,11 @@ class Test(object):
 
     '''
         Actions that the probe must perform when the test is over
-        generates the report!
+        generates the report and returns it!!!
     '''
     @staticmethod
     def replyOver():
-        pass
+        return Report()
 
     ''' report for this test (override)'''
     class TestReport(Report):
@@ -194,15 +194,18 @@ class TestManager(object):
     @classmethod
     def initTest(cls, test):
         cls.testManager = TestManager(test)
+        cls.testManager.start()
+
 
 from exceptions import TestInProgress
 #Thread ??
 class TestResponder(object):
     testId = None
+    sourceId = None
     testDone = Event()
     @classmethod
     def getTest(cls):
-        return cls.testId[0]
+        return testFactory(cls.testId[0])
 
     @classmethod
     def getCurrentTestId(cls):
@@ -211,10 +214,12 @@ class TestResponder(object):
     @classmethod
     def handleMessage(cls, message):
         consts.debug("TestManager : Handling test message : " + message.__class__.__name__)
-        if (message.getTestId() == cls.testId):
+        if (message.getTestId() != cls.testId):
             raise TestInProgress()
-        elif(isinstance(message, Over)):
-            cls.getTest().replyOver()
+
+        if(isinstance(message, Over)):
+            report = cls.getTest().replyOver()
+            Client.send(Result(cls.sourceId, cls.testId, report))
             cls.endTest()
         elif(isinstance(message, Abort)):
             cls.endTest()
@@ -229,10 +234,11 @@ class TestResponder(object):
 
 
     @classmethod
-    def initTest(cls, testId):
+    def initTest(cls, testId, sourceId):
         # only if we are not already responding to a test!
         if (cls.testId == None):
             cls.testId = testId
+            cls.sourceId = sourceId
             cls.testDone.clear()
         else:
             raise TestInProgress()

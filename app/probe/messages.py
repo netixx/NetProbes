@@ -81,8 +81,12 @@ class TesterMessage(TestMessage):
 
 class Prepare(TesterMessage):
     ''' Means "Get ready for the given test, stop processing other messages and answer when you're ready" '''
-    def __init__(self, targetId, testId):
+    def __init__(self, targetId, testId, sourceId):
         super().__init__(self, targetId, testId)
+        self.sourceId = sourceId
+        
+    def getSourceId(self):
+        return self.sourceId
 
 class Over(TesterMessage):
     ''' Means "Test is over, give me your report" '''
@@ -111,7 +115,3 @@ class Result(TesteeAnswer):
     def __init__(self, targetId, testId, report):
         super().__init__(self, targetId, testId)
         self.report = report
-
-
-
-

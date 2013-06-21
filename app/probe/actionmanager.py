@@ -80,7 +80,7 @@ class ActionMan(Thread):
     @staticmethod
     def managePrepare(action):
         assert(isinstance(action, a.Prepare))
-        TestResponder.initTest(action.getTestId())
+        TestResponder.initTest(action.getTestId(), action.getSourceId())
         # blaok all other actions
         TestResponder.testDone.wait()
 

@@ -41,3 +41,8 @@ def toDo(doMessage):
 def toHello(message):
     assert isinstance(message, m.Hello)
     return Add(message.getRemoteIP(), message.getRemoteID(), hello=False)
+
+
+def toPrepare(message):
+    assert isinstance(message, m.Prepare)
+    return Prepare(message.getTestId(), message.getSourceId())

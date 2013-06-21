@@ -55,12 +55,16 @@ class Do(Action):
 
 class Prepare(Action):
     priority = 0
-    def __init__(self, testId):
+    def __init__(self, testId, sourceId):
         super().__init__(self)
         self.testId = testId
+        self.sourceId = sourceId
 
     def getTestId(self):
         return self.testId
+    
+    def getSourceId(self):
+        return self.sourceId
 
 
 class Quit(Action):
