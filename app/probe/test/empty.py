@@ -5,7 +5,7 @@ Created on 13 juin 2013
 '''
 from tests import Test, Report
 
-class EmptyTest(Test):
+class Empty(Test):
 
     def __init__(self, options):
         super().__init__(self, options)
