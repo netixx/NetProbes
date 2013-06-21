@@ -266,8 +266,9 @@ class TestResponder(object):
         # only if we are not already responding to a test!
         if (cls.testId == None):
             cls.testId = testId
+            cls.getTest().options = options
             cls.sourceId = sourceId
-            cls.options = options
+
             cls.testDone.clear()
             cls.replyPrepare()
             consts.debug("TestResponder : responding new test with id : " + "(" + " ".join(cls.testId) + ")" + " from source : " + sourceId)
