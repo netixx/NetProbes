@@ -84,7 +84,7 @@ class ActionMan(Thread):
     def managePrepare(action):
         assert(isinstance(action, a.Prepare))
         debug("ActionMan : manage prepare test " + "(" + " ".join(action.getTestId()) + ")")
-        TestResponder.initTest(action.getTestId(), action.getSourceId())
+        TestResponder.initTest(action.getTestId(), action.getSourceId(), action.getTestOptions())
         # block all other actions
         TestResponder.testDone.wait()
 

@@ -46,4 +46,4 @@ def toHello(message):
 
 def toPrepare(message):
     assert isinstance(message, m.Prepare)
-    return Prepare(message.getTestId(), message.getSourceId())
+    return Prepare(message.getTestId(), message.getSourceId(), message.getTestOptions())

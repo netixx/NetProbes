@@ -77,12 +77,16 @@ class TestMessage(Message):
 
 class Prepare(TestMessage):
     ''' Means "Get ready for the given test, stop processing other messages and answer when you're ready" '''
-    def __init__(self, targetId, testId, sourceId):
+    def __init__(self, targetId, testId, sourceId, testOptions):
         super().__init__(targetId, testId)
         self.sourceId = sourceId
+        self.testOptions = testOptions
 
     def getSourceId(self):
         return self.sourceId
+
+    def getTestOptions(self):
+        return self.testOptions
 
 class TesterMessage(TestMessage):
     pass

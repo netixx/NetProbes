@@ -18,6 +18,7 @@ class Report(object):
 '''
 class Test(object):
 
+    options = None
     def __init__(self, options):
         self.targets = []
         self.result = None
@@ -100,6 +101,9 @@ class Test(object):
     class TestReport(Report):
         pass
 
+    def getOptions(self):
+        return self.options
+
 
 from threading import RLock,Event
 from client import Client
@@ -132,7 +136,7 @@ class TestManager(object):
         self.test.doPrepare()
         for target in self.test.getTargets():
             # prepare for the test width given id
-            Client.send(Prepare(target, self.test.getId(), Identification.PROBE_ID))
+            Client.send(Prepare(target, self.test.getId(), Identification.PROBE_ID, self.test.getOptions()))
 
         #wait for everyone to be ready
         self.isReadyForTest.wait()
@@ -257,12 +261,13 @@ class TestResponder(object):
         Client.send( Ready(cls.sourceId, cls.getCurrentTestId() ) )
 
     @classmethod
-    def initTest(cls, testId, sourceId):
+    def initTest(cls, testId, sourceId, options):
         consts.debug("TestResponder : received request to do test")
         # only if we are not already responding to a test!
         if (cls.testId == None):
             cls.testId = testId
             cls.sourceId = sourceId
+            cls.options = options
             cls.testDone.clear()
             cls.replyPrepare()
             consts.debug("TestResponder : responding new test with id : " + "(" + " ".join(cls.testId) + ")" + " from source : " + sourceId)

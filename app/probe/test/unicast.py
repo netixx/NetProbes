@@ -4,7 +4,7 @@ from tests import Report
 import socket
 from probes import ProbeStorage
 import consts
-
+import argparse
 
 class Unicast(Test):
     
@@ -23,20 +23,34 @@ class Unicast(Test):
         should populate at least the targets list
     '''
     def parseOptions(self, options):
-        self.targets = options[0:1]
+        parser = argparse.ArgumentParser(description="Parses the unicast test options")
+        parser.add_argument('target', metavar='target')
+        parser.add_argument('--port', type=int, metavar='port', default=self.port)
+        parser.add_argument('--protocol', metavar='protocol', default='tcp', choices=['tcp', 'udp'])
+
+        opts = parser.parse_args(options)
+        self.targets = opts.target
+        self.options = opts
+    
+    @staticmethod
+    def protocolToUnix(protocol):
+        if (protocol == 'udp'):
+            return socket.SOCK_DGRAM
+
+        return socket.SOCK_STREAM
 
     '''
         Prepare yourself for the test
     '''
     def doPrepare(self):
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket = socket.socket(socket.AF_INET, self.protocolToUnix(self.options.protocol))
 
     '''
         Does the actual test
     '''
     def doTest(self):
         consts.debug("Unicast : Starting test")
-        self.socket.connect((ProbeStorage.getProbeById(self.targets[0]).getIp() , self.port))
+        self.socket.connect((ProbeStorage.getProbeById(self.targets[0]).getIp() , self.options.port))
         consts.debug("Unicast : Sending message")
         self.socket.sendall(self.messageSend.encode(self.ENCODING) )
         consts.debug("Unicast : Receiving message")
@@ -66,8 +80,8 @@ class Unicast(Test):
     '''
     @classmethod
     def replyPrepare(cls):
-        cls.rcvSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        cls.rcvSocket.bind(("", cls.port))
+        cls.rcvSocket = socket.socket(socket.AF_INET, cls.protocolToUnix(cls.options.protocol))
+        cls.rcvSocket.bind(("", cls.options.port))
         cls.rcvSocket.listen(1)
 
     '''
