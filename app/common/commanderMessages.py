@@ -15,7 +15,7 @@ class Add(object):
 
 
 class Do(CommanderMessage):
-    def __init__(self, targetId, test, testOptions):
+    def __init__(self, targetId, test, testOptions=None):
         CommanderMessage.__init__(self, targetId)
         self.test = test
         self.testOptions = testOptions

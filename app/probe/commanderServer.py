@@ -125,7 +125,7 @@ class CommanderServer(Thread):
                     Client.send(byeMessage)
 
                 if(isinstance(message, Do)):
-                    consts.debug("CommanderServer : trying to do a test" + message.test)
+                    consts.debug("CommanderServer : trying to do a test : " + message.test)
                     Server.addTask(a.Do(message.test, message.testOptions))
 
 
