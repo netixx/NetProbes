@@ -21,7 +21,7 @@ class Test(object):
     def __init__(self, options):
         self.targets = []
         self.result = None
-        self.ID = (self.__class__.__name__, "'%030x' % random.randrange(256**15)")
+        self.ID = (self.__class__.__name__, '%030x' % random.randrange(256 ** 15))
         self.parseOptions(options)
         
     def getId(self):
