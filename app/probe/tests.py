@@ -178,7 +178,7 @@ class TestManager(object):
             consts.debug("TestManager : received new Ready from target probe")
             self.readies += 1
             if (self.readies == self.test.getProbeNumber()):
-                consts.debug("TestManager : all Readies recieved, proceeding with test")
+                consts.debug("TestManager : all Readies received, proceeding with test")
                 self.isReadyForTest.set()
                 self.readies = 0
 

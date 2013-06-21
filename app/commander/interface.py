@@ -97,7 +97,7 @@ class Interface(object):
         self.doFetchResults.clear()
         self.connectionResults.request("GET", "/results", "", {})
         response = self.connectionResults.getresponse()
-        return response.read(int(response.getheader('content-length')))
+        return response.read(int(response.getheader('content-length'))).decode()
 
 
     def updateStatus(self, status):

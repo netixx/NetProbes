@@ -13,6 +13,7 @@ from messages import Hello, Bye
 from tests import TestResponder, TestManager
 from server import Server
 import tests
+from commanderServer import CommanderServer
 
 class ActionMan(Thread):
 
@@ -76,6 +77,7 @@ class ActionMan(Thread):
         debug("ActionMan : Test Over " + test.__class__.__name__)
         result = test.getResult()
         debug("ActionMan : Result of the test is a follows : \n" + result)
+        CommanderServer.addResult(result)
         # @todo : send result to whoever!
     
     @staticmethod

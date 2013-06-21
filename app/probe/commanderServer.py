@@ -90,7 +90,7 @@ class CommanderServer(Thread):
                 elif (getPath == "/results"):
                     consts.debug("CommanderServer : Asked for results")
                     # blocant!
-                    message = CommanderServer.getResult()
+                    message = CommanderServer.getResult().encode(Consts.POST_MESSAGE_ENCODING)
                     consts.debug("CommanderServer : Giving the results")
                 else :
                     message = "Commander server running, state your command ...".encode(Consts.POST_MESSAGE_ENCODING)
