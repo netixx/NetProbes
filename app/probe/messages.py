@@ -70,7 +70,7 @@ class Bye(Message):
 '''----- Messages to manage tests -----'''
 class TestMessage(Message):
     def __init__(self, targetId, testId):
-        super().__init__(self, targetId)
+        super().__init__(targetId)
         self.testId = testId
 
     def getTestId(self):
@@ -82,7 +82,7 @@ class TesterMessage(TestMessage):
 class Prepare(TesterMessage):
     ''' Means "Get ready for the given test, stop processing other messages and answer when you're ready" '''
     def __init__(self, targetId, testId, sourceId):
-        super().__init__(self, targetId, testId)
+        super().__init__(targetId, testId)
         self.sourceId = sourceId
         
     def getSourceId(self):
@@ -91,12 +91,12 @@ class Prepare(TesterMessage):
 class Over(TesterMessage):
     ''' Means "Test is over, give me your report" '''
     def __init__(self, targetId, testId):
-        super().__init__(self, targetId, testId)
+        super().__init__(targetId, testId)
 
 class Abort(TesterMessage):
     ''' Means "Never mind, this test is cancelled, forget about it, resume answering to other messages" '''
     def __init__(self, targetId, testId):
-        super().__init__(self, targetId, testId)
+        super().__init__(targetId, testId)
         
 '''
     An answer from the probe beeing tested
@@ -107,13 +107,13 @@ class TesteeAnswer(TestMessage):
 class Ready(TesteeAnswer):
     ''' Means "I'm ready to perform your test, I won't answer to other messages" '''
     def __init__(self, targetId, testId):
-        super().__init__(self, targetId, testId)
+        super().__init__(targetId, testId)
 
 
 class Result(TesteeAnswer):
     ''' Means "You initiated a test, here are the results" '''
     def __init__(self, targetId, testId, report):
-        super().__init__(self, targetId, testId)
+        super().__init__(targetId, testId)
         self.report = report
         
     def getReport(self):

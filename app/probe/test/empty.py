@@ -7,13 +7,13 @@ from tests import Test, Report
 
 class Empty(Test):
 
-    def __init__(self, options):
-        super().__init__(self, options)
+    def __init__(self, opts):
+        print(opts)
+        super().__init__(opts)
     
     def parseOptions(self, options):
         self.options = options
         self.targets = options
-
 
     '''
         Generate the result of the test given the set of reports from the tested probes

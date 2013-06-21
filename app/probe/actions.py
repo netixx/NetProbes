@@ -50,13 +50,13 @@ class Do(Action):
         return self.testClass
 
     def getOptions(self):
-        return "".join(self.testOptions)
+        return self.testOptions
 
 
 class Prepare(Action):
     priority = 0
     def __init__(self, testId, sourceId):
-        super().__init__(self)
+        super().__init__()
         self.testId = testId
         self.sourceId = sourceId
 
