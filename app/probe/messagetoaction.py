@@ -11,7 +11,8 @@ messages = {"Add" : "toAdd",
             "Transfer" : "toTransfer",
             "Do" : "toDo",
             "Bye" : "toBye",
-            "Hello" : "toHello"}
+            "Hello" : "toHello",
+            "Prepare" : "toPrepare"}
 
 def toAction(message):
     consts.debug("Message to Action : transforming message into action")
