@@ -111,10 +111,13 @@ class Ready(TesteeAnswer):
 
 class Result(TesteeAnswer):
     ''' Means "You initiated a test, here are the results" '''
-    def __init__(self, targetId, testId, report):
+    def __init__(self, targetId, testId, sourceId, report):
         super().__init__(targetId, testId)
         self.report = report
+        self.sourceId = sourceId
         
     def getReport(self):
         return self.report
 
+    def getSourceId(self):
+        return self.sourceId

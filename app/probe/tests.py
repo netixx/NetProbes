@@ -139,7 +139,7 @@ class TestManager(object):
         self.isReadyForTest.clear()
         consts.debug("TestManager : Prepare over, executing test")
       
-    def test(self):
+    def performTest(self):
         self.test.doTest()
         consts.debug("TestManager : actual test is done")
 
@@ -165,7 +165,7 @@ class TestManager(object):
     def start(self):
         consts.debug("TestManager : Starting test")
         self.prepare()
-        self.test()
+        self.performTest()
         self.over()
         self.result()
 
