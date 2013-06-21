@@ -25,7 +25,8 @@ class ActionMan(Thread):
             "Remove" : "manageRemove",
             "Transfer" : "manageTransfer",
             "Do" : "manageDo",
-            "Quit" : "manageQuit" }
+            "Quit" : "manageQuit",
+            "Prepare" : "managePrepare" }
     
     def __init__(self):
         #init the thread
