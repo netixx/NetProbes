@@ -12,6 +12,7 @@ class Unicast(Test):
     port = 5678
     messageSend = "Unicast Test"
     messageReply = ""
+    
     def __init__(self, options):
         super().__init__(options)
         self.socket = None

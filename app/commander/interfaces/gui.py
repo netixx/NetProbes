@@ -39,9 +39,13 @@ class Gui(Interface):
         txtInput = Entry(self.mainWin, textvariable=self.command, width=30)
         txtInput.grid(row=0, column=1, sticky=E + W)
         txtInput.bind("<Return>", self.doCommand)
-
+        
+        button = Button(self.mainWin, text="Refresh", fg="blue", command=self.triggerFetchProbes)
+        button.grid(row=1, column=0, sticky=N + S + E + W)
+        
         txtStatus = Label(self.mainWin, textvariable=self.status, wraplength=600, justify=CENTER)
-        txtStatus.grid(row=1, columnspan=2, sticky=N + S + E + W)
+        txtStatus.grid(row=1, column=1, sticky=N + S + E + W)
+        
         self.probesDisplay = Treeview(self.mainWin, columns=Gui.TREE_COLUMNS, show="headings")
         self.probesDisplay.grid(row=2, columnspan=2, sticky=N + S + E + W)
 

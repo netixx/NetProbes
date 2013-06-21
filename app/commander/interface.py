@@ -142,6 +142,7 @@ class Parser(object):
         subp3.add_argument('id', metavar='id',
                     help='The id of the probe you wish to remove')
         subp3.set_defaults(func=self.setRemove)
+        
 
         try:
             self.command = args.parse_args(shlex.split(command))
