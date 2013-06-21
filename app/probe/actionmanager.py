@@ -10,7 +10,7 @@ from probes import Probe, ProbeStorage
 from client import Client
 from consts import *
 from messages import Hello, Bye
-from test import TestResponder, TestManager
+from tests import TestResponder, TestManager
 from server import Server
 import tests
 
