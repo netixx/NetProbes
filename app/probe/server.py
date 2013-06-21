@@ -71,8 +71,10 @@ class Server(Thread):
         assert isinstance(message, Message)
         # if probe is in test mode, give the message right to the TestManager!
         if (isinstance(message, TesteeAnswer)):
+            consts.debug("Server : Handling TesteeAnswer")
             TestManager.handleMessage(message)
         elif (isinstance(message, TesterMessage)):
+            consts.debug("Server : Handling TesterMessage")
             TestResponder.handleMessage(message)
         else:
             Server.addTask(MTA.toAction(message))
