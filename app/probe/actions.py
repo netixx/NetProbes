@@ -52,6 +52,17 @@ class Do(Action):
     def getOptions(self):
         return self.testOptions
 
+
+class Prepare(Action):
+    priority = 0
+    def __init__(self, testId):
+        super().__init__(self)
+        self.testId = testId
+
+    def getTestId(self):
+        return self.testId
+
+
 class Quit(Action):
     def __init__(self):
         Action.__init__(self)

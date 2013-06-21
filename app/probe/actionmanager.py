@@ -10,7 +10,7 @@ from probes import Probe, ProbeStorage
 from client import Client
 from consts import *
 from messages import Hello, Bye
-from test import Test, TestManager
+from test import TestResponder, TestManager
 from server import Server
 import tests
 
@@ -79,7 +79,10 @@ class ActionMan(Thread):
     
     @staticmethod
     def managePrepare(action):
-        pass
+        assert(isinstance(action, a.Prepare))
+        TestResponder.initTest(action.getTestId())
+        # blaok all other actions
+        TestResponder.testDone.wait()
 
     @staticmethod
     def manageQuit(action):

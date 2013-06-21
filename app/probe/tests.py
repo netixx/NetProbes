@@ -199,7 +199,7 @@ from exceptions import TestInProgress
 #Thread ??
 class TestResponder(object):
     testId = None
-
+    testDone = Event()
     @classmethod
     def getTest(cls):
         return cls.testId[0]
@@ -213,21 +213,26 @@ class TestResponder(object):
         consts.debug("TestManager : Handling test message : " + message.__class__.__name__)
         if (message.getTestId() == cls.testId):
             raise TestInProgress()
-        
-        if(isinstance(message, Prepare)):
-            cls.initTest(message.getTestId())
         elif(isinstance(message, Over)):
             cls.getTest().replyOver()
+            cls.endTest()
         elif(isinstance(message, Abort)):
-            pass
+            cls.endTest()
         else:
             pass
         # todo : implementer
+
+    @classmethod
+    def endTest(cls):
+        cls.testId = None
+        cls.testDone.set()
+
 
     @classmethod
     def initTest(cls, testId):
         # only if we are not already responding to a test!
         if (cls.testId == None):
             cls.testId = testId
+            cls.testDone.clear()
         else:
             raise TestInProgress()
