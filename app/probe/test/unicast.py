@@ -34,9 +34,13 @@ class Unicast(Test):
         Does the actual test
     '''
     def doTest(self):
+        consts.debug("Unicast : Starting test")
         self.socket.connect((ProbeStorage.getProbeById(self.targets[0]).getIp() , self.port))
+        consts.debug("Unicast : Sending message")
         self.socket.sendall(self.messageSend.encode(self.ENCODING) )
-        response = self.socket.recv(1024)
+        consts.debug("Unicast : Receiving message")
+        response = self.socket.recv( len(self.messageReply) )
+        consts.debug("Unicast : Message received")
 
     '''
         Prepare yourself for finish
