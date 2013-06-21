@@ -38,7 +38,7 @@ class Test(object):
         Parse the options for the current test
         should populate at least the targets list
     '''
-    def parseOption(self, options):
+    def parseOptions(self, options):
         self.options = options
 
     '''
@@ -136,9 +136,12 @@ class TestManager(object):
         #wait for everyone to be ready
         self.isReadyForTest.wait()
         self.isReadyForTest.clear()
+        consts.debug("TestManager : Prepare over, executing test")
       
     def test(self):
         self.test.doTest()
+        consts.debug("TestManager : actual test is done")
+
 
     def over(self):
         # @todo : cf supra
@@ -149,14 +152,17 @@ class TestManager(object):
 
         self.areReportsCollected.wait()
         self.areReportsCollected.clear()
+        consts.debug("TestManager : over done, processing results")
 
     def result(self):
         self.test.doResult(self.reports)
+        consts.debug("TestManager : results processing over, test is done")
 
     '''
         starts the process of testing
     '''
     def start(self):
+        consts.debug("TestManager : Starting test")
         self.prepare()
         self.test()
         self.over()
@@ -168,15 +174,20 @@ class TestManager(object):
     '''Tools methods'''
     def addReady(self):
         with self.readyLock:
+            consts.debug("TestManager : received new Ready from target probe")
             self.readies += 1
             if (self.readies == self.test.getProbeNumber()):
+                consts.debug("TestManager : all Readies recieved, proceeding with test")
                 self.isReadyForTest.set()
                 self.readies = 0
+
 
     def addReport(self, probeId, report):
         with self.reportsLock:
             self.reports[probeId] = report
+            consts.debug("TestManager : received new report from target probe")
             if(len(self.reports) == self.test.getProbeNumber()):
+                consts.debug("TestManager : all reports received, proceeding with result")
                 self.areReportsCollected.set()
 
 
@@ -193,8 +204,11 @@ class TestManager(object):
 
     @classmethod
     def initTest(cls, test):
+        consts.debug("TestManager : Trying to start test : " + test.__class__.__name__)
         cls.testManager = TestManager(test)
+        consts.debug("TestManager : creating test with id : " + test.getId())
         cls.testManager.start()
+        consts.debug("TestManager : Test " + test.__class__.__name__ + " is done.")
 
 
 
@@ -214,15 +228,17 @@ class TestResponder(object):
 
     @classmethod
     def handleMessage(cls, message):
-        consts.debug("TestManager : Handling test message : " + message.__class__.__name__)
+        consts.debug("TestResponder : Handling request for test : " + message.__class__.__name__)
         if (message.getTestId() != cls.testId):
             raise TestInProgress()
 
         if(isinstance(message, Over)):
+            consts.debug("TestResponder : Over message received")
             report = cls.getTest().replyOver()
             Client.send(Result(cls.sourceId, cls.testId, report))
             cls.endTest()
         elif(isinstance(message, Abort)):
+            consts.debug("TestResponder : Abort message received")
             cls.endTest()
         else:
             pass
@@ -232,14 +248,17 @@ class TestResponder(object):
     def endTest(cls):
         cls.testId = None
         cls.testDone.set()
+        consts.debug("TestResponder : Test is over")
 
 
     @classmethod
     def initTest(cls, testId, sourceId):
+        consts.debug("TestResponder : received request to do test")
         # only if we are not already responding to a test!
         if (cls.testId == None):
             cls.testId = testId
             cls.sourceId = sourceId
             cls.testDone.clear()
+            consts.debug("TestResponder : responding new test with id : " + cls.testId + " from source : " + sourceId)
         else:
             raise TestInProgress()
