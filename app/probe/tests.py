@@ -221,7 +221,7 @@ class TestResponder(object):
     testDone = Event()
     @classmethod
     def getTest(cls):
-        return testFactory(cls.testId[0])
+        return testFactory(cls.testId[0].lower() )
 
     @classmethod
     def getCurrentTestId(cls):
@@ -251,6 +251,10 @@ class TestResponder(object):
         cls.testDone.set()
         consts.debug("TestResponder : Test is over")
 
+    @classmethod
+    def replyPrepare(cls):
+        cls.getTest().replyPrepare()
+        Client.send( Ready(cls.sourceId, cls.getCurrentTestId() ) )
 
     @classmethod
     def initTest(cls, testId, sourceId):
@@ -260,6 +264,7 @@ class TestResponder(object):
             cls.testId = testId
             cls.sourceId = sourceId
             cls.testDone.clear()
+            cls.replyPrepare()
             consts.debug("TestResponder : responding new test with id : " + "(" + " ".join(cls.testId) + ")" + " from source : " + sourceId)
         else:
             raise TestInProgress()
