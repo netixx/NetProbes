@@ -236,7 +236,7 @@ class TestResponder(object):
         if(isinstance(message, Over)):
             consts.debug("TestResponder : Over message received")
             report = cls.getTest().replyOver()
-            Client.send(Result(cls.sourceId, cls.testId, report))
+            Client.send(Result(cls.sourceId, cls.testId, Identification.PROBE_ID, report))
             cls.endTest()
         elif(isinstance(message, Abort)):
             consts.debug("TestResponder : Abort message received")
