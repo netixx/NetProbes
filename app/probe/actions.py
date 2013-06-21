@@ -50,7 +50,7 @@ class Do(Action):
         return self.testClass
 
     def getOptions(self):
-        return self.testOptions
+        return "".join(self.testOptions)
 
 
 class Prepare(Action):
