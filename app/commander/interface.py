@@ -51,14 +51,17 @@ class Interface(object):
     def doCommand(self, command):
         self.updateStatus("Executing command : " + command)
         time.sleep(0.3)
-        try:
-            cmd = Command(Parser(command), self)
-            cmd.start()
-            cmd.join()
-            self.updateStatus("Command done...")
-        except (ValueError, NoSuchCommand):
-            pass
-#             self.updateStatus("Command is false or unkown")
+        if command == "refresh":
+            self.triggerFetchProbes()
+        else:
+            try:
+                cmd = Command(Parser(command), self)
+                cmd.start()
+                cmd.join()
+                self.updateStatus("Command done...")
+            except (ValueError, NoSuchCommand):
+                pass
+#               self.updateStatus("Command is false or unkown")
 
     def updateProbes(self):
         pass

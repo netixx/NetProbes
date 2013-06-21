@@ -18,7 +18,7 @@ from queue import PriorityQueue
 import datetime
 from tests import TestManager, TestResponder
 '''
-    Server thread listens on the given port to a POST request containing a serialisation of a Message object
+    Server thread listens on the given port to a POST request containing a serialization of a Message object
     It then transforms this Message into a corresponding Action that is added to the Queue of actions that the server must execute
 '''
 class Server(Thread):
