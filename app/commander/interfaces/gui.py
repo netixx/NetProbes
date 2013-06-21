@@ -69,7 +69,7 @@ class Gui(Interface):
     def doCommand(self, event):
         consts.debug("Commander : executing command")
         super().doCommand(self.command.get())
-        self.triggerFetch()
+        self.triggerFetchProbes()
         self.command.set("")
 
     def updateStatus(self, status):
