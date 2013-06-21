@@ -2,7 +2,7 @@ import random
 import importlib
 
 def testFactory(test):
-    mod = importlib.import_module("tests." + test)
+    mod = importlib.import_module("test." + test)
     return getattr(mod, test.capitalize())
 
 '''
