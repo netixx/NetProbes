@@ -115,3 +115,7 @@ class Result(TesteeAnswer):
     def __init__(self, targetId, testId, report):
         super().__init__(self, targetId, testId)
         self.report = report
+        
+    def getReport(self):
+        return self.report
+
