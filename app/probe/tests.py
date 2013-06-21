@@ -206,7 +206,7 @@ class TestManager(object):
     def initTest(cls, test):
         consts.debug("TestManager : Trying to start test : " + test.__class__.__name__)
         cls.testManager = TestManager(test)
-        consts.debug("TestManager : creating test with id : " + test.getId())
+        consts.debug("TestManager : creating test with id : " + "(" + " ".join(test.getId()) + ")")
         cls.testManager.start()
         consts.debug("TestManager : Test " + test.__class__.__name__ + " is done.")
 
@@ -259,6 +259,6 @@ class TestResponder(object):
             cls.testId = testId
             cls.sourceId = sourceId
             cls.testDone.clear()
-            consts.debug("TestResponder : responding new test with id : " + cls.testId + " from source : " + sourceId)
+            consts.debug("TestResponder : responding new test with id : " + "(" + " ".join(cls.testId) + ")" + " from source : " + sourceId)
         else:
             raise TestInProgress()
