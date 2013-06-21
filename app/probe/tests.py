@@ -105,6 +105,7 @@ from threading import RLock,Event
 from client import Client
 from messages import *
 import consts
+from consts import Identification
 '''
     In charge of running a test
 '''
@@ -131,7 +132,7 @@ class TestManager(object):
         self.test.doPrepare()
         for target in self.test.getTargets():
             # prepare for the test width given id
-            Client.send(Prepare(target, self.test.getId()))
+            Client.send(Prepare(target, self.test.getId(), Identification.PROBE_ID))
 
         #wait for everyone to be ready
         self.isReadyForTest.wait()

@@ -66,7 +66,6 @@ class Bye(Message):
         return self.leavingId
 
 
-
 '''----- Messages to manage tests -----'''
 class TestMessage(Message):
     def __init__(self, targetId, testId):
@@ -76,17 +75,17 @@ class TestMessage(Message):
     def getTestId(self):
         return self.testId
 
-class TesterMessage(TestMessage):
-    pass
-
-class Prepare(TesterMessage):
+class Prepare(TestMessage):
     ''' Means "Get ready for the given test, stop processing other messages and answer when you're ready" '''
     def __init__(self, targetId, testId, sourceId):
         super().__init__(targetId, testId)
         self.sourceId = sourceId
-        
+
     def getSourceId(self):
         return self.sourceId
+
+class TesterMessage(TestMessage):
+    pass
 
 class Over(TesterMessage):
     ''' Means "Test is over, give me your report" '''
