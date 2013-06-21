@@ -80,8 +80,9 @@ class ActionMan(Thread):
     @staticmethod
     def managePrepare(action):
         assert(isinstance(action, a.Prepare))
+        debug("ActionMan : manage prepare test " + action.getTestId())
         TestResponder.initTest(action.getTestId(), action.getSourceId())
-        # blaok all other actions
+        # block all other actions
         TestResponder.testDone.wait()
 
     @staticmethod
