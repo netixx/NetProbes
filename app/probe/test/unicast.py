@@ -7,7 +7,8 @@ import consts
 
 
 class Unicast(Test):
-
+    
+    ENCODING = "latin1"
     port = 5678
     messageSend = "Unicast Test"
     messageReply = ""
@@ -34,7 +35,7 @@ class Unicast(Test):
     '''
     def doTest(self):
         self.socket.connect((ProbeStorage.getProbeById(self.targets[0]).getIp() , self.port))
-        self.socket.sendall(self.message)
+        self.socket.sendall(self.messageSend.encode(self.ENCODING) )
         response = self.socket.recv(1024)
 
     '''
@@ -73,7 +74,7 @@ class Unicast(Test):
         msg = connection.recv(1024)
         consts.debug("Test : Message received")
         if (msg == cls.messageSend):
-            connection.sendall(cls.messageReply)
+            connection.sendall(cls.messageReply.encode( cls.ENCODING) )
             
 
     '''
