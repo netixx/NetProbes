@@ -76,7 +76,7 @@ class Unicast(Test):
     @classmethod
     def replyTest(cls):
         connection, address = cls.rcvSocket.accept()
-        msg = connection.recv(1024)
+        msg = connection.recv(len(cls.messageSend))
         consts.debug("Test : Message received")
         if (msg == cls.messageSend):
             connection.sendall(cls.messageReply.encode( cls.ENCODING) )
