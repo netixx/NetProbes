@@ -77,23 +77,23 @@ class Test(object):
     '''
         Actions that the probe must perform in order to be ready
     '''
-    @staticmethod
-    def replyPrepare():
+    @classmethod
+    def replyPrepare(cls):
         pass
 
     '''
         Actions that must be taken when the probe recieved the test
     '''
-    @staticmethod
-    def replyTest():
+    @classmethod
+    def replyTest(cls):
         pass
 
     '''
         Actions that the probe must perform when the test is over
         generates the report and returns it!!!
     '''
-    @staticmethod
-    def replyOver():
+    @classmethod
+    def replyOver(cls):
         return Report()
 
     ''' report for this test (override)'''
