@@ -23,12 +23,19 @@ class Unicast(Test):
         should populate at least the targets list
     '''
     def parseOptions(self, options):
-        parser = argparse.ArgumentParser(description="Parses the unicast test options")
-        parser.add_argument('target', metavar='target')
-        parser.add_argument('--port', type=int, metavar='port', default=self.port)
-        parser.add_argument('--protocol', metavar='protocol', default='tcp', choices=['tcp', 'udp'])
-
+        parser = argparse.ArgumentParser(description="Parses the unicast test target")
+        parser.add_argument('target', metavar='target', nargs=1)
+        parser.add_argument('opts', nargs=argparse.REMAINDER)
         opts = parser.parse_args(options)
+
+        optParser = argparse.ArgumentParser(description="Parses the unicast test options")
+        optParser.add_argument('--port', type=int, metavar='port', default=self.port)
+        optParser.add_argument('--protocol', metavar='protocol', default='tcp', choices=['tcp', 'udp'])
+        popt = []
+        for op in opts.opts:
+            popt.extend(('--' + op).split())
+        optParser.parse_args(popt, opts)
+
         self.targets = opts.target
         self.options = opts
     

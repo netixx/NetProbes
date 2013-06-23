@@ -143,7 +143,6 @@ class Parser(object):
                     help='The id of the probe you wish to remove')
         subp3.set_defaults(func=self.setRemove)
         
-
         try:
             self.command = args.parse_args(shlex.split(command))
             self.command.func()
