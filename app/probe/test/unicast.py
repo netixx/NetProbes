@@ -5,14 +5,18 @@ import socket
 from probes import ProbeStorage
 import consts
 import argparse
+from consts import Identification
 
 class Unicast(Test):
     
     ENCODING = "latin1"
     port = 5678
     messageSend = "Unicast Test"
-    messageReply = ""
+    messageReply = "Unicast Reply"
     
+    msgReceived = False
+    msgSent = False
+    success = False
     def __init__(self, options):
         super().__init__(options)
         self.socket = None
@@ -63,6 +67,8 @@ class Unicast(Test):
         consts.debug("Unicast : Receiving message")
         response = self.socket.recv( len(self.messageReply) )
         consts.debug("Unicast : Message received")
+        if (response == self.messageReply):
+            self.success = True
 
     '''
         Prepare yourself for finish
@@ -75,9 +81,22 @@ class Unicast(Test):
         Should populate self.result
     '''
     def doResult(self, reports):
+        ok = []
+        fail = []
         for report in reports:
-            pass
-        self.result = "Ok, probe replied successfully"
+            if not report.isSuccess():
+                fail.append(report.getProbeId())
+            else:
+                ok.append(report.getProbeId())
+
+        if (len(ok) == len(reports) and self.success):
+            self.result = "Ok, probe replied successfully."
+        elif (len(ok) == len(reports)):
+            self.result = "Partial Fail : probe received the message but didn't reply correctly."
+        else:
+            self.result = "Fail, probe did not receive the message."
+
+        self.result += "\n Id tested :" + " ".join(ok) + " ".join(fail)
 
     ''' Methods for the probe(s) which receive the test'''
 
@@ -99,8 +118,10 @@ class Unicast(Test):
         connection, address = cls.rcvSocket.accept()
         msg = connection.recv(len(cls.messageSend))
         consts.debug("Test : Message received")
+        cls.msgReceived = True
         if (msg == cls.messageSend):
             connection.sendall(cls.messageReply.encode( cls.ENCODING) )
+        cls.msgSent = True
             
 
     '''
@@ -110,4 +131,8 @@ class Unicast(Test):
     @classmethod
     def replyOver(cls):
         cls.rcvSocket.close()
-        return Report()
+        report = Report(Identification.PROBE_ID)
+        if not (cls.messageReply and cls.msgSent):
+            report.isSuccess = False
+
+        return report

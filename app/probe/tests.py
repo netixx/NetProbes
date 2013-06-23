@@ -10,7 +10,15 @@ def testFactory(test):
     Send after over signal is received
 '''
 class Report(object):
-    pass
+    def __init__(self, probeId, isSuccess=True):
+        self.isSuccess = isSuccess
+        self.probeId = probeId
+
+    def isSuccess(self):
+        return self.isSuccess
+
+    def getProbeId(self):
+        return self.probeId
 
 
 '''
