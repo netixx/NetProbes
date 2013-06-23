@@ -1,0 +1,130 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[francais]{babel}
+\usepackage[T1]{fontenc}
+
+\usepackage[toc,page]{appendix}
+%fonts pour les math
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{dsfont}
+%couleur dans le doc
+\usepackage[dvipsnames]{xcolor}
+
+%affichage lignes de code
+\usepackage{listings}
+\usepackage{textcomp}
+\lstset{
+	tabsize=2,
+	language=python,
+        basicstyle=\scriptsize,
+        upquote=true,
+        aboveskip={0.2\baselineskip},
+        columns=fixed,
+        showstringspaces=false,
+        extendedchars=true,
+        breaklines=true,
+        prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+        frame=single,
+        showtabs=false,
+        showspaces=false,
+        showstringspaces=false,
+        identifierstyle=\ttfamily,
+        keywordstyle=\color[rgb]{0,0,1},
+        commentstyle=\color[rgb]{0.133,0.545,0.133},
+        stringstyle=\color[rgb]{0.627,0.126,0.941},
+}
+
+%\usepackage{lastpage}
+%pour les images
+	\usepackage[dvips, pdftex]{graphicx}
+	\usepackage[section]{placeins}
+	\usepackage{here}	
+	\usepackage{float}
+
+%définition du titre du document
+ \newcommand{\titleinfo}{INF441-NET - NetProbes} 
+
+%formattage de la page
+	\usepackage{geometry}
+	\geometry{top=2cm, bottom=2cm, left=2cm, right=2cm}
+	%fomattage de l'entête et du pied de page
+	\usepackage{fancyhdr}
+	\pagestyle{fancy}
+		\setlength{\headheight}{15.2pt}
+		\lhead{\titleinfo}
+		\rhead{\leftmark}
+	%Page de garde avec style vide
+	\thispagestyle{empty}	
+	
+
+%formattage du titre des sections
+	%\usepackage{titlesec}
+	%\titleformat{\section}[runin]{\normalfont\bfseries}{\sectionprefix \thesection}{1pt}{}[.]
+
+%longueur des sauts de paragraphe
+\setlength{\parskip}{1ex}
+
+%commande pour les ensembles
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\C}{\mathbb{C}}
+
+%commande pour les notations de map
+	%\newcommand{\I}{\mathds{1}}
+	%\newcommand{\p}{\mathds{P}}
+	%\newcommand{\E}{\mathds{E}}
+	%\renewcommand{\P}{\mathds{P}}
+
+
+%commande pour les opérateurs
+\newcommand{\INT}{\displaystyle\int}
+\newcommand{\SUM}{\displaystyle\sum}
+\newcommand{\FRAC}{\displaystyle\frac}
+\newcommand{\PROD}{\displaystyle\prod}
+\newcommand{\INF}{\displaystyle\inf}
+
+%commande pour environnement description
+\newcommand{\desc}[1]{\item[] \texttt{#1}}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
+}
+
+\begin{document}
+
+\input{une}
+
+\tableofcontents
+
+\section{NetProbes : un programme de diagnostic réseau distribué}
+
+
+\section{Guide de l'utilisateur}
+\subsection{Prérequis}
+
+\subsection{Installation}
+
+\subsection{Manuel d'utilisation}
+\subsubsection{Sondes : package probe}
+\subsubsection{Commander : package commander}
+
+
+
+
+%\newpage
+%appendice éventuel
+%\clearpage
+%\rhead{Annexe}
+%\renewcommand{\appendixpagename}{\centering{Annexe : Liste des fonctions Scilab}}
+%\renewcommand{\labelitemi}{$\bullet$}
+%\renewcommand{\labelitemiii}{$\cdot$}
+%\renewcommand{\labelitemii}{$\diamond$}
+%\renewcommand{\labelitemiv}{$\ast$}
+%\begin{appendices}
+%\end{appendices}
+\end{document}

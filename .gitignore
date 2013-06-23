@@ -1,3 +1,10 @@
+*.toc
+*.out
+*.aux
+*.log
+*main.pdf
+*.synctex.gz
+
 .settings
 *.py[cod]
 
