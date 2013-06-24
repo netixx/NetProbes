@@ -118,14 +118,25 @@ class Unicast(Test):
     '''
     @classmethod
     def replyTest(cls):
-        connection, address = cls.rcvSocket.accept()
-        consts.debug("Unicast : Waiting for message")
-        cls.rcvSocket.settimeout(cls.options.timeout)
-        msg = connection.recv(len(cls.messageSend)).decode(cls.ENCODING)
-        consts.debug("Unicast : Message received")
-        cls.msgReceived = True
-        if (msg == cls.messageSend):
-            connection.sendall(cls.messageReply.encode( cls.ENCODING) )
+        if cls.rcvSocket.type == socket.SOCK_STREAM:
+            connection, address = cls.rcvSocket.accept()
+            consts.debug("Unicast : Waiting for tcp message")
+            cls.rcvSocket.settimeout(cls.options.timeout)
+            msg = connection.recv(len(cls.messageSend))
+            consts.debug("Unicast : Message received")
+            cls.msgReceived = True
+            if (msg.decode(cls.ENCODING) == cls.messageSend):
+                connection.sendall(cls.messageReply.encode( cls.ENCODING) )
+                
+                
+        elif cls.rcvSocket.type == socket.SOCK_DGRAM:
+            consts.debug("Unicast : Waiting for udp message")
+            msg , adr = cls.rcvSocket.recvfrom( len(cls.messageSend) )
+            
+            consts.debug("Unicast : Message received")
+            cls.msgReceived = True
+            if (msg.decode(cls.ENCODING) == cls.messageSend):
+                cls.rcvSocket.sendto( cls.messageReply.encode( cls.ENCODING), adr )
         cls.msgSent = True
             
 
