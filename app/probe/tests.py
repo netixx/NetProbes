@@ -293,6 +293,7 @@ class TestResponder(object):
     def replyPrepare(cls):
         cls.getTest().replyPrepare()
         Client.send( Ready(cls.sourceId, cls.getCurrentTestId() ) )
+        cls.getTest().replyTest()
 
     @classmethod
     def initTest(cls, testId, sourceId, options):
