@@ -69,7 +69,7 @@ class Unicast(Test):
         self.socket.settimeout(self.options.timeout)
         response = self.socket.recv( len(self.messageReply) )
         consts.debug("Unicast : Message received")
-        if (response == self.messageReply):
+        if (response.decode(self.ENCODING) == self.messageReply):
             self.success = True
 
     '''
