@@ -120,7 +120,7 @@ class Unicast(Test):
         connection, address = cls.rcvSocket.accept()
         consts.debug("Unicast : Waiting for message")
         cls.rcvSocket.settimeout(cls.options.timeout)
-        msg = connection.recv(len(cls.messageSend))
+        msg = connection.recv(len(cls.messageSend)).decode(cls.ENCODING)
         consts.debug("Unicast : Message received")
         cls.msgReceived = True
         if (msg == cls.messageSend):
