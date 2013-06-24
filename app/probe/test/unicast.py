@@ -10,6 +10,7 @@ class Unicast(Test):
     
     ENCODING = "latin1"
     port = 5678
+    timeout = 3.0
     messageSend = "Unicast Test"
     messageReply = "Unicast Reply"
     
@@ -34,6 +35,7 @@ class Unicast(Test):
         optParser = argparse.ArgumentParser(description="Parses the unicast test options")
         optParser.add_argument('--port', type=int, metavar='port', default=self.port)
         optParser.add_argument('--protocol', metavar='protocol', default='tcp', choices=['tcp', 'udp'])
+        optParser.add_argument('--timeout', metavar='timeout', default=self.timeout, type=float)
         popt = []
         for op in opts.opts:
             popt.extend(('--' + op).split())
@@ -63,7 +65,8 @@ class Unicast(Test):
         self.socket.connect((ProbeStorage.getProbeById(self.targets[0]).getIp() , self.options.port))
         consts.debug("Unicast : Sending message")
         self.socket.sendall(self.messageSend.encode(self.ENCODING) )
-        consts.debug("Unicast : Receiving message")
+        consts.debug("Unicast : Waiting for response message")
+        self.socket.settimeout(self.options.timeout)
         response = self.socket.recv( len(self.messageReply) )
         consts.debug("Unicast : Message received")
         if (response == self.messageReply):
@@ -115,8 +118,10 @@ class Unicast(Test):
     @classmethod
     def replyTest(cls):
         connection, address = cls.rcvSocket.accept()
+        consts.debug("Unicast : Waiting for message")
+        cls.rcvSocket.settimeout(cls.options.timeout)
         msg = connection.recv(len(cls.messageSend))
-        consts.debug("Test : Message received")
+        consts.debug("Unicast : Message received")
         cls.msgReceived = True
         if (msg == cls.messageSend):
             connection.sendall(cls.messageReply.encode( cls.ENCODING) )
