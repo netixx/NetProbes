@@ -7,6 +7,8 @@ from actions import *
 import messages as m
 import consts
 
+treatedAction = 0
+
 '''
 Matches message class to its corresponding method
 
@@ -18,11 +20,10 @@ messages = {"Add" : "toAdd",
             "Hello" : "toHello",
             "Prepare" : "toPrepare"}
 
-treatedAction = 0
-
 def toAction(message):
     consts.debug("Message to Action : transforming message into action")
     assert isinstance(message, m.Message)
+    global treatedAction
     treatedAction += 1
     return globals()[messages.get(message.__class__.__name__)](message)
 
