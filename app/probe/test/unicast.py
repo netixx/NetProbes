@@ -110,7 +110,8 @@ class Unicast(Test):
     def replyPrepare(cls):
         cls.rcvSocket = socket.socket(socket.AF_INET, cls.protocolToUnix(cls.options.protocol))
         cls.rcvSocket.bind(("", cls.options.port))
-        cls.rcvSocket.listen(1)
+        if(cls.rcvSocket.type == socket.SOCK_STREAM):
+            cls.rcvSocket.listen(1)
 
     '''
         Actions that must be taken when the probe recieved the test
