@@ -106,13 +106,58 @@
 
 \section{Guide de l'utilisateur}
 \subsection{Prérequis}
-
+\begin{description}
+\item[Python3] l'interpréteur python est requis. Nous avons développé notre application pour la version 3.3.
+\item[Connexion http] une connexion http entre les sondes est requise afin de permettre la synchronisation autour des tests et les opération de construction du réseau de sonde.
+\end{description}
 \subsection{Installation}
-
+\begin{enumerate}
+\item Décompresser l'archive dans un dossier de son choix.
+\item Se placer dans le dossier voulu : commander ou probe et lancer les exécutables python main.py :
+\end{enumerate}
 \subsection{Manuel d'utilisation}
+\subsubsection{Options au lancement}
+Les options pour les différents programme sont donnés par l'option -h à l'invocation du main : python main.py -h.
+Ceci est valable pour les deux exécutables que nous fournissons.
 \subsubsection{Sondes : package probe}
-\subsubsection{Commander : package commander}
+L'utilisation des sondes est transparente et autonome. Les commandes d'ajout/suppression et de test étant effectuées par l'interface utilisateur.
 
+La sonde est par défaut verbeuse, à moins de spécifier --no-debug lors de son lancement.
+
+On peut lui spécifier un identifiant de son choix avec l'option -id.
+
+Pour quitter la sonde, la solution implémentée est d'utiliser Ctrl+C.
+
+\subsubsection{Interface utilisateur : package commander}
+L'interface permet de commander une sonde de son choix. On peut choisir l'ip de cette sonde au démarrage avec l'option -ip.
+
+Un fois la connexion établie, on obtient l'affichage suivant :
+\begin{figure}
+\begin{minipage}[c]{0.5\linewidth}
+\centering\includegraphics[width=\linewidth]{img/commander.png}
+\end{minipage}
+\hfill
+\begin{minipage}[c]{0.5\linewidth}
+\begin{description}
+\item[ligne d'entrée] permet de donner des commandes à la sonde
+\item[ligne de statut] permet d'afficher le status de la commande exécutée
+\item[bouton rafraichir] permet de rafraichir les sondes connues en les demandant au serveur commandé
+\item[affichage des sondes] tableau id | ip des sondes connues
+\item[panneau résultats] affiche les résultats des tests lancés
+\end{description}
+\end{minipage}
+\end{figure}
+\FloatBarrier
+Les commandes supportés sont les suivantes :
+\begin{description}
+\item[add ip] ajoute la sonde d'adresse ip 'ip' à notre réseau de sondes. On peut ensuite effectuer des tests dessus.
+\item[remove id] supprime la sonde id du réseau. Supprimer la sonde commandée permet de la retirer du réseau.
+\item[do testname testoptions] effectue le test 'testname' sur la sonde commandée avec les options testoptions. Les options sont de la forme option=valeur.
+\end{description}
+\vspace{2ex}
+\textbf{Affichage des résultats}
+
+Les résultats sont automatiquement affichés lorsqu'ils sont disponibles sur la sonde commandée dans le panneau prévu à cet effet.
 
 
 
