@@ -20,9 +20,6 @@ class Report(object):
         self.isSuccess = isSuccess
         self.probeId = probeId
 
-    def isSuccess(self):
-        return self.isSuccess
-
     def getProbeId(self):
         return self.probeId
 

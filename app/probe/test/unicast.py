@@ -85,11 +85,11 @@ class Unicast(Test):
     def doResult(self, reports):
         ok = []
         fail = []
-        for report in reports:
-            if not report.isSuccess():
-                fail.append(report.getProbeId())
+        for probeId, report in reports.items():
+            if not report.isSuccess:
+                fail.append(probeId)
             else:
-                ok.append(report.getProbeId())
+                ok.append(probeId)
 
         if (len(ok) == len(reports) and self.success):
             self.result = "Ok, probe replied successfully."
