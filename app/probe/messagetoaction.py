@@ -1,5 +1,5 @@
 '''
-Created on 11 juin 2013
+Transforms a Message into an Action
 
 @author: francois
 '''
@@ -7,6 +7,10 @@ from actions import *
 import messages as m
 import consts
 
+'''
+Matches message class to its corresponding method
+
+'''
 messages = {"Add" : "toAdd",
             "Transfer" : "toTransfer",
             "Do" : "toDo",
@@ -14,9 +18,12 @@ messages = {"Add" : "toAdd",
             "Hello" : "toHello",
             "Prepare" : "toPrepare"}
 
+treatedAction = 0
+
 def toAction(message):
     consts.debug("Message to Action : transforming message into action")
     assert isinstance(message, m.Message)
+    treatedAction += 1
     return globals()[messages.get(message.__class__.__name__)](message)
 
 

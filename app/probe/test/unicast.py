@@ -1,4 +1,3 @@
-
 from tests import Test
 from tests import Report
 import socket

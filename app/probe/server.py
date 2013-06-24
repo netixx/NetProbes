@@ -1,5 +1,5 @@
 '''
-Created on 7 juin 2013
+Server that listens to probe messages
 
 @author: francois
 '''
@@ -17,12 +17,17 @@ from actions import Action
 from queue import PriorityQueue
 import datetime
 from tests import TestManager, TestResponder
-'''
+
+
+class Server(Thread):
+    '''
     Server thread listens on the given port to a POST request containing a serialization of a Message object
     It then transforms this Message into a corresponding Action that is added to the Queue of actions that the server must execute
-'''
-class Server(Thread):
+
+    It also listens to get request an replies its id to whoever asks it!
     
+    '''
+
     #the list of actions to be done
     actionQueue = PriorityQueue()
     
@@ -80,7 +85,10 @@ class Server(Thread):
             Server.addTask(MTA.toAction(message))
 
     class Listener(ThreadingMixIn,HTTPServer, Thread):
-        
+        '''
+        Threaded listener that processes a request on the server
+
+        '''
         def __init__(self, server):
             HTTPServer.__init__(self,("", Consts.PORT_NUMBER), __class__.RequestHandler)
             self.server = server
@@ -95,8 +103,12 @@ class Server(Thread):
         def addTask(self,action):
             Server.addTask(action)
         
+
         class RequestHandler(SimpleHTTPRequestHandler):
-            
+            '''
+            Handler that does the actual work
+
+            '''
             def __init__(self, request, client_address, server_socket):
                 SimpleHTTPRequestHandler.__init__(self, request, client_address, server_socket)
             

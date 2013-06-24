@@ -17,11 +17,6 @@ from commanderServer import CommanderServer
 
 class ActionMan(Thread):
 
-    '''
-        thread that does the tests
-    '''
-    testThread = None
-
     manager = { "Add" : "manageAdd",
             "Remove" : "manageRemove",
             "Transfer" : "manageTransfer",
@@ -56,14 +51,11 @@ class ActionMan(Thread):
         if action.getHello():
             Client.send( Hello(action.getIdSonde(), Identification.PROBE_ID ) );
         
-    
-    
     @staticmethod
     def manageRemove(action):
         assert isinstance(action, a.Remove)
         debug("ActionMan : managing Remove task")
         ProbeStorage.delProbe( action.getIdSonde() );
-    
     
     @staticmethod
     def manageDo(action):

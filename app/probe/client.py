@@ -13,13 +13,14 @@ from exceptions import NoSuchProbe
 import copy
 
 
-'''
+
+class Client(Thread):
+    '''
     Client Thread : talks to the Server through http
     Server can be local (localhost) or remote
     Connection is established as a Probe is added to ProbeStorage through ProbeStorage.addProbe through http on the port given by Consts.PORT_NUMBER
-'''
-class Client(Thread):
     
+    '''
     messagePile = Queue()
     stop = False
     

@@ -1,12 +1,12 @@
 '''
-Created on 7 juin 2013
+Module gathering the constants of the probe
 
 @author: francois
 '''
 
 class Consts:
     '''
-    classdocs
+    The 'real' consts
     '''
 
     PORT_NUMBER = 5000
@@ -16,10 +16,16 @@ class Consts:
 
 
 class Params:
+    '''
+    Parameters for the runtime
+    '''
     DEBUG = True
     COMMANDER = True
 
 class Identification:
+    '''
+    Identification elements of the probe
+    '''
     PROBE_ID = "1122334455667788"
 
 

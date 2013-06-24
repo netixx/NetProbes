@@ -1,5 +1,5 @@
 '''
-Created on 13 juin 2013
+Storage of the probes and probe object
 
 @author: francois
 '''
@@ -8,12 +8,14 @@ import http.client;
 from consts import Consts
 from exceptions import NoSuchProbe
 
-'''
+
+class ProbeStorage(object):
+    '''
     Stores all the Probes currently known by the current probe in a dictionnary
     Addition and deletion are thread safe implemented
     Contains the local probe (the probe of the computer it's running on)
-'''
-class ProbeStorage(object):
+
+    '''
     connectedProbes = {}
     connectedProbesLock = RLock()
         
@@ -62,11 +64,11 @@ class ProbeStorage(object):
         with cls.connectedProbesLock:
             return cls.connectedProbes.keys()
 
-'''
-    Represents a probe
-'''
-class Probe(object):
 
+class Probe(object):
+    '''
+    Represents a probe
+    '''
     def __init__(self, ID, IP, status="connected"):
         self.IP = IP
         self.ID = ID

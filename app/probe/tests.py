@@ -1,15 +1,21 @@
 import random
 import importlib
 
+'''
+A factory to get the class from the name of the test
+
+'''
 def testFactory(test):
     mod = importlib.import_module("test." + test)
     return getattr(mod, test.capitalize())
 
-'''
-    A report from a probe regarding a Test
-    Send after over signal is received
-'''
+
 class Report(object):
+    '''
+    A report from a probe regarding a Test
+    Send after over signal is received. Often encapsulated in a Result message
+
+    '''
     def __init__(self, probeId, isSuccess=True):
         self.isSuccess = isSuccess
         self.probeId = probeId
@@ -21,11 +27,11 @@ class Report(object):
         return self.probeId
 
 
-'''
-    Super class for all the tests we can submit our network to
-'''
 class Test(object):
+    '''
+    Super class for all the tests we can submit our network to
 
+    '''
     options = None
     def __init__(self, options):
         self.targets = []
@@ -43,71 +49,73 @@ class Test(object):
         return self.targets
 
     ''' Methods for the probe which starts the test'''
-    '''
+
+    def parseOptions(self, options):
+        '''
         Parse the options for the current test
         should populate at least the targets list
-    '''
-    def parseOptions(self, options):
+        '''
         self.options = options
 
-    '''
-        Prepare yourself for the test
-    '''
     def doPrepare(self):
+        '''
+        Prepare yourself for the test
+        '''
         pass
     
-    '''
-        Does the actual test
-    '''
     def doTest(self):
+        '''
+        Does the actual test
+        '''
         pass
 
-    '''
-        Prepare yourself for finish
-    '''
     def doOver(self):
+        '''
+        Prepare yourself for finish
+        '''
         pass
 
-    '''
+
+    def doResult(self, reports):
+        '''
         Generate the result of the test given the set of reports from the tested probes
         Should populate self.result
-    '''
-    def doResult(self, reports):
+        '''
         pass
     
-    '''
-        returns the result of the test
-    '''
+
     def getResult(self):
+        '''
+        returns the result of the test
+        '''
         return self.result
 
     ''' Methods for the probe(s) which receive the test'''
 
-    '''
-        Actions that the probe must perform in order to be ready
-    '''
+
     @classmethod
     def replyPrepare(cls):
+        '''
+        Actions that the probe must perform in order to be ready
+        '''
         pass
 
-    '''
-        Actions that must be taken when the probe recieved the test
-    '''
+
     @classmethod
     def replyTest(cls):
+        '''
+        Actions that must be taken when the probe recieved the test
+        '''
         pass
 
-    '''
-        Actions that the probe must perform when the test is over
-        generates the report and returns it!!!
-    '''
+   
     @classmethod
     def replyOver(cls):
+        '''
+        Actions that the probe must perform when the test is over
+        generates the report and returns it!!!
+        '''
         return Report()
-
-    ''' report for this test (override)'''
-    class TestReport(Report):
-        pass
 
     def getOptions(self):
         return self.options
@@ -118,16 +126,19 @@ from client import Client
 from messages import *
 import consts
 from consts import Identification
-'''
-    In charge of running a test
-'''
+
 class TestManager(object):
-    
+    '''
+    In charge of running a test
+    Started by the probes who receives the Do message/command
+    TesteeAnswer are handed down to this object by the Server
+    '''
     testManager = None
-    '''
-        test :the test to run
-    '''
+
     def __init__(self, test):
+        '''
+        test : an instance of the test to run
+        '''
         assert(isinstance(test, Test))
         self.test = test
         self.readies = 0
@@ -171,10 +182,12 @@ class TestManager(object):
         self.test.doResult(self.reports)
         consts.debug("TestManager : results processing over, test is done")
 
-    '''
-        starts the process of testing
-    '''
+
     def start(self):
+        '''
+        starts the process of testing
+
+        '''
         consts.debug("TestManager : Starting test")
         self.prepare()
         self.performTest()
@@ -215,8 +228,15 @@ class TestManager(object):
             pass
         # todo : implementer
 
+
     @classmethod
     def initTest(cls, test):
+        '''
+        Method to call in order to start a test.
+        It places a new instance of the TestManager into the static field for access purposes
+        test : an instance of the test to perform
+
+        '''
         consts.debug("TestManager : Trying to start test : " + test.__class__.__name__)
         cls.testManager = TestManager(test)
         consts.debug("TestManager : creating test with id : " + "(" + " ".join(test.getId()) + ")")
@@ -226,8 +246,14 @@ class TestManager(object):
 
 
 from exceptions import TestInProgress
-#Thread ??
+
 class TestResponder(object):
+    '''
+    Manager for the test on the testee side.
+    All static class that responds to the request of the tester probe.
+    TesterMessages are automatically handed over to him by the server (no processing is done)
+
+    '''
     testId = None
     sourceId = None
     testDone = Event()
