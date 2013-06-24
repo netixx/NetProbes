@@ -102,7 +102,11 @@
 \tableofcontents
 
 \section{NetProbes : un programme de diagnostic réseau distribué}
+Le but de ce programme est de permettre d'effectuer des tests sur un réseau donnée.
 
+Après avoir établit un réseau de sondes par dessus le réseau test via http, on pourra lancer les tests de notre choix sur ce réseau et collecter les résultats pour analyse.
+
+L'architecture de l'application nous permet d'implémenter des tests à la volée. En effet, il suffit de placer un module python implémentant les bonnes fonctions dans le dossier probe/tests afin que le nouveau test puisse être utilisé. Notre but a donc plus été de proposer une méthode de synchronisation autour des tests que le code des tests eux-mêmes.
 
 \section{Guide de l'utilisateur}
 \subsection{Prérequis}
@@ -159,6 +163,36 @@ Les commandes supportés sont les suivantes :
 
 Les résultats sont automatiquement affichés lorsqu'ils sont disponibles sur la sonde commandée dans le panneau prévu à cet effet.
 
+\section{Architecture et fonctionnement}
+\begin{figure}
+\centering\includegraphics[width=\linewidth]{img/add1.png}
+\caption{}
+\end{figure}
+
+\begin{figure}
+\centering\includegraphics[width=\linewidth]{img/add2.png}
+\caption{}
+\end{figure}
+
+\begin{figure}
+\centering\includegraphics[width=\linewidth]{img/discovery.png}
+\caption{}
+\end{figure}
+
+\begin{figure}
+\centering\includegraphics[width=\linewidth]{img/graphCommander.png}
+\caption{}
+\end{figure}
+
+\begin{figure}
+\centering\includegraphics[width=\linewidth]{img/test.png}
+\caption{}
+\end{figure}
+
+\begin{figure}
+\centering\includegraphics[width=\linewidth]{img/legend.png}
+\caption{}
+\end{figure}
 
 
 %\newpage
