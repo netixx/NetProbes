@@ -80,12 +80,13 @@ class Client(Thread):
             conn = ProbeStorage.getProbeById(message.targetId).getConnection()
             conn.request("POST", "", params, headers)
             debug("Client : Message : " + message.__class__.__name__ + " has been sent")
+            response = conn.getresponse()
+            if response.status != 200 :
+                debug("Client : Wrong status ! Trying to resend")
+                self.send(message)
         except NoSuchProbe:
             debug("The probe you requested to send a message to : '" + message.targetId + "', is currently unkown to me.")
-        response = conn.getresponse()
-#         
-#         if response.status != 200 :
-#             self.send(message)
+       
 
     @classmethod
     def allMessagesSent(cls):

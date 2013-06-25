@@ -147,7 +147,8 @@ class Unicast(Test):
     '''
     @classmethod
     def replyOver(cls):
-        cls.rcvSocket.shutdown(socket.SHUT_RDWR)
+        if cls.rcvSocket.type == socket.SOCK_STREAM:
+            cls.rcvSocket.shutdown(socket.SHUT_RDWR)
         cls.rcvSocket.close()
         report = Report(Identification.PROBE_ID)
         if not (cls.messageReply and cls.msgSent):

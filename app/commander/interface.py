@@ -20,7 +20,7 @@ from http.client import CannotSendRequest
 class Interface(object):
     targetIp = "127.0.0.1"
     PROBE_REFRESH_TIME = 10
-    RESULTS_REFRESH_TIME = 20
+    RESULTS_REFRESH_TIME = 10
 
     def __init__(self, ip):
         self.targetIp = ip
