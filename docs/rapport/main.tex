@@ -272,7 +272,7 @@ Les conventions de représentations sont les suivantes :
 
 Une sonde est composé dans sa version la plus simple de 3 threads et de 3 structures de stockage de données.
 \begin{itemize}
-\item L'objet \cd{ProbeStorage} contient les sondes du réseau (Id, IP), ainsi que les connections HTTP vers ces sondes.
+\item L'objet \cd{ProbeStorage} contient les sondes du réseau (Id, IP), ainsi que les objets représentant les connexions HTTP vers ces sondes.
 \item Le thread \cd{Client} gère une file de messages. Il utilise les connections du \cd{probestorage} pour les envoyer au fur et à mesure.
 \item Le thread \cd{Server} écoute les requêtes HTTP sur le port de communication interne des sondes et transforme les messages reçu en actions qu'il stocke dans une file d'attente.
 \item Le thread \cd{ActionMan} dépile les actions dans l'ordre de priorité et les exécute.
