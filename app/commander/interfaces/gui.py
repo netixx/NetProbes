@@ -58,11 +58,12 @@ class Gui(Interface):
         self.mainWin.grid_rowconfigure(2, weight=1)
         self.mainWin.grid_columnconfigure(1, weight=1)
         
-        self.thProbe.start()
         self.thProbeTrigger.start()
+        self.thProbe.start()
 
-        self.thResults.start()
         self.thResultsTrigger.start()
+        self.thResults.start()
+
         consts.debug("Commander : Starting main window")
 
         self.mainWin.mainloop()
@@ -73,7 +74,6 @@ class Gui(Interface):
     def doCommand(self, event):
         consts.debug("Commander : executing command")
         super().doCommand(self.command.get())
-        self.triggerFetchProbes()
         self.command.set("")
 
     def updateStatus(self, status):
