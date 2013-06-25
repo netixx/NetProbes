@@ -163,7 +163,11 @@ class Unicast(Test):
     @classmethod
     def replyOver(cls):
         if cls.rcvSocket.type == socket.SOCK_STREAM:
-            cls.rcvSocket.shutdown(socket.SHUT_RDWR)
+            try:
+                cls.rcvSocket.shutdown(socket.SHUT_RDWR)
+            except:
+                consts.debug("Unicast : unable to shutdown socket")
+
         cls.rcvSocket.close()
         report = Report(Identification.PROBE_ID)
         if not (cls.msgReceived and cls.msgSent):
