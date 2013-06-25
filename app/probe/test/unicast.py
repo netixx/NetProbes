@@ -72,12 +72,13 @@ class Unicast(Test):
     '''
     def doTest(self):
         consts.debug("Unicast : Starting test")
-        self.socket.connect((ProbeStorage.getProbeById(self.targets[0]).getIp() , self.options.port))
-        consts.debug("Unicast : Sending message")
-        self.socket.sendall(self.messageSend.encode(self.ENCODING) )
-        consts.debug("Unicast : Waiting for response message")
         try:
             self.socket.settimeout(self.options.timeout)
+            self.socket.connect((ProbeStorage.getProbeById(self.targets[0]).getIp() , self.options.port))
+            consts.debug("Unicast : Sending message")
+            self.socket.sendall(self.messageSend.encode(self.ENCODING))
+            consts.debug("Unicast : Waiting for response message")
+
             response = self.socket.recv(len(self.messageReply))
             consts.debug("Unicast : Message received")
             if (response.decode(self.ENCODING) == self.messageReply):
