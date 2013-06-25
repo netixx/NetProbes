@@ -27,48 +27,38 @@ class Unicast(Test):
         should populate at least the targets list
     '''
     def parseOptions(self, options):
-        parser = argparse.ArgumentParser(description="Parses the unicast test target")
-        parser.add_argument('target', metavar='target', nargs=1)
-        parser.add_argument('opts', nargs=argparse.REMAINDER)
-        opts = parser.parse_args(options)
-
-        optParser = argparse.ArgumentParser(description="Parses the unicast test options")
-        optParser.add_argument('--port', type=int, metavar='port', default=self.port)
-        optParser.add_argument('--protocol', metavar='protocol', default='tcp', choices=['tcp', 'udp'])
-        optParser.add_argument('--timeout', metavar='timeout', default=self.timeout, type=float)
         popt = []
-        for op in opts.opts:
+        for op in options:
             popt.extend(('--' + op).split())
-        optParser.parse_args(popt, opts)
+
+        parser = argparse.ArgumentParser(description="Parses the broadcast test options")
+        parser.add_argument('--port', type=int, metavar='port', default=self.port)
+        parser.add_argument('--timeout', metavar='timeout', default=self.timeout, type=float)
+        opts = parser.parse_args(popt)
 
         self.targets = opts.target
         self.options = opts
     
-    @staticmethod
-    def protocolToUnix(protocol):
-        if (protocol == 'udp'):
-            return socket.SOCK_DGRAM
-
-        return socket.SOCK_STREAM
-
     '''
         Prepare yourself for the test
     '''
     def doPrepare(self):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST,1)
         self.socket = socket.socket(socket.AF_INET, self.protocolToUnix(self.options.protocol))
+        self.socket.settimeout(self.options.timeout)
 
     '''
         Does the actual test
     '''
     def doTest(self):
-        consts.debug("Unicast : Starting test")
-        self.socket.connect((ProbeStorage.getProbeById(self.targets[0]).getIp() , self.options.port))
-        consts.debug("Unicast : Sending message")
-        self.socket.sendall(self.messageSend.encode(self.ENCODING) )
-        consts.debug("Unicast : Waiting for response message")
-        self.socket.settimeout(self.options.timeout)
-        response = self.socket.recv( len(self.messageReply) )
-        consts.debug("Unicast : Message received")
+        consts.debug("BroadCast : Starting test")
+        consts.debug("BroadCast : Sending message")
+        self.sendto(self.messageSend, ('<broadcast>' , self.options.port))
+        consts.debug("BroadCast : Waiting for response message")
+#         self.socket.settimeout(self.options.timeout)
+        response = self.socket.recv(len(self.messageReply))
+        consts.debug("BroadCast : Message received")
         if (response.decode(self.ENCODING) == self.messageReply):
             self.success = True
 
@@ -108,25 +98,20 @@ class Unicast(Test):
     '''
     @classmethod
     def replyPrepare(cls):
-        cls.rcvSocket = socket.socket(socket.AF_INET, cls.protocolToUnix(cls.options.protocol))
-        cls.rcvSocket.bind(("", cls.options.port))
-        if(cls.rcvSocket.type == socket.SOCK_STREAM):
-            cls.rcvSocket.listen(1)
+        cls.rcvSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        cls.rcvSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        cls.rcvSocket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        cls.rcvSocket.bind(('', cls.options.port))
 
     '''
         Actions that must be taken when the probe recieved the test
     '''
     @classmethod
     def replyTest(cls):
-        connection, address = cls.rcvSocket.accept()
-        consts.debug("Unicast : Waiting for message")
-        cls.rcvSocket.settimeout(cls.options.timeout)
-        msg = connection.recv(len(cls.messageSend)).decode(cls.ENCODING)
-        consts.debug("Unicast : Message received")
+        message , address = cls.rcvSocket.recvfrom(len(cls.messageSend))
         cls.msgReceived = True
-        if (msg == cls.messageSend):
-            connection.sendall(cls.messageReply.encode( cls.ENCODING) )
-        cls.msgSent = True
+        if (message.decode(cls.ENCODING) == cls.messageSend):
+            cls.rcvSocket.sendto(cls.messageReply.encode(cls.ENCODING), address)
             
 
     '''
@@ -137,7 +122,7 @@ class Unicast(Test):
     def replyOver(cls):
         cls.rcvSocket.close()
         report = Report(Identification.PROBE_ID)
-        if not (cls.messageReply and cls.msgSent):
+        if not (cls.msgReceived and cls.msgSent):
             report.isSuccess = False
 
         return report
