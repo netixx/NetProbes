@@ -76,11 +76,14 @@ class Unicast(Test):
         consts.debug("Unicast : Sending message")
         self.socket.sendall(self.messageSend.encode(self.ENCODING) )
         consts.debug("Unicast : Waiting for response message")
-        self.socket.settimeout(self.options.timeout)
-        response = self.socket.recv( len(self.messageReply) )
-        consts.debug("Unicast : Message received")
-        if (response.decode(self.ENCODING) == self.messageReply):
-            self.success = True
+        try:
+            self.socket.settimeout(self.options.timeout)
+            response = self.socket.recv(len(self.messageReply))
+            consts.debug("Unicast : Message received")
+            if (response.decode(self.ENCODING) == self.messageReply):
+                self.success = True
+        except socket.timeout:
+            self.success = False
 
     '''
         Prepare yourself for finish
@@ -132,13 +135,15 @@ class Unicast(Test):
         if cls.rcvSocket.type == socket.SOCK_STREAM:
             connection, address = cls.rcvSocket.accept()
             consts.debug("Unicast : Waiting for tcp message")
-            cls.rcvSocket.settimeout(cls.options.timeout)
-            msg = connection.recv(len(cls.messageSend))
-            consts.debug("Unicast : Message received")
-            cls.msgReceived = True
-            if (msg.decode(cls.ENCODING) == cls.messageSend):
-                connection.sendall(cls.messageReply.encode( cls.ENCODING) )
-                
+            try:
+                cls.rcvSocket.settimeout(cls.options.timeout)
+                msg = connection.recv(len(cls.messageSend))
+                consts.debug("Unicast : Message received")
+                cls.msgReceived = True
+                if (msg.decode(cls.ENCODING) == cls.messageSend):
+                    connection.sendall(cls.messageReply.encode(cls.ENCODING))
+            except socket.timeout:
+                cls.msgReceived = False
                 
         elif cls.rcvSocket.type == socket.SOCK_DGRAM:
             consts.debug("Unicast : Waiting for UDP message")
