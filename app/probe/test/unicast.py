@@ -109,6 +109,7 @@ class Unicast(Test):
     @classmethod
     def replyPrepare(cls):
         cls.rcvSocket = socket.socket(socket.AF_INET, cls.protocolToUnix(cls.options.protocol))
+        cls.rcvSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         cls.rcvSocket.bind(("", cls.options.port))
         if(cls.rcvSocket.type == socket.SOCK_STREAM):
             cls.rcvSocket.listen(1)
@@ -146,6 +147,7 @@ class Unicast(Test):
     '''
     @classmethod
     def replyOver(cls):
+        cls.rcvSocket.shutdown()
         cls.rcvSocket.close()
         report = Report(Identification.PROBE_ID)
         if not (cls.messageReply and cls.msgSent):
