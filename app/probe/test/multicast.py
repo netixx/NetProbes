@@ -36,7 +36,7 @@ class Multicast(Test):
         optParser.add_argument('--port', type=int, metavar='port', default=self.port)
         optParser.add_argument('--timeout', metavar='timeout', default=self.timeout, type=float)
         optParser.add_argument('--ttl', metavar='ttl', default=self.ttl, type=int)
-        optParser.add_argument('-ma', '--multicast-address', metavar='multicast-address', required=True, type=int)
+        optParser.add_argument('--m-address', metavar='multicast-address', required=True, type=int)
 
         try:
             opts = parser.parse_args(options)
@@ -69,7 +69,7 @@ class Multicast(Test):
     '''
     def doTest(self):
         consts.debug("Multicast : Starting test / Sending message")
-        self.socket.sendto( self.messageSend.encode(self.ENCODING), ( self.options.multicast_address, self.options.port) )
+        self.socket.sendto(self.messageSend.encode(self.ENCODING), (self.options.m_address, self.options.port))
         
 
     '''
@@ -116,7 +116,7 @@ class Multicast(Test):
         
         ''' On ajoute la sonde au groupe multicast  '''
         consts.debug("Multicast : On ajoute la sonde au groupe multicast")
-        group = socket.inet_aton(cls.options.multicast_address)
+        group = socket.inet_aton(cls.options.m_address)
         mreq = struct.pack('4sL', group, socket.INADDR_ANY)
         cls.rcvSocket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
         consts.debug("Multicast : Sonde ajoutée au groupe multicast")

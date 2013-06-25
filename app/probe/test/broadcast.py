@@ -39,10 +39,11 @@ class Unicast(Test):
 
         try:
             opts = parser.parse_args(popt)
+            self.targets = [probe.getIp() for probe in ProbeStorage.getAllProbes()]
+            self.options = opts
         except (argparse.ArgumentError, SystemExit):
             raise TestArgumentError(parser.format_usage())
-        self.targets = opts.target
-        self.options = opts
+
     
     '''
         Prepare yourself for the test
