@@ -14,6 +14,7 @@
 \usepackage{enumitem}
 \frenchbsetup{StandardLists=true}
 \usepackage{multirow}
+\usepackage{hyperref}
 
 %affichage lignes de code
 \usepackage{listings}
@@ -113,32 +114,53 @@ Après avoir établit un réseau de sondes par dessus le réseau test via http, 
 
 L'architecture de l'application nous permet d'implémenter des tests à la volée. En effet, il suffit de placer un module python implémentant les bonnes fonctions dans le dossier probe/tests afin que le nouveau test puisse être utilisé. Notre but a donc plus été de proposer une méthode de synchronisation autour des tests que le code des tests eux-mêmes.
 
+\newpage
 \section{Guide de l'utilisateur}
+
 \subsection{Prérequis}
 \begin{description}
-\item[Python3] l'interpréteur python est requis. Nous avons développé notre application pour la version 3.3.
-\item[Connexion http] une connexion http entre les sondes est requise afin de permettre la synchronisation autour des tests et les opération de construction du réseau de sonde.
+\item[Python3] l'interpréteur python est requis. Nous avons développé notre application pour la version 3.3.\\
+Pour plus d'information sur l'installation de Python3, consulter cette page :
+\begin{center}
+\href{http://docs.activestate.com/activepython/3.2/diveintopython3/html/installing-python.html}{http://docs.activestate.com/activepython/3.2/diveintopython3/html/installing-python.html}
+\end{center}
+
+\item[Connexion HTTP] une connexion HTTP entre les sondes est requise afin de permettre la synchronisation autour des tests et les opération de construction du réseau de sonde.
 \end{description}
+
+
 \subsection{Installation}
 \begin{enumerate}
-\item Décompresser l'archive dans un dossier de son choix.
-\item Se placer dans le dossier voulu : commander ou probe et lancer les exécutables python main.py :
+\item Décompresser l'archive dans un dossier au choix.
+\item Se placer en ligne de commande dans un des sous-dossier : commander ou probe.
+\item Lancer l'exécutable python : main.py
 \end{enumerate}
+Remarque: dans les exemples sous Windows suivants, Python3 a été ajouté au path via une commande du type:
+\begin{center} \texttt{C:$\backslash$...$\backslash$NetProbes$>$path \%path\%;c:$\backslash$python33} \end{center}
+
 \subsection{Manuel d'utilisation}
+
 \subsubsection{Options au lancement}
 Les options pour les différents programme sont donnés par l'option -h à l'invocation du main : python main.py -h.
-Ceci est valable pour les deux exécutables que nous fournissons.
+Ceci est valable pour les deux exécutables que nous fournissons.\\
+Exemple\\
+Sous Windows: \ \ \ \texttt{C:$\backslash$...$\backslash$NetProbes$\backslash$app$\backslash$probe$>$python main.py -h}
+
 \subsubsection{Sondes : package probe}
-L'utilisation des sondes est transparente et autonome. Les commandes d'ajout/suppression et de test étant effectuées par l'interface utilisateur.
+La première étape de l'utilisation de notre outil consister à faire tourner plusieurs sonde sur différentes machines connectées à un même réseau. L'utilisation des sondes est transparente et autonome. Les commandes d'ajout/suppression et de test étant effectuées par l'interface utilisateur.
 
-La sonde est par défaut verbeuse, à moins de spécifier --no-debug lors de son lancement.
+Une sonde se lance par une simple exécution du programme python \texttt{main.py}.
 
-On peut lui spécifier un identifiant de son choix avec l'option -id.
+La sonde est par défaut verbeuse, à moins de spécifier l'option --no-debug lors de son lancement.
 
-Pour quitter la sonde, la solution implémentée est d'utiliser Ctrl+C.
+Il est également possible de lui spécifier un identifiant avec l'option -id.
+
+Pour quitter la sonde, la seule solution implémentée est d'utiliser Ctrl+C sous Linux ou de fermer la console sous Windows.
+
+Exemple sous Windows: \ \ \ \texttt{C:$\backslash$...$\backslash$NetProbes$\backslash$app$\backslash$probe$>$python main.py -id sondeA --no-debug}
 
 \subsubsection{Interface utilisateur : package commander}
-L'interface permet de commander une sonde de son choix. On peut choisir l'ip de cette sonde au démarrage avec l'option -ip.
+L'interface permet de commander une sonde de son choix. On peut choisir l'adresse IP de cette sonde au démarrage avec l'option -ip.
 
 Un fois la connexion établie, on obtient l'affichage suivant :
 \begin{figure}
@@ -151,7 +173,7 @@ Un fois la connexion établie, on obtient l'affichage suivant :
 \item[ligne d'entrée] permet de donner des commandes à la sonde
 \item[ligne de statut] permet d'afficher le status de la commande exécutée
 \item[bouton rafraichir] permet de rafraichir les sondes connues en les demandant au serveur commandé
-\item[affichage des sondes] tableau id | ip des sondes connues
+\item[affichage des sondes] tableau id | adresse IP des sondes connues
 \item[panneau résultats] affiche les résultats des tests lancés
 \end{description}
 \end{minipage}
@@ -159,7 +181,7 @@ Un fois la connexion établie, on obtient l'affichage suivant :
 \FloatBarrier
 Les commandes supportés sont les suivantes :
 \begin{description}
-\item[add ip] ajoute la sonde d'adresse ip 'ip' à notre réseau de sondes. On peut ensuite effectuer des tests dessus.
+\item[add ip] ajoute la sonde d'adresse IP 'ip' à notre réseau de sondes. On peut ensuite effectuer des tests dessus.
 \item[remove id] supprime la sonde id du réseau. Supprimer la sonde commandée permet de la retirer du réseau.
 \item[do testname testoptions] effectue le test 'testname' sur la sonde commandée avec les options testoptions. Les options sont de la forme option=valeur.
 \end{description}
@@ -168,11 +190,20 @@ Les commandes supportés sont les suivantes :
 
 Les résultats sont automatiquement affichés lorsqu'ils sont disponibles sur la sonde commandée dans le panneau prévu à cet effet.
 
+
+\subsection{Exemples}
+
+\subsubsection{Ajouter un sonde}
+
+
+
+
+
+
 \newpage
 \section{Architecture et fonctionnement}
 
 \subsection{Tables de fonctionnement}
-
 \begin{center}
 \begin{tabular}{|l|l|c|l|}
 \hline
