@@ -102,11 +102,12 @@ class Multicast(Test):
         cls.rcvSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         cls.rcvSocket.bind( ('', cls.options.port) )
         
-        ''' On ajoute la sonde  '''
+        ''' On ajoute la sonde au groupe multicast  '''
+        consts.debug("Multicast : On ajoute la sonde au groupe multicast")
         group = socket.inet_aton(cls.options.multicast_address)
         mreq = struct.pack('4sL', group, socket.INADDR_ANY)
         cls.rcvSocket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-        
+        consts.debug("Multicast : Sonde ajoutée au groupe multicast")
         
 
     '''
@@ -114,12 +115,12 @@ class Multicast(Test):
     '''
     @classmethod
     def replyTest(cls):
-        consts.debug("Unicast : Waiting for message")
+        consts.debug("Multicast : Waiting for message")
         cls.rcvSocket.settimeout(cls.options.timeout)
         
         msg, address = cls.rcvSocket.recvfrom( len(cls.msgSend) )
         msg = msg.decode(cls.ENCODING)
-        consts.debug("Unicast : Message received")
+        consts.debug("Multicast : Message received")
         cls.msgReceived = True
     
 
