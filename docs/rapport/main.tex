@@ -159,11 +159,17 @@ Pour quitter la sonde, la seule solution implémentée est d'utiliser Ctrl+C sou
 
 Exemple sous Windows: \ \ \ \texttt{C:$\backslash$...$\backslash$NetProbes$\backslash$app$\backslash$probe$>$python main.py -id sondeA --no-debug}
 
+\newpage
 \subsubsection{Interface utilisateur : package commander}
 L'interface permet de commander une sonde de son choix. On peut choisir l'adresse IP de cette sonde au démarrage avec l'option -ip.
 
+Exemple sous Windows:
+\begin{center}
+\texttt{C:$\backslash$...$\backslash$NetProbes$\backslash$app$\backslash$commander$>$python main.py -i gui -ip 127.0.0.1}
+\end{center} 
 Un fois la connexion établie, on obtient l'affichage suivant :
-\begin{figure}
+
+\begin{figure}[!hb]
 \begin{minipage}[c]{0.5\linewidth}
 \centering\includegraphics[width=\linewidth]{img/commander.png}
 \end{minipage}
@@ -179,6 +185,7 @@ Un fois la connexion établie, on obtient l'affichage suivant :
 \end{minipage}
 \end{figure}
 \FloatBarrier
+
 Les commandes supportés sont les suivantes :
 \begin{description}
 \item[add ip] ajoute la sonde d'adresse IP 'ip' à notre réseau de sondes. On peut ensuite effectuer des tests dessus.
@@ -192,12 +199,17 @@ Les résultats sont automatiquement affichés lorsqu'ils sont disponibles sur la
 
 
 \subsection{Exemples}
+% Mettre un capture d'écran avec des meilleurs noms
+\subsubsection{Ajouter des sondes}
+\texttt{add 10.0.0.148}\\
+\indent\texttt{add 10.0.0.130}
 
-\subsubsection{Ajouter un sonde}
-
-
-
-
+\subsubsection{Effectuer des tests}
+\texttt{do unicast r port=5611 protocol=tcp}\\
+\indent\texttt{do unicast r timeout=2 protocol=udp}\\
+\indent\texttt{do broadcast port=7267 timeout=3.5 }\\
+\indent\texttt{do multicast "r probeOfTheDead --port 12456 --timeout 3.4 --ttl 20 --ma 224.4.6.6"}\\
+\indent\texttt{do empty}
 
 
 \newpage
