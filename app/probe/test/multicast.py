@@ -36,7 +36,7 @@ class Multicast(Test):
         optParser.add_argument('--port', type=int, metavar='port', default=self.port)
         optParser.add_argument('--timeout', metavar='timeout', default=self.timeout, type=float)
         optParser.add_argument('--ttl', metavar='ttl', default=self.ttl, type=int)
-        optParser.add_argument('--multicast-address', metavar='multicast-address', required=True, type=int)
+        optParser.add_argument('-ma', '--multicast-address', metavar='multicast-address', required=True, type=int)
         popt = []
         for op in opts.opts:
             popt.extend(('--' + op).split())
