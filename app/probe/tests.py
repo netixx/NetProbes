@@ -132,6 +132,7 @@ from messages import *
 import consts
 from consts import Identification
 from exceptions import TestError
+import time
 
 class TestManager(object):
     '''
@@ -210,6 +211,7 @@ class TestManager(object):
             self.readies += 1
             if (self.readies == self.test.getProbeNumber()):
                 consts.debug("TestManager : all Readies received, proceeding with test")
+                time.sleep(0.2)
                 self.isReadyForTest.set()
                 self.readies = 0
 
