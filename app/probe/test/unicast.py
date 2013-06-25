@@ -125,7 +125,7 @@ class Unicast(Test):
             cls.rcvSocket.listen(1)
 
     '''
-        Actions that must be taken when the probe recieved the test
+        Actions that must be taken when the probe received the test
     '''
     @classmethod
     def replyTest(cls):
@@ -141,7 +141,7 @@ class Unicast(Test):
                 
                 
         elif cls.rcvSocket.type == socket.SOCK_DGRAM:
-            consts.debug("Unicast : Waiting for udp message")
+            consts.debug("Unicast : Waiting for UDP message")
             msg , adr = cls.rcvSocket.recvfrom( len(cls.messageSend) )
             
             consts.debug("Unicast : Message received")
@@ -161,7 +161,7 @@ class Unicast(Test):
             cls.rcvSocket.shutdown(socket.SHUT_RDWR)
         cls.rcvSocket.close()
         report = Report(Identification.PROBE_ID)
-        if not (cls.messageReply and cls.msgSent):
+        if not (cls.msgReceived and cls.msgSent):
             report.isSuccess = False
 
         return report

@@ -300,8 +300,9 @@ class TestResponder(object):
     @classmethod
     def replyPrepare(cls):
         cls.getTest().replyPrepare()
-        Client.send( Ready(cls.sourceId, cls.getCurrentTestId() ) )
         cls.getTest().replyTest()
+        Client.send( Ready(cls.sourceId, cls.getCurrentTestId() ) )
+
 
     @classmethod
     def initTest(cls, testId, sourceId, options):
