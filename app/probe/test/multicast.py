@@ -17,7 +17,6 @@ class Multicast(Test):
     messageSend = "Multicast Test"
     
     msgReceived = False
-    success = False
     def __init__(self, options):
         super().__init__(options)
         self.socket = None
@@ -77,14 +76,12 @@ class Multicast(Test):
             else:
                 ok.append(probeId)
 
-        if (len(ok) == len(reports) and self.success):
+        if (len(ok) == len(reports)):
             self.result = "Ok, probe replied successfully."
-        elif (len(ok) == len(reports)):
-            self.result = "Partial Fail : probe received the message but didn't reply correctly."
         else:
             self.result = "Fail, probe did not receive the message."
 
-        self.result += "\n Id tested :" + " ".join(ok) + " ".join(fail)
+        self.result += "\n Id ok : " + ", ".join(ok) + "Id fail : " + ", ".join(fail)
         
     
     
@@ -119,6 +116,7 @@ class Multicast(Test):
         msg = msg.decode(cls.ENCODING)
         consts.debug("Multicast : Message received")
         cls.msgReceived = True
+
     
 
     '''
