@@ -30,17 +30,28 @@ class Multicast(Test):
         parser = argparse.ArgumentParser(description="Parses the multicast test target")
         parser.add_argument('target', metavar='target', nargs="+")
         parser.add_argument('opts', nargs=argparse.REMAINDER)
-        opts = parser.parse_args(options)
 
         optParser = argparse.ArgumentParser(description="Parses the multicast test options")
         optParser.add_argument('--port', type=int, metavar='port', default=self.port)
         optParser.add_argument('--timeout', metavar='timeout', default=self.timeout, type=float)
         optParser.add_argument('--ttl', metavar='ttl', default=self.ttl, type=int)
         optParser.add_argument('-ma', '--multicast-address', metavar='multicast-address', required=True, type=int)
-        popt = []
-        for op in opts.opts:
-            popt.extend(('--' + op).split())
-        optParser.parse_args(popt, opts)
+
+        try:
+            opts = parser.parse_args(options)
+            popt = []
+            for op in opts.opts:
+                popt.extend(('--' + op).split())
+
+            try:
+                optParser.parse_args(popt, opts)
+                self.targets = opts.target
+                self.options = opts
+            except (argparse.ArgumentError, SystemExit):
+                raise TestArgumentError(optParser.format_usage())
+
+        except (argparse.ArgumentError, SystemExit):
+            raise TestArgumentError(parser.format_usage())
 
         self.targets = opts.target
         self.options = opts
@@ -107,7 +118,7 @@ class Multicast(Test):
         group = socket.inet_aton(cls.options.multicast_address)
         mreq = struct.pack('4sL', group, socket.INADDR_ANY)
         cls.rcvSocket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-        consts.debug("Multicast : Sonde ajoutée au groupe multicast")
+        consts.debug("Multicast : Sonde ajoutÃ©e au groupe multicast")
         
 
     '''

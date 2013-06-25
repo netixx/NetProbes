@@ -34,8 +34,11 @@ class Unicast(Test):
         parser = argparse.ArgumentParser(description="Parses the broadcast test options")
         parser.add_argument('--port', type=int, metavar='port', default=self.port)
         parser.add_argument('--timeout', metavar='timeout', default=self.timeout, type=float)
-        opts = parser.parse_args(popt)
 
+        try:
+            opts = parser.parse_args(popt)
+        except (argparse.ArgumentError, SystemExit):
+            raise TestArgumentError(parser.format_usage())
         self.targets = opts.target
         self.options = opts
     
