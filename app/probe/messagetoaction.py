@@ -14,7 +14,6 @@ Matches message class to its corresponding method
 
 '''
 messages = {"Add" : "toAdd",
-            "Do" : "toDo",
             "Bye" : "toBye",
             "Hello" : "toHello",
             "Prepare" : "toPrepare"}

@@ -188,7 +188,7 @@ Hello & Add & $\longrightarrow$ & Ajout dans la table\\
 \cline{2-4}
  & Quit & $\longrightarrow$ & Diffuse un message "Bye" / Coupe toute les connections sauf la sienne\\
 \hline
-Prepare & Prepare & $\longrightarrow$ & Instancie le test / Bloque jusqu'à la fin du test \\
+Prepare & Prepare & $\longrightarrow$ & Lance le test / Bloque jusqu'à la fin du test \\
 \hline
 \end{tabular}
 \end{center}
@@ -205,42 +205,99 @@ Add & Requête "GET" vers la nouvelle sonde pour connaître son ID / Diffuse un 
 \hline
 Delete & Envoie un message "Bye"\\
 \hline
-Do & Met une action "Do" dans le pile du serveur\\
+Do & Met une action "Do" dans le pile d'actions\\
 \hline
 \end{tabular}
 \end{center}
 
 
+\subsection{Architecture}
+
+On représente ci-dessous l'organisation globale des différents threads qui composent les sonde du réseau.
+Les conventions de représentations sont les suivantes :
+\begin{figure}[!h]
+\centering\includegraphics[width=\linewidth]{img/graphLegend.png}
+\caption{Légende}
+\end{figure}
+
+\newpage
+
+\begin{figure}[!h]
+\centering\includegraphics[width=\linewidth]{img/graphDiscovery.png}
+\caption{Fonctionnement d'une sonde}
+\end{figure}
+
+Une sonde est composé dans sa version la plus simple de 3 threads et de 3 structures de stockage de données.
+\begin{itemize}
+\item L'objet \cd{ProbeStorage} contient les sondes du réseau (Id, IP), ainsi que les connections HTTP vers ces sondes.
+\item Le thread \cd{Client} gère une file de messages. Il utilise les connections du \cd{probestorage} pour les envoyer au fur et à mesure.
+\item Le thread \cd{Server} écoute les requêtes HTTP sur le port de communication interne des sondes et transforme les messages reçu en actions qu'il stocke dans une file d'attente.
+\item Le thread \cd{ActionMan} dépile les actions dans l'ordre de priorité et les exécute.
+\end{itemize}
+
+
+\newpage
+
+\begin{figure}
+\centering\includegraphics[width=\linewidth]{img/graphTest.png}
+\caption{Fonctionnement alternatif lors d'un test}
+\end{figure}
+
+Lors de l'exécution d'un test, un thread particulier, est lancé par les sondes. Le thread \cd{ActionMan} est bloqué jusqu'à l'arrêt du test.
+\begin{itemize}
+\item \cd{TestManager} pour la sonde qui exécute le test.
+\item \cd{TestResponder} pour les sondes qui réagissent au test.
+\end{itemize}
+
+
+
+\newpage
+
+\begin{figure}
+\centering\includegraphics[width=\linewidth]{img/graphCommander.png}
+\caption{Fonctionnement d'une sonde commandée}
+\end{figure}
+
+
+\newpage
+\subsection{Fonctionnement}
+
+\subsubsection{Ajout d'une sonde au réseau}
 
 \begin{figure}
 \centering\includegraphics[width=\linewidth]{img/graphAdd1.png}
-\caption{}
+\caption{Ajout d'une sonde - Etape 1}
 \end{figure}
 
 \begin{figure}
 \centering\includegraphics[width=\linewidth]{img/graphAdd2.png}
-\caption{}
+\caption{Ajout d'une sonde - Etape 2}
+\end{figure}
+
+
+\subsubsection{Exécution d'un test}
+
+\begin{figure}
+\centering\includegraphics[width=\linewidth]{img/graphTest1.png}
+\caption{Exécution d'un test - Etape 1}
 \end{figure}
 
 \begin{figure}
-\centering\includegraphics[width=\linewidth]{img/graphDiscovery.png}
-\caption{}
+\centering\includegraphics[width=\linewidth]{img/graphTest2.png}
+\caption{Exécution d'un test - Etape 2}
 \end{figure}
 
 \begin{figure}
-\centering\includegraphics[width=\linewidth]{img/graphCommander.png}
-\caption{}
+\centering\includegraphics[width=\linewidth]{img/graphTest3.png}
+\caption{Exécution d'un test - Etape 3}
 \end{figure}
 
-\begin{figure}
-\centering\includegraphics[width=\linewidth]{img/graphTest.png}
-\caption{}
-\end{figure}
 
-\begin{figure}
-\centering\includegraphics[width=\linewidth]{img/graphLegend.png}
-\caption{}
-\end{figure}
+
+
+
+
+
 
 
 
