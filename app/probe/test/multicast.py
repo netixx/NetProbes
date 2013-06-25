@@ -115,10 +115,9 @@ class Multicast(Test):
         msg, address = cls.rcvSocket.recvfrom( len(cls.messageSend) )
         msg = msg.decode(cls.ENCODING)
         consts.debug("Multicast : Message received")
-        cls.msgReceived = True
-
+        cls.msgReceived = msg == cls.messageSend
+        
     
-
     '''
         Actions that the probe must perform when the test is over
         generates the report and returns it!!!
