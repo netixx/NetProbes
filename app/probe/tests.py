@@ -314,9 +314,9 @@ class TestResponder(object):
             cls.testId = testId
             cls.getTest().options = options
             cls.sourceId = sourceId
-
-            cls.testDone.clear()
             cls.replyPrepare()
             consts.debug("TestResponder : responding new test with id : " + "(" + " ".join(cls.testId) + ")" + " from source : " + sourceId)
+            cls.testDone.clear()
+            
         else:
             raise TestInProgress()

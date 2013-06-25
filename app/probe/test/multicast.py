@@ -111,13 +111,20 @@ class Multicast(Test):
     @classmethod
     def replyTest(cls):
         consts.debug("Multicast : Waiting for message")
-        cls.rcvSocket.settimeout(cls.options.timeout)
-        msg, address = cls.rcvSocket.recvfrom( len(cls.messageSend) )
-        msg = msg.decode(cls.ENCODING)
-        consts.debug("Multicast : Message received")
-        cls.msgReceived = msg == cls.messageSend
-        
-    
+        try:
+            cls.rcvSocket.settimeout(cls.options.timeout)
+            msg, address = cls.rcvSocket.recvfrom( len(cls.messageSend) )
+            msg = msg.decode(cls.ENCODING)
+            consts.debug("Multicast : Message received")
+            cls.msgReceived = msg == cls.messageSend
+        except socket.timeout:
+            cls.msgReceived = False
+            consts.debug("Multicast : ReplyTest -> socket timeout")
+        except:
+            cls.msgReceived = False
+            consts.debug("Multicast : ReplyTest -> unknown error")
+
+
     '''
         Actions that the probe must perform when the test is over
         generates the report and returns it!!!

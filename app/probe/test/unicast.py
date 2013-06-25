@@ -132,36 +132,42 @@ class Unicast(Test):
     '''
     @classmethod
     def replyTest(cls):
-        if cls.rcvSocket.type == socket.SOCK_STREAM:
-            connection, address = cls.rcvSocket.accept()
-            consts.debug("Unicast : Waiting for tcp message")
-            try:
-                cls.rcvSocket.settimeout(cls.options.timeout)
+        try:
+            cls.rcvSocket.settimeout(cls.options.timeout)
+            if cls.rcvSocket.type == socket.SOCK_STREAM:
+                connection, address = cls.rcvSocket.accept()
+                consts.debug("Unicast : Waiting for tcp message")
                 msg = connection.recv(len(cls.messageSend))
                 consts.debug("Unicast : Message received")
                 cls.msgReceived = True
                 if (msg.decode(cls.ENCODING) == cls.messageSend):
                     connection.sendall(cls.messageReply.encode(cls.ENCODING))
-            except socket.timeout:
-                cls.msgReceived = False
+                    cls.msgSent = True
                 
-        elif cls.rcvSocket.type == socket.SOCK_DGRAM:
-            consts.debug("Unicast : Waiting for UDP message")
-            msg , adr = cls.rcvSocket.recvfrom( len(cls.messageSend) )
+            elif cls.rcvSocket.type == socket.SOCK_DGRAM:
+                consts.debug("Unicast : Waiting for UDP message")
+                msg , adr = cls.rcvSocket.recvfrom( len(cls.messageSend) )
+                consts.debug("Unicast : Message received")
+                cls.msgReceived = True
+                if (msg.decode(cls.ENCODING) == cls.messageSend):
+                    cls.rcvSocket.sendto( cls.messageReply.encode( cls.ENCODING), adr )
+                    cls.msgSent = True
+                    
+        except socket.timeout:
+                cls.msgReceived = False
+                consts.debug("Unicast : Unable to receive message : Socket timeout")
+        except:
+            cls.msgReceived = False
+            consts.debug("Unicast : Unable to receive message")
             
-            consts.debug("Unicast : Message received")
-            cls.msgReceived = True
-            if (msg.decode(cls.ENCODING) == cls.messageSend):
-                cls.rcvSocket.sendto( cls.messageReply.encode( cls.ENCODING), adr )
-        cls.msgSent = True
-            
-
+    
     '''
         Actions that the probe must perform when the test is over
         generates the report and returns it!!!
     '''
     @classmethod
     def replyOver(cls):
+        consts.debug("Unicast : Replying over")
         if cls.rcvSocket.type == socket.SOCK_STREAM:
             try:
                 cls.rcvSocket.shutdown(socket.SHUT_RDWR)
@@ -172,5 +178,5 @@ class Unicast(Test):
         report = Report(Identification.PROBE_ID)
         if not (cls.msgReceived and cls.msgSent):
             report.isSuccess = False
-
+        consts.debug("Unicast : Report created")
         return report
