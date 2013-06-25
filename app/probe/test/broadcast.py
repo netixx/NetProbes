@@ -14,11 +14,8 @@ class Broadcast(Test):
     port = 5678
     timeout = 3.0
     messageSend = "Unicast Test"
-    messageReply = "Unicast Reply"
     
     msgReceived = False
-    msgSent = False
-    success = False
     def __init__(self, options):
         super().__init__(options)
         self.socket = None
@@ -39,7 +36,7 @@ class Broadcast(Test):
 
         try:
             opts = parser.parse_args(popt)
-            self.targets = [probe.getIp() for probe in ProbeStorage.getAllProbes()]
+            self.targets = ProbeStorage.getIdAllOtherProbes()
             self.options = opts
         except (argparse.ArgumentError, SystemExit):
             raise TestArgumentError(parser.format_usage())
@@ -51,7 +48,6 @@ class Broadcast(Test):
     def doPrepare(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST,1)
-        self.socket = socket.socket(socket.AF_INET, self.protocolToUnix(self.options.protocol))
         self.socket.settimeout(self.options.timeout)
 
     '''
@@ -60,13 +56,9 @@ class Broadcast(Test):
     def doTest(self):
         consts.debug("BroadCast : Starting test")
         consts.debug("BroadCast : Sending message")
-        self.sendto(self.messageSend, ('<broadcast>' , self.options.port))
+        self.socket.sendto(self.messageSend.encode(self.ENCODING), ('<broadcast>' , self.options.port))
         consts.debug("BroadCast : Waiting for response message")
 #         self.socket.settimeout(self.options.timeout)
-        response = self.socket.recv(len(self.messageReply))
-        consts.debug("BroadCast : Message received")
-        if (response.decode(self.ENCODING) == self.messageReply):
-            self.success = True
 
     '''
         Prepare yourself for finish
@@ -87,14 +79,12 @@ class Broadcast(Test):
             else:
                 ok.append(probeId)
 
-        if (len(ok) == len(reports) and self.success):
-            self.result = "Ok, probe replied successfully."
-        elif (len(ok) == len(reports)):
-            self.result = "Partial Fail : probe received the message but didn't reply correctly."
+        if (len(ok) == len(reports)):
+            self.result = "Ok : probe received the message."
         else:
             self.result = "Fail, probe did not receive the message."
 
-        self.result += "\n Id tested :" + " ".join(ok) + " ".join(fail)
+        self.result += "\n Id ok : " + ", ".join(ok) + "\n Id fail : " + ", ".join(fail)
 
     ''' Methods for the probe(s) which receive the test'''
 
@@ -110,14 +100,13 @@ class Broadcast(Test):
         cls.rcvSocket.bind(('', cls.options.port))
 
     '''
-        Actions that must be taken when the probe recieved the test
+        Actions that must be taken when the probe received the test
     '''
     @classmethod
     def replyTest(cls):
         message , address = cls.rcvSocket.recvfrom(len(cls.messageSend))
-        cls.msgReceived = True
         if (message.decode(cls.ENCODING) == cls.messageSend):
-            cls.rcvSocket.sendto(cls.messageReply.encode(cls.ENCODING), address)
+            cls.msgReceived = True
             
 
     '''
@@ -128,7 +117,5 @@ class Broadcast(Test):
     def replyOver(cls):
         cls.rcvSocket.close()
         report = Report(Identification.PROBE_ID)
-        if not (cls.msgReceived and cls.msgSent):
-            report.isSuccess = False
-
+        report.isSuccess = cls.msgReceived
         return report

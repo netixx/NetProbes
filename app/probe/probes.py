@@ -5,9 +5,8 @@ Storage of the probes and probe object
 '''
 from threading import RLock
 import http.client;
-from consts import Consts
+from consts import Consts, Identification
 from exceptions import NoSuchProbe
-
 
 class ProbeStorage(object):
     '''
@@ -58,6 +57,15 @@ class ProbeStorage(object):
     def getAllProbes(cls):
         with cls.connectedProbesLock:
             return cls.connectedProbes.values()
+
+    @classmethod
+    def getIdAllOtherProbes(cls):
+        with cls.connectedProbesLock:
+            ret = []
+            for probeId in cls.connectedProbes.keys():
+                if (probeId != Identification.PROBE_ID):
+                    ret.append(probeId)
+            return ret
 
     @classmethod
     def getKeys(cls):
