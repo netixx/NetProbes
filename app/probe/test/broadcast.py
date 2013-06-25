@@ -5,6 +5,8 @@ from probes import ProbeStorage
 import consts
 import argparse
 from consts import Identification
+from exceptions import TestArgumentError
+
 
 class Unicast(Test):
     

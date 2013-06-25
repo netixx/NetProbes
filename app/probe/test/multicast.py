@@ -6,6 +6,7 @@ import consts
 import argparse
 import struct
 from consts import Identification
+from exceptions import TestArgumentError
 
 class Multicast(Test):
     
