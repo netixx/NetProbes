@@ -81,7 +81,7 @@ class Multicast(Test):
         else:
             self.result = "Fail, probe did not receive the message."
 
-        self.result += "\n Id ok : " + ", ".join(ok) + "Id fail : " + ", ".join(fail)
+        self.result += "\n Id ok : " + ", ".join(ok) + "\n Id fail : " + ", ".join(fail)
         
     
     

@@ -8,7 +8,7 @@ from consts import Identification
 from exceptions import TestArgumentError
 
 
-class Unicast(Test):
+class Broadcast(Test):
     
     ENCODING = "latin1"
     port = 5678
