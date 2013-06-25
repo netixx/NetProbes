@@ -130,7 +130,7 @@ class Multicast(Test):
         consts.debug("Multicast : Waiting for message")
         cls.rcvSocket.settimeout(cls.options.timeout)
         
-        msg, address = cls.rcvSocket.recvfrom( len(cls.msgSend) )
+        msg, address = cls.rcvSocket.recvfrom( len(cls.messageSend) )
         msg = msg.decode(cls.ENCODING)
         consts.debug("Multicast : Message received")
         cls.msgReceived = True
