@@ -30,32 +30,18 @@ class Multicast(Test):
     def parseOptions(self, options):
         parser = argparse.ArgumentParser(description="Parses the multicast test target")
         parser.add_argument('target', metavar='target', nargs="+")
-        parser.add_argument('opts', nargs=argparse.REMAINDER)
-
-        optParser = argparse.ArgumentParser(description="Parses the multicast test options")
-        optParser.add_argument('--port', type=int, metavar='port', default=self.port)
-        optParser.add_argument('--timeout', metavar='timeout', default=self.timeout, type=float)
-        optParser.add_argument('--ttl', metavar='ttl', default=self.ttl, type=int)
-        optParser.add_argument('--m-address', metavar='multicast-address', required=True, type=int)
+        parser.add_argument('--port', type=int, metavar='port', default=self.port)
+        parser.add_argument('--timeout', metavar='timeout', default=self.timeout, type=float)
+        parser.add_argument('--ttl', metavar='ttl', default=self.ttl, type=int)
+        parser.add_argument('--m-address', metavar='multicast-address', required=True)
 
         try:
-            opts = parser.parse_args(options)
-            popt = []
-            for op in opts.opts:
-                popt.extend(('--' + op).split())
-
-            try:
-                optParser.parse_args(popt, opts)
-                self.targets = opts.target
-                self.options = opts
-            except (argparse.ArgumentError, SystemExit):
-                raise TestArgumentError(optParser.format_usage())
-
+            opts = parser.parse_args(options[0].split())
+            self.targets = opts.target
+            self.options = opts
         except (argparse.ArgumentError, SystemExit):
             raise TestArgumentError(parser.format_usage())
 
-        self.targets = opts.target
-        self.options = opts
 
     '''
         Prepare yourself for the test
