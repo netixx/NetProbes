@@ -5,6 +5,7 @@ from probes import ProbeStorage
 import consts
 import argparse
 from consts import Identification
+from exceptions import TestArgumentError
 
 class Unicast(Test):
     
@@ -27,23 +28,32 @@ class Unicast(Test):
         should populate at least the targets list
     '''
     def parseOptions(self, options):
+        # creating the parsers
         parser = argparse.ArgumentParser(description="Parses the unicast test target")
         parser.add_argument('target', metavar='target', nargs=1)
         parser.add_argument('opts', nargs=argparse.REMAINDER)
-        opts = parser.parse_args(options)
 
         optParser = argparse.ArgumentParser(description="Parses the unicast test options")
         optParser.add_argument('--port', type=int, metavar='port', default=self.port)
         optParser.add_argument('--protocol', metavar='protocol', default='tcp', choices=['tcp', 'udp'])
         optParser.add_argument('--timeout', metavar='timeout', default=self.timeout, type=float)
-        popt = []
-        for op in opts.opts:
-            popt.extend(('--' + op).split())
-        optParser.parse_args(popt, opts)
+        try:
+            opts = parser.parse_args(options)
+            popt = []
+            for op in opts.opts:
+                popt.extend(('--' + op).split())
 
-        self.targets = opts.target
-        self.options = opts
-    
+            try:
+                optParser.parse_args(popt, opts)
+                self.targets = opts.target
+                self.options = opts
+            except (argparse.ArgumentError, SystemExit):
+                raise TestArgumentError(optParser.format_usage())
+
+        except (argparse.ArgumentError, SystemExit):
+            raise TestArgumentError(parser.format_usage())
+
+
     @staticmethod
     def protocolToUnix(protocol):
         if (protocol == 'udp'):

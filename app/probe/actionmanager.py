@@ -14,6 +14,7 @@ from tests import TestResponder, TestManager
 from server import Server
 import tests
 from commanderServer import CommanderServer
+from exceptions import TestError, TestArgumentError
 
 class ActionMan(Thread):
 
@@ -63,14 +64,24 @@ class ActionMan(Thread):
         debug("ActionMan : managing Do task")
         # instantiate the right test
         debug("ActionMan : Starting test " + action.getTest())
-        test = tests.testFactory(action.getTest())
-        test = test(action.getOptions())
-        # This line blocks the ActionMan
-        TestManager.initTest(test)
-        debug("ActionMan : Test Over " + test.__class__.__name__)
-        result = test.getResult()
-        debug("ActionMan : Result of the test is a follows : \n" + result)
-        CommanderServer.addResult(result)
+
+        try:
+            try:
+                test = tests.testFactory(action.getTest())
+                test = test(action.getOptions())
+                # This line blocks the ActionMan
+                TestManager.initTest(test)
+                debug("ActionMan : Test Over " + test.__class__.__name__)
+                result = test.getResult()
+                debug("ActionMan : Result of the test is a follows : \n" + result)
+                CommanderServer.addResult(result)
+            except TestArgumentError as e:
+                raise TestError(e.getUsage())
+
+        except TestError as e:
+            debug("ActionMan : Test failed because :" + e.getReason())
+            CommanderServer.addResult(e.getReason())
+        
         # @todo : send result to whoever!
     
     @staticmethod

@@ -23,6 +23,7 @@ class Report(object):
     def getProbeId(self):
         return self.probeId
 
+from exceptions import TestArgumentError
 
 class Test(object):
     '''
@@ -33,9 +34,11 @@ class Test(object):
     def __init__(self, options):
         self.targets = []
         self.result = None
+        self.errors = None
         self.ID = (self.__class__.__name__, '%030x' % random.randrange(256 ** 15))
         self.parseOptions(options)
-        
+
+
     def getId(self):
         return self.ID
 
@@ -72,6 +75,11 @@ class Test(object):
         '''
         pass
 
+    def doAbort(self):
+        '''
+        Abort the test
+        '''
+        pass
 
     def doResult(self, reports):
         '''
@@ -123,6 +131,7 @@ from client import Client
 from messages import *
 import consts
 from consts import Identification
+from exceptions import TestError
 
 class TestManager(object):
     '''
@@ -137,7 +146,6 @@ class TestManager(object):
         test : an instance of the test to run
         '''
         assert(isinstance(test, Test))
-        self.test = test
         self.readies = 0
         self.readyLock = RLock()
         self.isReadyForTest = Event()
@@ -145,6 +153,7 @@ class TestManager(object):
         self.reportsLock = RLock()
         self.reports = {}
         self.areReportsCollected = Event()
+        self.test = test
 
     def prepare(self):
         # @todo : echanger doPrepare et messages ????
@@ -235,13 +244,15 @@ class TestManager(object):
 
         '''
         consts.debug("TestManager : Trying to start test : " + test.__class__.__name__)
-        cls.testManager = TestManager(test)
-        consts.debug("TestManager : creating test with id : " + "(" + " ".join(test.getId()) + ")")
-        cls.testManager.start()
-        consts.debug("TestManager : Test " + test.__class__.__name__ + " is done.")
-
-
-
+        try:
+            cls.testManager = TestManager(test)
+            consts.debug("TestManager : creating test with id : " + "(" + " ".join(test.getId()) + ")")
+            cls.testManager.start()
+            consts.debug("TestManager : Test " + test.__class__.__name__ + " is done.")
+        except TestError as e:
+            consts.debug("TestManager : Failed to start test : \n" + e.getReason())
+            raise
+        
 from exceptions import TestInProgress
 
 class TestResponder(object):
