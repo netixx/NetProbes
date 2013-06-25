@@ -14,6 +14,7 @@ class Multicast(Test):
     port = 6789
     timeout = 3.0
     ttl = 20
+    broadcast_address = "224.1.1.1"
     messageSend = "Multicast Test"
     
     msgReceived = False
@@ -32,7 +33,7 @@ class Multicast(Test):
         parser.add_argument('--port', type=int, metavar='port', default=self.port)
         parser.add_argument('--timeout', metavar='timeout', default=self.timeout, type=float)
         parser.add_argument('--ttl', metavar='ttl', default=self.ttl, type=int)
-        parser.add_argument('--m-address', metavar='multicast-address', required=True)
+        parser.add_argument('-ma', '--m-address', metavar='multicast-address', default=self.broadcast_address)
 
         try:
             opts = parser.parse_args(options[0].split())

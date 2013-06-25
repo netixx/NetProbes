@@ -14,6 +14,7 @@ class Gui(Interface):
     TREE_COLUMNS = ("Probe id", "Probe ip")
     RESULT_DIPLAY_HEIGHT = 10
     def __init__(self, ip):
+        self.commandHistory = []
         self.mainWin = Tk()
         self.command = StringVar(self.mainWin)
         self.status = StringVar(self.mainWin, value="Waiting for command ...")
@@ -39,6 +40,7 @@ class Gui(Interface):
         txtInput = Entry(self.mainWin, textvariable=self.command, width=30)
         txtInput.grid(row=0, column=1, sticky=E + W)
         txtInput.bind("<Return>", self.doCommand)
+        txtInput.bind("<Up>", self.recallCommand)
         
         button = Button(self.mainWin, text="Refresh", fg="blue", command=self.triggerFetchProbes)
         button.grid(row=1, column=0, sticky=N + S + E + W)
@@ -70,8 +72,13 @@ class Gui(Interface):
 
         consts.debug("Commander : mainloop over")
 
+    def recallCommand(self, event):
+        if (self.commandHistory != None):
+            self.command.set(self.commandHistory[-1])
+        return "break"
 
     def doCommand(self, event):
+        self.commandHistory.append(self.command.get())
         consts.debug("Commander : executing command")
         super().doCommand(self.command.get())
         self.command.set("")
