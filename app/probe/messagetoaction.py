@@ -14,7 +14,6 @@ Matches message class to its corresponding method
 
 '''
 messages = {"Add" : "toAdd",
-            "Transfer" : "toTransfer",
             "Do" : "toDo",
             "Bye" : "toBye",
             "Hello" : "toHello",
@@ -41,10 +40,6 @@ def toBye(byeMessage):
     else:
         consts.debug("Message to Action : remove probe message")
         return Remove( byeMessage.getLeavingID() )
-
-
-def toDo(doMessage):
-    return Do()
 
 
 def toHello(message):

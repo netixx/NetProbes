@@ -61,10 +61,11 @@ class ActionMan(Thread):
     def manageDo(action):
         assert isinstance(action, a.Do)
         debug("ActionMan : managing Do task")
-        # intanciate the right test
+        # instantiate the right test
         debug("ActionMan : Starting test " + action.getTest())
         test = tests.testFactory(action.getTest())
         test = test(action.getOptions())
+        # This line blocks the ActionMan
         TestManager.initTest(test)
         debug("ActionMan : Test Over " + test.__class__.__name__)
         result = test.getResult()

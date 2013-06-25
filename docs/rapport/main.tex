@@ -11,6 +11,10 @@
 %couleur dans le doc
 \usepackage[dvipsnames]{xcolor}
 
+\usepackage{enumitem}
+\frenchbsetup{StandardLists=true}
+\usepackage{multirow}
+
 %affichage lignes de code
 \usepackage{listings}
 \usepackage{textcomp}
@@ -69,6 +73,7 @@
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\N}{\mathbb{N}}
 \newcommand{\C}{\mathbb{C}}
+\newcommand{\cd}[1]{\texttt{#1}}
 
 %commande pour les notations de map
 	%\newcommand{\I}{\mathds{1}}
@@ -163,7 +168,50 @@ Les commandes supportés sont les suivantes :
 
 Les résultats sont automatiquement affichés lorsqu'ils sont disponibles sur la sonde commandée dans le panneau prévu à cet effet.
 
+\newpage
 \section{Architecture et fonctionnement}
+
+\subsection{Tables de fonctionnement}
+
+\begin{center}
+\begin{tabular}{|l|l|c|l|}
+\hline
+\cd{Server} & \multicolumn{3}{|c|}{\cd{ActionMan}} \\
+\hline
+\textbf{Message} & \textbf{Action} & & \\
+\hline
+Add & Add & $\longrightarrow$ & Ajout dans la table / Message "Hello" si nécessaire\\
+\hline
+Hello & Add & $\longrightarrow$ & Ajout dans la table\\
+\hline
+\multirow{2}{*}{Bye} & Remove & $\longrightarrow$ & Supprime la sonde de la table\\
+\cline{2-4}
+ & Quit & $\longrightarrow$ & Diffuse un message "Bye" / Coupe toute les connections sauf la sienne\\
+\hline
+Prepare & Prepare & $\longrightarrow$ & Instancie le test / Bloque jusqu'à la fin du test \\
+\hline
+\end{tabular}
+\end{center}
+
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{2}{|c|}{\cd{CommanderServer}} \\
+\hline
+\textbf{Message} & \\
+\hline
+Add & Requête "GET" vers la nouvelle sonde pour connaître son ID / Diffuse un message "Add" \\
+\hline
+Delete & Envoie un message "Bye"\\
+\hline
+Do & Met une action "Do" dans le pile du serveur\\
+\hline
+\end{tabular}
+\end{center}
+
+
+
 \begin{figure}
 \centering\includegraphics[width=\linewidth]{img/graphAdd1.png}
 \caption{}
@@ -193,6 +241,113 @@ Les résultats sont automatiquement affichés lorsqu'ils sont disponibles sur la
 \centering\includegraphics[width=\linewidth]{img/graphLegend.png}
 \caption{}
 \end{figure}
+
+
+
+
+
+
+
+
+\newpage
+\section{Annexes}
+
+\subsection{Organisation du code}
+
+\textbf{Thread}
+\begin{itemize}
+\item \cd{Server}
+	\begin{itemize}
+	\item \cd{Listener(ThreadingMixIn, HTTPServer, Thread)}
+		\begin{itemize}
+		\item \cd{RequestHandler(SimpleHTTPRequestHandler)}
+		\end{itemize}
+	\end{itemize}
+
+\item \cd{CommanderServer}
+	\begin{itemize}
+	\item \cd{Listener(ThreadingMixIn, HTTPServer, Thread)}
+		\begin{itemize}
+		\item \cd{RequestHandler(SimpleHTTPRequestHandler)}
+		\end{itemize}
+	\end{itemize}
+
+\item \cd{Client}
+\item \cd{ActionMan}
+\end{itemize}
+
+
+
+\textbf{Object}
+\begin{itemize}
+\item \cd{Message} 
+	\begin{itemize}
+	\item \cd{Add}
+	\item \cd{Hello}
+	\item \cd{Bye}
+	\item \cd{TestMessage}
+	\begin{itemize}
+		\item \cd{Prepare}
+		\item \cd{TesterMessage}
+			\begin{itemize}
+			\item \cd{Over}
+			\item \cd{Abort}
+			\end{itemize}
+		\item \cd{TesteeMessage}
+			\begin{itemize}
+			\item \cd{Ready}
+			\item \cd{Result}
+			\end{itemize}
+		\end{itemize}
+	\end{itemize}
+
+\item \cd{Action} 
+	\begin{itemize}
+	\item \cd{Add}
+	\item \cd{Remove}
+	\item \cd{Do}
+	\item \cd{Prepare}
+	\item \cd{Quit}
+	\end{itemize}
+
+\item \cd{Test}
+	\begin{itemize}
+	\item \cd{Unicast}
+	\item \cd{Multicast}
+	\item \cd{Broadcast}
+	\item \cd{Empty}
+	\end{itemize}
+
+\item \cd{TestManager}
+\item \cd{TestResponder}
+
+\item \cd{Interface}
+	\begin{itemize}
+	\item \cd{Gui}
+	\item \cd{Cli}
+	\end{itemize}
+\item \cd{Parser}
+
+\item \cd{Probe}
+\item \cd{ProbeStorage}
+\item \cd{Consts}
+\item \cd{Params}
+\item \cd{Identification}
+
+\item \cd{Exception}
+	\begin{itemize}
+	\item \cd{NoSuchProbe}
+	\item \cd{TestInProgress}
+	\item \cd{NoSuchCommand}
+	\end{itemize}
+\end{itemize}
+
+
+
+
+
+
+
 
 
 %\newpage
