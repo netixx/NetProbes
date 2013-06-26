@@ -224,10 +224,7 @@ Les conventions de représentations sont les suivantes :
 \caption{Légende}
 \end{figure}
 
-\begin{figure}[!ht]
-\centering\includegraphics[width=\linewidth]{img/graphCommander.png}
-\caption{Fonctionnement d'une sonde}
-\end{figure}
+
 
 Une sonde est composé dans sa version la plus simple de 3 threads et de 3 structures de stockage de données.
 \begin{itemize}
@@ -243,11 +240,11 @@ Les threads mis en jeu sont :
 \item Le thread \cd{CommanderServer} tourne sur la sonde et écoute les requêtes HTTP sur le port de communication "commander" des sondes. Il réagit immédiatement aux messages reçu du commander.
 \end{itemize}
 
-
 \begin{figure}[!ht]
-\centering\includegraphics[width=\linewidth]{img/graphTest.png}
-\caption{Fonctionnement alternatif lors d'un test}
+\centering\includegraphics[width=\linewidth]{img/graphCommander.png}
+\caption{Fonctionnement d'une sonde}
 \end{figure}
+
 
 Lors de l'exécution d'un test, un thread particulier, est lancé par les sondes. Le thread \cd{ActionMan} est bloqué jusqu'à l'arrêt du test.
 \begin{itemize}
@@ -255,14 +252,41 @@ Lors de l'exécution d'un test, un thread particulier, est lancé par les sondes
 \item \cd{TestResponder} pour les sondes qui réagissent au test.
 \end{itemize}
 
+\begin{figure}[!ht]
+\centering\includegraphics[width=\linewidth]{img/graphTest.png}
+\caption{Fonctionnement alternatif lors d'un test}
+\end{figure}
+
+\FloatBarrier
+
+
 \subsection{Fonctionnement}
 
 \subsubsection{Ajout d'une sonde au réseau}
+
+Détail des étapes lors de l'ajout d'une sonde au réseau.
+\begin{itemize}
+\item L'utilisateur lance une commande "add" : \texttt{add 10.0.0.130}
+\item L'interface crée un requête HTTP "POST" contenant l'IP de la machine sur laquelle tourne la sonde à ajouter.
+\item A la réception de cette requête, le \texttt{commanderserver} sur lequel est branché l'interface envoie une requête "GET" à l'adresse IP désirée et attend la réponse de la sonde.
+\item La nouvelle sonde (si elle existe bien) renvoie son ID à la réception de la requête "GET"
+\item Le \texttt{commanderserver} demande alors au \texttt{client} d'envoyer à toute les ondes (y compris celle sur laquelle il tourne) le message "Add" avec le flag "Hello" à True et les paramètres de la nouvelle sonde.
+\item Le client dépile les messages "Add" et les envoie au fur et à mesure.
+\item Les serveurs des sondes du réseau, à la réception de ce message, empilent une action "Add" avec flag "hello".
+\end{itemize}
 
 \begin{figure}[!ht]
 \centering\includegraphics[width=\linewidth]{img/graphAdd1.png}
 \caption{Ajout d'une sonde - Etape 1}
 \end{figure}
+
+\begin{itemize}
+\item Les \texttt{actionmanager} de chaque sonde dépilent cette action et l'exécutent : Ils ajoutent la nouvelle sonde dans le \texttt{probestorage} et chargent le \texttt{client} d'envoyer à cette nouvelle sonde un message "Hello".
+\item Le client s'exécute.
+\item Le serveur de la nouvelle sonde empile une action "Add" sans flag "hello" pour chaque message "Hello" qu'elle reçoit.
+\item A la lecture de ces "Add" de toutes les sondes du réseaux, l'\texttt{actionmanager} de la nouvelle sonde se constitue un répertoire complet des sondes du réseau.
+\end{itemize}
+
 
 
 
