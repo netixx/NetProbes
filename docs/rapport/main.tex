@@ -57,7 +57,7 @@
 	\usepackage{fancyhdr}
 	\pagestyle{fancy}
 		\setlength{\headheight}{15.2pt}
-		\lhead{\titleinfo}
+		\lhead{\titleinfo\\}
 		\rhead{\leftmark}
 	%Page de garde avec style vide
 	\thispagestyle{empty}	
@@ -114,7 +114,6 @@ Après avoir établit un réseau de sondes par dessus le réseau test via http, 
 
 L'architecture de l'application nous permet d'implémenter des tests à la volée. En effet, il suffit de placer un module python implémentant les bonnes fonctions dans le dossier probe/tests afin que le nouveau test puisse être utilisé. Notre but a donc plus été de proposer une méthode de synchronisation autour des tests que le code des tests eux-mêmes.
 
-\newpage
 \section{Guide de l'utilisateur}
 
 \subsection{Prérequis}
@@ -159,7 +158,6 @@ Pour quitter la sonde, la seule solution implémentée est d'utiliser Ctrl+C sou
 
 Exemple sous Windows: \ \ \ \texttt{C:$\backslash$...$\backslash$NetProbes$\backslash$app$\backslash$probe$>$python main.py -id sondeA --no-debug}
 
-\newpage
 \subsubsection{Interface utilisateur : package commander}
 L'interface permet de commander une sonde de son choix. On peut choisir l'adresse IP de cette sonde au démarrage avec l'option -ip.
 
@@ -169,7 +167,7 @@ Exemple sous Windows:
 \end{center} 
 Un fois la connexion établie, on obtient l'affichage suivant :
 
-\begin{figure}[!hb]
+\begin{figure}[!ht]
 \begin{minipage}[c]{0.5\linewidth}
 \centering\includegraphics[width=\linewidth]{img/commander.png}
 \end{minipage}
@@ -211,8 +209,6 @@ Les résultats sont automatiquement affichés lorsqu'ils sont disponibles sur la
 \indent\texttt{do multicast "r probeOfTheDead --port 12456 --timeout 3.4 --ttl 20 --ma 224.4.6.6"}\\
 \indent\texttt{do empty}
 
-
-\newpage
 \section{Architecture et fonctionnement}
 
 \subsection{Tables de fonctionnement}
@@ -258,15 +254,13 @@ Do & Met une action "Do" dans le pile d'actions\\
 
 On représente ci-dessous l'organisation globale des différents threads qui composent les sonde du réseau.
 Les conventions de représentations sont les suivantes :
-\begin{figure}[!h]
+\begin{figure}[!ht]
 \centering\includegraphics[width=\linewidth]{img/graphLegend.png}
 \caption{Légende}
 \end{figure}
 
-\newpage
-
-\begin{figure}[!h]
-\centering\includegraphics[width=\linewidth]{img/graphDiscovery.png}
+\begin{figure}[!ht]
+\centering\includegraphics[width=\linewidth]{img/graphCommander.png}
 \caption{Fonctionnement d'une sonde}
 \end{figure}
 
@@ -278,10 +272,7 @@ Une sonde est composé dans sa version la plus simple de 3 threads et de 3 struc
 \item Le thread \cd{ActionMan} dépile les actions dans l'ordre de priorité et les exécute.
 \end{itemize}
 
-
-\newpage
-
-\begin{figure}
+\begin{figure}[!ht]
 \centering\includegraphics[width=\linewidth]{img/graphTest.png}
 \caption{Fonctionnement alternatif lors d'un test}
 \end{figure}
@@ -292,27 +283,16 @@ Lors de l'exécution d'un test, un thread particulier, est lancé par les sondes
 \item \cd{TestResponder} pour les sondes qui réagissent au test.
 \end{itemize}
 
-
-
-\newpage
-
-\begin{figure}
-\centering\includegraphics[width=\linewidth]{img/graphCommander.png}
-\caption{Fonctionnement d'une sonde commandée}
-\end{figure}
-
-
-\newpage
 \subsection{Fonctionnement}
 
 \subsubsection{Ajout d'une sonde au réseau}
 
-\begin{figure}
+\begin{figure}[!ht]
 \centering\includegraphics[width=\linewidth]{img/graphAdd1.png}
 \caption{Ajout d'une sonde - Etape 1}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[!ht]
 \centering\includegraphics[width=\linewidth]{img/graphAdd2.png}
 \caption{Ajout d'une sonde - Etape 2}
 \end{figure}
@@ -320,17 +300,17 @@ Lors de l'exécution d'un test, un thread particulier, est lancé par les sondes
 
 \subsubsection{Exécution d'un test}
 
-\begin{figure}
+\begin{figure}[!ht]
 \centering\includegraphics[width=\linewidth]{img/graphTest1.png}
 \caption{Exécution d'un test - Etape 1}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[!ht]
 \centering\includegraphics[width=\linewidth]{img/graphTest2.png}
 \caption{Exécution d'un test - Etape 2}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[!ht]
 \centering\includegraphics[width=\linewidth]{img/graphTest3.png}
 \caption{Exécution d'un test - Etape 3}
 \end{figure}
