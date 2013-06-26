@@ -135,7 +135,7 @@ Pour plus d'information sur l'installation de Python3, consulter cette page :
 \item Lancer l'exécutable python : main.py
 \end{enumerate}
 Remarque: dans les exemples sous Windows suivants, Python3 a été ajouté au path via une commande du type:
-\begin{center} \texttt{C:$\backslash$...$\backslash$NetProbes$>$path \%path\%;c:$\backslash$python33} \end{center}
+\begin{center} \texttt{ { \color{blue}C:$\backslash$...$\backslash$NetProbes$>$}path \%path\%;c:$\backslash$python33} \end{center}
 
 \subsection{Manuel d'utilisation}
 
@@ -143,7 +143,7 @@ Remarque: dans les exemples sous Windows suivants, Python3 a été ajouté au pa
 Les options pour les différents programme sont donnés par l'option -h à l'invocation du main : python main.py -h.
 Ceci est valable pour les deux exécutables que nous fournissons.\\
 Exemple\\
-Sous Windows: \ \ \ \texttt{C:$\backslash$...$\backslash$NetProbes$\backslash$app$\backslash$probe$>$python main.py -h}
+Sous Windows: \ \ \ \texttt{ { \color{blue}C:$\backslash$...$\backslash$NetProbes$\backslash$app$\backslash$probe$>$}python main.py -h}
 
 \subsubsection{Sondes : package probe}
 La première étape de l'utilisation de notre outil consister à faire tourner plusieurs sonde sur différentes machines connectées à un même réseau. L'utilisation des sondes est transparente et autonome. Les commandes d'ajout/suppression et de test étant effectuées par l'interface utilisateur.
@@ -156,14 +156,17 @@ Il est également possible de lui spécifier un identifiant avec l'option -id.
 
 Pour quitter la sonde, la seule solution implémentée est d'utiliser Ctrl+C sous Linux ou de fermer la console sous Windows.
 
-Exemple sous Windows: \ \ \ \texttt{C:$\backslash$...$\backslash$NetProbes$\backslash$app$\backslash$probe$>$python main.py -id sondeA --no-debug}
+Exemple sous Windows:\\
+\texttt{ { \color{blue} C:$\backslash$...$\backslash$NetProbes$>$}cd app$\backslash$probe}\\
+\texttt{ { \color{blue} C:$\backslash$...$\backslash$NetProbes$\backslash$app$\backslash$probe$>$}python main.py -id sondeA ---no-debug}
+
 
 \subsubsection{Interface utilisateur : package commander}
 L'interface permet de commander une sonde de son choix. On peut choisir l'adresse IP de cette sonde au démarrage avec l'option -ip.
 
 Exemple sous Windows:
 \begin{center}
-\texttt{C:$\backslash$...$\backslash$NetProbes$\backslash$app$\backslash$commander$>$python main.py -i gui -ip 127.0.0.1}
+\texttt{ { \color{blue}C:$\backslash$...$\backslash$NetProbes$\backslash$app$\backslash$commander$>$}python main.py -i gui -ip 127.0.0.1}
 \end{center} 
 Un fois la connexion établie, on obtient l'affichage suivant :
 
@@ -262,6 +265,9 @@ Lors de l'exécution d'un test, un thread particulier, est lancé par les sondes
 \centering\includegraphics[width=\linewidth]{img/graphAdd1.png}
 \caption{Ajout d'une sonde - Etape 1}
 \end{figure}
+
+
+
 
 \begin{figure}[!ht]
 \centering\includegraphics[width=\linewidth]{img/graphAdd2.png}
