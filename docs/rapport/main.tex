@@ -126,7 +126,7 @@ Pour plus d'information sur l'installation de Python3, consulter cette page : \h
 \subsection{Installation}
 \begin{enumerate}
 \item Décompresser l'archive dans un dossier au choix.
-\item Se placer en ligne de commande dans un des sous-dossier : commander ou probe.
+\item Se placer en ligne de commande dans un des sous-dossiers : commander ou probe.
 \item Lancer l'exécutable python : main.py
 \end{enumerate}
 Remarque: dans les exemples sous Windows suivants, Python3 a éventuellement été ajouté au path via une commande du type:
@@ -135,7 +135,7 @@ Remarque: dans les exemples sous Windows suivants, Python3 a éventuellement ét
 \subsection{Manuel d'utilisation}
 
 \subsubsection{Options au lancement}
-Les options pour les différents programme sont donnés par l'option -h à l'invocation du main : python main.py -h.
+Les options pour les différents programme sont donnés par l'option \texttt{-h} à l'invocation du main.
 Ceci est valable pour les deux exécutables que nous fournissons.\\
 Exemple\\
 Sous Windows:\\
@@ -143,11 +143,11 @@ Sous Windows:\\
 \texttt{{\color{blue}C:$\backslash$...$\backslash$NetProbes$\backslash$app$\backslash$probe$>$}python main.py -h}
 
 \subsubsection{Sondes : package probe}
-La première étape de l'utilisation de notre outil consister à faire tourner plusieurs sonde sur différentes machines connectées à un même réseau. L'utilisation des sondes est transparente et autonome. Les commandes d'ajout/suppression et de tests étant effectuées par l'interface utilisateur.
+La première étape de l'utilisation de notre outil consister à faire tourner plusieurs sonde sur différentes machines connectées à un même réseau. L'utilisation des sondes est transparente et autonome. Les commandes d'ajout, de suppression et de tests étant effectuées à partir de l'interface utilisateur.
 
 Une sonde se lance par une simple exécution du programme python \texttt{main.py}.
 
-La sonde est par défaut verbeuse, à moins de spécifier l'option --no-debug lors de son lancement.
+La sonde est par défaut verbeuse, à moins de spécifier l'option ---no-debug lors de son lancement.
 
 Il est également possible de lui spécifier un identifiant avec l'option -id.
 
@@ -200,8 +200,8 @@ Les résultats sont automatiquement affichés lorsqu'ils sont disponibles sur la
 \indent\texttt{add 10.0.0.130}
 
 \subsubsection*{Effectuer des tests}
-\texttt{do unicast r --port 5611 --protocol tcp}\\
-\indent\texttt{do unicast r --timeout 2 --protocol udp}\\
+\texttt{do unicast tangente --port 5611 --protocol tcp}\\
+\indent\texttt{do unicast vaneau --timeout 2 --protocol udp}\\
 \indent\texttt{do broadcast --port 7267 --timeout 3.5 }\\
 \indent\texttt{do multicast vaneau tangente --port 12456 --timeout 3.4 --ttl 20 -ma 224.4.6.6}\\
 \indent\texttt{do empty}
@@ -211,7 +211,7 @@ Les résultats sont automatiquement affichés lorsqu'ils sont disponibles sur la
 
 \subsection{Architecture}
 
-On représente ci-dessous l'organisation globale des différents threads qui composent les sonde du réseau.
+On représente ci-dessous l'organisation globale des différents threads qui composent les sondes du réseau.
 Les conventions de représentations sont les suivantes :
 \begin{figure}[!ht]
 \centering\includegraphics[width=\linewidth]{img/graphLegend.png}
@@ -223,8 +223,8 @@ Les conventions de représentations sont les suivantes :
 Une sonde est composé dans sa version la plus simple de 3 threads et de 3 structures de stockage de données.
 \begin{itemize}
 \item L'objet \cd{ProbeStorage} contient les sondes du réseau (Id, IP), ainsi que les objets représentant les connexions HTTP vers ces sondes.
-\item Le thread \cd{Client} gère une file de messages. Il utilise les connections du \cd{probestorage} pour les envoyer au fur et à mesure.
-\item Le thread \cd{Server} écoute les requêtes HTTP sur le port de communication interne des sondes et transforme les messages reçu en actions qu'il stocke dans une file d'attente.
+\item Le thread \cd{Client} gère une file de messages. Il utilise les connexions du \cd{probestorage} pour les envoyer au fur et à mesure.
+\item Le thread \cd{Server} écoute les requêtes HTTP sur le port de communication interne des sondes et transforme les messages reçus en actions qu'il stocke dans une file d'attente.
 \item Le thread \cd{ActionMan} dépile les actions dans l'ordre de priorité et les exécute.
 \end{itemize}
 \begin{figure}[!ht]
@@ -268,9 +268,9 @@ Détail des étapes lors de l'ajout d'une sonde au réseau :
 \begin{itemize}
 \item L'utilisateur lance une commande "add" : \texttt{add 10.0.0.130}
 \item L'interface crée un requête HTTP "POST" contenant l'IP de la machine sur laquelle tourne la sonde à ajouter.
-\item A la réception de cette requête, le \texttt{commanderserver} sur lequel est branché l'interface envoie une requête "GET" à l'adresse IP désirée et attend la réponse de la sonde.
+\item A la réception de cette requête, le \texttt{CommanderServer} sur lequel est branché l'interface envoie une requête "GET" à l'adresse IP désirée et attend la réponse de la sonde.
 \item La nouvelle sonde (si elle existe bien) renvoie son ID à la réception de la requête "GET"
-\item Le \texttt{commanderserver} demande alors au \texttt{client} d'envoyer à toute les ondes (y compris celle sur laquelle il tourne) le message "Add" avec le flag "Hello" à True et les paramètres de la nouvelle sonde.
+\item Le \texttt{CommanderServer} demande alors au \texttt{client} d'envoyer à toute les ondes (y compris celle sur laquelle il tourne) le message "Add" avec le flag "Hello" à True et les paramètres de la nouvelle sonde.
 \item Le client dépile les messages "Add" et les envoie au fur et à mesure.
 \item Les serveurs des sondes du réseau, à la réception de ce message, empilent une action "Add" avec flag "hello".
 \end{itemize}
@@ -281,10 +281,10 @@ Détail des étapes lors de l'ajout d'une sonde au réseau :
 \end{figure}
 
 \begin{itemize}
-\item Les \texttt{actionmanager} de chaque sonde dépilent cette action et l'exécutent : Ils ajoutent la nouvelle sonde dans le \texttt{probestorage} et chargent le \texttt{client} d'envoyer à cette nouvelle sonde un message "Hello".
+\item Les \texttt{ActionMan} de chaque sonde dépilent cette action et l'exécutent : Ils ajoutent la nouvelle sonde dans le \texttt{ProbeStorage} et chargent le \texttt{client} d'envoyer à cette nouvelle sonde un message "Hello".
 \item Le client s'exécute.
 \item Le serveur de la nouvelle sonde empile une action "Add" sans flag "hello" pour chaque message "Hello" qu'elle reçoit.
-\item A la lecture de ces "Add" de toutes les sondes du réseaux, l'\texttt{actionmanager} de la nouvelle sonde se constitue un répertoire complet des sondes du réseau.
+\item A la lecture de ces "Add" de toutes les sondes du réseaux, l'\texttt{ActionMan} de la nouvelle sonde se constitue un répertoire complet des sondes du réseau.
 \end{itemize}
 
 \begin{figure}[!ht]
@@ -310,10 +310,10 @@ Détail des étapes lors de l'exécution d'un test :
 \item Ce dernier effectue les préparatifs pour le test puis envoie, via le \texttt{Client} un message "Ready" à la sonde qui a initié le test.
 \item Le \texttt{TestManager} de cette sonde attend de recevoir les messages "Ready" de toute les sondes cibles. En cas d'erreur ou de non réception d'un des "Ready", elle renvoie à tous un message "Abort".
 \item Le test est effectué par la sonde initiatrice.
-\item Le \texttt{TestManager} envoie un message "Over" à toute les sonde participant au test.
+\item Le \texttt{TestManager} envoie un message "Over" à toute les sondes participant au test.
 \item Ces dernières répondent un message "Result" contenant les résultats qu'elles ont obtenus.
 \item A la réception de tout les résultats, le \texttt{TestManager} construit un rapport qu'il retourne au \texttt{CommanderServer}, lequel était bloqué jusqu'à la réception de ce rapport.
-\item Le \texttt{CommanderServer} Répond à l'interface qui met à jour son affichage.
+\item Le \texttt{CommanderServer} répond à l'interface qui met à jour son affichage.
 \end{itemize}
 
 
@@ -349,7 +349,7 @@ Hello & Add & $\longrightarrow$ & Ajout dans la table\\
 \hline
 \multirow{2}{*}{Bye} & Remove & $\longrightarrow$ & Supprime la sonde de la table\\
 \cline{2-4}
- & Quit & $\longrightarrow$ & Diffuse un message "Bye" / Coupe toute les connections sauf la sienne\\
+ & Quit & $\longrightarrow$ & Diffuse un message "Bye" / Coupe toute les connexions sauf la sienne\\
 \hline
 Prepare & Prepare & $\longrightarrow$ & Lance le test / Bloque jusqu'à la fin du test \\
 \hline
@@ -363,7 +363,7 @@ Prepare & Prepare & $\longrightarrow$ & Lance le test / Bloque jusqu'à la fin d
 \hline
 \textbf{Message} & \\
 \hline
-Add & Requête "GET" vers la nouvelle sonde pour connaître son ID / Diffuse un message "Add" \\
+Add & Requête "GET" vers la nouvelle sonde pour connaitre son ID / Diffuse un message "Add" \\
 \hline
 Delete & Envoie un message "Bye"\\
 \hline
