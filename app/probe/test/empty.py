@@ -8,7 +8,6 @@ from tests import Test, Report
 class Empty(Test):
 
     def __init__(self, opts):
-        print(opts)
         super().__init__(opts)
     
     def parseOptions(self, options):

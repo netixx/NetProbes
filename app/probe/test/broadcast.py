@@ -26,16 +26,12 @@ class Broadcast(Test):
         should populate at least the targets list
     '''
     def parseOptions(self, options):
-        popt = []
-        for op in options:
-            popt.extend(('--' + op).split())
-
         parser = argparse.ArgumentParser(description="Parses the broadcast test options")
         parser.add_argument('--port', type=int, metavar='port', default=self.port)
         parser.add_argument('--timeout', metavar='timeout', default=self.timeout, type=float)
 
         try:
-            opts = parser.parse_args(popt)
+            opts = parser.parse_args(options)
             self.targets = ProbeStorage.getIdAllOtherProbes()
             self.options = opts
         except (argparse.ArgumentError, SystemExit):

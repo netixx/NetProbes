@@ -36,7 +36,7 @@ class Multicast(Test):
         parser.add_argument('-ma', '--m-address', metavar='multicast-address', default=self.broadcast_address)
 
         try:
-            opts = parser.parse_args(options[0].split())
+            opts = parser.parse_args(options)
             self.targets = opts.target
             self.options = opts
         except (argparse.ArgumentError, SystemExit):

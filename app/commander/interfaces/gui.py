@@ -73,7 +73,7 @@ class Gui(Interface):
         consts.debug("Commander : mainloop over")
 
     def recallCommand(self, event):
-        if (self.commandHistory != None):
+        if len(self.commandHistory) != 0:
             self.command.set(self.commandHistory[-1])
         return "break"
 
@@ -113,12 +113,9 @@ class Gui(Interface):
 
     def updateResults(self):
         while(self.isRunning):
-            print("fetching results")
             result = self.fetchResults()
             self.addResult(result)
-            print("results fetched")
             self.doFetchResults.wait()
-            print("going for another loop")
 
 
     def quit(self):

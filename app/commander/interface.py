@@ -132,8 +132,7 @@ class Parser(object):
         subp2 = subp.add_parser('do')
         subp2.add_argument('test', metavar='test',
                     help='The message you want to send to the probe')
-        subp2.add_argument('options', metavar='options', nargs="*",
-                    help='Options of the test')
+        subp2.add_argument('options', nargs=argparse.REMAINDER)
         subp2.set_defaults(func=self.setDo)
 
         # parse for the remove command
@@ -142,6 +141,7 @@ class Parser(object):
                     help='The id of the probe you wish to remove')
         subp3.set_defaults(func=self.setRemove)
         
+
         try:
             self.command = args.parse_args(shlex.split(command))
             self.command.func()
