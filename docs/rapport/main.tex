@@ -108,25 +108,20 @@
 \tableofcontents
 
 \section{NetProbes : un programme de diagnostic réseau distribué}
-Le but de ce programme est de permettre d'effectuer des tests sur un réseau donnée.
+Le but de ce programme est de permettre d'effectuer des tests sur un réseau donné.
 
-Après avoir établit un réseau de sondes par dessus le réseau test via http, on pourra lancer les tests de notre choix sur ce réseau et collecter les résultats pour analyse.
+Après avoir établi un réseau de sondes au-dessus du réseau test via http, on pourra lancer les tests de notre choix sur ce réseau et collecter les résultats pour analyse.
 
-L'architecture de l'application nous permet d'implémenter des tests à la volée. En effet, il suffit de placer un module python implémentant les bonnes fonctions dans le dossier probe/tests afin que le nouveau test puisse être utilisé. Notre but a donc plus été de proposer une méthode de synchronisation autour des tests que le code des tests eux-mêmes.
+L'architecture de l'application nous permet d'implémenter des tests "à la volée". En effet, il suffit de placer un module python implémentant les bonnes fonctions dans le dossier probe/tests afin que le nouveau test puisse être utilisé. Notre but a donc plus été de proposer une méthode de synchronisation autour des tests plutôt que le code des tests eux-mêmes. Cependant, nous avons implémenté trois tests basiques : unicast, multicast et broadcast.
 
 \section{Guide de l'utilisateur}
 
 \subsection{Prérequis}
 \begin{description}
 \item[Python3] l'interpréteur python est requis. Nous avons développé notre application pour la version 3.3.\\
-Pour plus d'information sur l'installation de Python3, consulter cette page :
-\begin{center}
-\href{http://docs.activestate.com/activepython/3.2/diveintopython3/html/installing-python.html}{http://docs.activestate.com/activepython/3.2/diveintopython3/html/installing-python.html}
-\end{center}
-
+Pour plus d'information sur l'installation de Python3, consulter cette page : \href{http://www.python.org/download/releases/3.3.2/}{http://www.python.org/download/releases/3.3.2/}
 \item[Connexion HTTP] une connexion HTTP entre les sondes est requise afin de permettre la synchronisation autour des tests et les opération de construction du réseau de sonde.
 \end{description}
-
 
 \subsection{Installation}
 \begin{enumerate}
@@ -134,7 +129,7 @@ Pour plus d'information sur l'installation de Python3, consulter cette page :
 \item Se placer en ligne de commande dans un des sous-dossier : commander ou probe.
 \item Lancer l'exécutable python : main.py
 \end{enumerate}
-Remarque: dans les exemples sous Windows suivants, Python3 a été ajouté au path via une commande du type:
+Remarque: dans les exemples sous Windows suivants, Python3 a éventuellement été ajouté au path via une commande du type:
 \begin{center} \texttt{{\color{blue}C:$\backslash$...$\backslash$NetProbes$>$}path \%path\%;c:$\backslash$python33} \end{center}
 
 \subsection{Manuel d'utilisation}
@@ -148,7 +143,7 @@ Sous Windows:\\
 \texttt{{\color{blue}C:$\backslash$...$\backslash$NetProbes$\backslash$app$\backslash$probe$>$}python main.py -h}
 
 \subsubsection{Sondes : package probe}
-La première étape de l'utilisation de notre outil consister à faire tourner plusieurs sonde sur différentes machines connectées à un même réseau. L'utilisation des sondes est transparente et autonome. Les commandes d'ajout/suppression et de test étant effectuées par l'interface utilisateur.
+La première étape de l'utilisation de notre outil consister à faire tourner plusieurs sonde sur différentes machines connectées à un même réseau. L'utilisation des sondes est transparente et autonome. Les commandes d'ajout/suppression et de tests étant effectuées par l'interface utilisateur.
 
 Une sonde se lance par une simple exécution du programme python \texttt{main.py}.
 
@@ -198,15 +193,15 @@ Les commandes supportés sont les suivantes :
 Les résultats sont automatiquement affichés lorsqu'ils sont disponibles sur la sonde commandée dans le panneau prévu à cet effet.
 
 
-\subsection{Exemples}
+\subsubsection{Exemples}
 % Mettre un capture d'écran avec des meilleurs noms
-\subsubsection{Ajouter des sondes}
+\subsubsection*{Ajouter des sondes}
 \texttt{add 10.0.0.148}\\
 \indent\texttt{add 10.0.0.130}
 
-\subsubsection{Effectuer des tests}
-\texttt{do unicast tangente --port 5611 --protocol tcp}\\
-\indent\texttt{do unicast vaneau --timeout 2 --protocol udp}\\
+\subsubsection*{Effectuer des tests}
+\texttt{do unicast r --port 5611 --protocol tcp}\\
+\indent\texttt{do unicast r --timeout 2 --protocol udp}\\
 \indent\texttt{do broadcast --port 7267 --timeout 3.5 }\\
 \indent\texttt{do multicast vaneau tangente --port 12456 --timeout 3.4 --ttl 20 -ma 224.4.6.6}\\
 \indent\texttt{do empty}
@@ -232,19 +227,25 @@ Une sonde est composé dans sa version la plus simple de 3 threads et de 3 struc
 \item Le thread \cd{Server} écoute les requêtes HTTP sur le port de communication interne des sondes et transforme les messages reçu en actions qu'il stocke dans une file d'attente.
 \item Le thread \cd{ActionMan} dépile les actions dans l'ordre de priorité et les exécute.
 \end{itemize}
-Le commander est un thread à part qui peut même être lancé à partir d'une machine sur laquelle ne tourne aucune sonde. Ce programme prend en entrée une machine (adresse IP) sur laquelle fonctionne une sonde avec qui communiquer. Il utilise cette sonde pour connaître le réseaux et déclencher des tests.
-Les threads mis en jeu sont :
-\begin{itemize}
-\item Le thread \cd{Interface} graphique (GUI) ou en ligne de commande (CLI), elle est à la fois le serveur et le client qui permet de communiquer avec une sonde commandée.
-\item Le thread \cd{CommanderServer} tourne sur la sonde et écoute les requêtes HTTP sur le port de communication "commander" des sondes. Il réagit immédiatement aux messages reçu du commander.
-\end{itemize}
-
 \begin{figure}[!ht]
+\begin{minipage}[c]{0.3\linewidth}
+
+Le commander est un thread à part qui peut même être lancé à partir d'une machine sur laquelle ne tourne aucune sonde. Ce programme prend en entrée une machine (adresse IP) sur laquelle fonctionne une sonde avec qui communiquer. Il utilise cette sonde pour connaitre le réseau et déclencher des tests.
+\end{minipage}
+\hfill
+\begin{minipage}[c]{0.7\linewidth}
+
 \centering\includegraphics[width=\linewidth]{img/graphCommander.png}
 \caption{Fonctionnement d'une sonde}
+\end{minipage}
 \end{figure}
+\FloatBarrier
 
-
+Les threads mis en jeu sont :
+\begin{description}
+\item[Le thread \cd{Interface} graphique (GUI) ou en ligne de commande (CLI)], elle est à la fois le serveur et le client qui permet de communiquer avec une sonde commandée.
+\item[Le thread \cd{CommanderServer}] tourne sur la sonde et écoute les requêtes HTTP sur le port de communication "commander" des sondes. Il réagit immédiatement aux messages reçu du commander.
+\end{description}
 Lors de l'exécution d'un test, un thread particulier, est lancé par les sondes. Le thread \cd{ActionMan} est bloqué jusqu'à l'arrêt du test.
 \begin{itemize}
 \item \cd{TestManager} pour la sonde qui exécute le test.
@@ -252,7 +253,7 @@ Lors de l'exécution d'un test, un thread particulier, est lancé par les sondes
 \end{itemize}
 
 \begin{figure}[!ht]
-\centering\includegraphics[width=\linewidth]{img/graphTest.png}
+\centering\includegraphics[width=0.8\linewidth]{img/graphTest.png}
 \caption{Fonctionnement alternatif lors d'un test}
 \end{figure}
 
@@ -275,7 +276,7 @@ Détail des étapes lors de l'ajout d'une sonde au réseau :
 \end{itemize}
 
 \begin{figure}[!ht]
-\centering\includegraphics[width=\linewidth]{img/graphAdd1.png}
+\centering\includegraphics[width=0.8\linewidth]{img/graphAdd1.png}
 \caption{Ajout d'une sonde - Etape 1}
 \end{figure}
 
@@ -287,7 +288,7 @@ Détail des étapes lors de l'ajout d'une sonde au réseau :
 \end{itemize}
 
 \begin{figure}[!ht]
-\centering\includegraphics[width=\linewidth]{img/graphAdd2.png}
+\centering\includegraphics[width=0.6\linewidth]{img/graphAdd2.png}
 \caption{Ajout d'une sonde - Etape 2}
 \end{figure}
 
@@ -317,12 +318,12 @@ Détail des étapes lors de l'exécution d'un test :
 
 
 \begin{figure}[!ht]
-\centering\includegraphics[width=\linewidth]{img/graphTest1.png}
+\centering\includegraphics[width=0.8\linewidth]{img/graphTest1.png}
 \caption{Exécution d'un test - Etape 1}
 \end{figure}
 
 \begin{figure}[!ht]
-\centering\includegraphics[width=\linewidth]{img/graphTest2.png}
+\centering\includegraphics[width=0.8\linewidth]{img/graphTest2.png}
 \caption{Exécution d'un test - Etape 2}
 \end{figure}
 
