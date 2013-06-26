@@ -305,6 +305,14 @@ Détail des étapes lors de l'exécution d'un test :
 \item Le \texttt{CommanderServer} empile une action correspondant dans la pile du \texttt{Server}.
 \item L'\texttt{ActionMan}, à la lecture de cette action lance le test et bloque jusqu'à la fin de celui-ci. La main est laissée aux fonctions du \texttt{TestManager}.
 \item Le \texttt{TestManager} lit les options du test et envoie aux sondes concernées un message "Prepare" contenant les options du test.
+
+\end{itemize}
+\begin{figure}[!ht]
+\centering\includegraphics[width=0.8\linewidth]{img/graphTest1.png}
+\caption{Exécution d'un test - Etape 1}
+\end{figure}
+
+\begin{itemize}
 \item Les serveurs de ces sondes transforme ce message en action.
 \item L'\texttt{ActionManager} de ces sondes bloque et cède la main aux fonctions du \texttt{TestResponder}.
 \item Ce dernier effectue les préparatifs pour le test puis envoie, via le \texttt{Client} un message "Ready" à la sonde qui a initié le test.
@@ -316,19 +324,20 @@ Détail des étapes lors de l'exécution d'un test :
 \item Le \texttt{CommanderServer} répond à l'interface qui met à jour son affichage.
 \end{itemize}
 
-
-\begin{figure}[!ht]
-\centering\includegraphics[width=0.8\linewidth]{img/graphTest1.png}
-\caption{Exécution d'un test - Etape 1}
-\end{figure}
-
 \begin{figure}[!ht]
 \centering\includegraphics[width=0.8\linewidth]{img/graphTest2.png}
 \caption{Exécution d'un test - Etape 2}
 \end{figure}
 
+\begin{itemize}
+\item Le \texttt{TestManager} envoie un message "Over" à toute les sonde participant au test.
+\item Ces dernières répondent un message "Result" contenant les résultats qu'elles ont obtenus.
+\item A la réception de tout les résultats, le \texttt{TestManager} construit un rapport qu'il retourne au \texttt{CommanderServer}, lequel était bloqué jusqu'à la réception de ce rapport.
+\item Le \texttt{CommanderServer} Répond à l'interface qui met à jour son affichage.
+\end{itemize}
+
 \begin{figure}[!ht]
-\centering\includegraphics[width=\linewidth]{img/graphTest3.png}
+\centering\includegraphics[width=0.8\linewidth]{img/graphTest3.png}
 \caption{Exécution d'un test - Etape 3}
 \end{figure}
 
