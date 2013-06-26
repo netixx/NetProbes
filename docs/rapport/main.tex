@@ -203,13 +203,91 @@ Les résultats sont automatiquement affichés lorsqu'ils sont disponibles sur la
 \indent\texttt{add 10.0.0.130}
 
 \subsubsection{Effectuer des tests}
-\texttt{do unicast r port=5611 protocol=tcp}\\
-\indent\texttt{do unicast r timeout=2 protocol=udp}\\
-\indent\texttt{do broadcast port=7267 timeout=3.5 }\\
-\indent\texttt{do multicast "r probeOfTheDead --port 12456 --timeout 3.4 --ttl 20 --ma 224.4.6.6"}\\
+\texttt{do unicast r --port 5611 --protocol tcp}\\
+\indent\texttt{do unicast r --timeout 2 --protocol udp}\\
+\indent\texttt{do broadcast --port 7267 --timeout 3.5 }\\
+\indent\texttt{do multicast vaneau tangente --port 12456 --timeout 3.4 --ttl 20 -ma 224.4.6.6}\\
 \indent\texttt{do empty}
 
 \section{Architecture et fonctionnement}
+
+
+\subsection{Architecture}
+
+On représente ci-dessous l'organisation globale des différents threads qui composent les sonde du réseau.
+Les conventions de représentations sont les suivantes :
+\begin{figure}[!ht]
+\centering\includegraphics[width=\linewidth]{img/graphLegend.png}
+\caption{Légende}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering\includegraphics[width=\linewidth]{img/graphCommander.png}
+\caption{Fonctionnement d'une sonde}
+\end{figure}
+
+Une sonde est composé dans sa version la plus simple de 3 threads et de 3 structures de stockage de données.
+\begin{itemize}
+\item L'objet \cd{ProbeStorage} contient les sondes du réseau (Id, IP), ainsi que les objets représentant les connexions HTTP vers ces sondes.
+\item Le thread \cd{Client} gère une file de messages. Il utilise les connections du \cd{probestorage} pour les envoyer au fur et à mesure.
+\item Le thread \cd{Server} écoute les requêtes HTTP sur le port de communication interne des sondes et transforme les messages reçu en actions qu'il stocke dans une file d'attente.
+\item Le thread \cd{ActionMan} dépile les actions dans l'ordre de priorité et les exécute.
+\end{itemize}
+Le commander est un thread à part qui peut même être lancé à partir d'une machine sur laquelle ne tourne aucune sonde. Ce programme prend en entrée une machine (adresse IP) sur laquelle fonctionne une sonde avec qui communiquer. Il utilise cette sonde pour connaître le réseaux et déclencher des tests.
+Les threads mis en jeu sont :
+\begin{itemize}
+\item Le thread \cd{Interface} graphique (GUI) ou en ligne de commande(CLI), elle est à la fois le serveur et le client qui permet de communiquer avec une sonde commandée.
+\item Le thread \cd{CommanderServer} tourne sur la sonde et écoute les requêtes HTTP sur le port de communication "commander" des sondes. Il réagit immédiatement aux messages reçu du commander.
+\end{itemize}
+
+
+\begin{figure}[!ht]
+\centering\includegraphics[width=\linewidth]{img/graphTest.png}
+\caption{Fonctionnement alternatif lors d'un test}
+\end{figure}
+
+Lors de l'exécution d'un test, un thread particulier, est lancé par les sondes. Le thread \cd{ActionMan} est bloqué jusqu'à l'arrêt du test.
+\begin{itemize}
+\item \cd{TestManager} pour la sonde qui exécute le test.
+\item \cd{TestResponder} pour les sondes qui réagissent au test.
+\end{itemize}
+
+
+
+\subsection{Fonctionnement}
+
+\subsubsection{Ajout d'une sonde au réseau}
+
+\begin{figure}[!ht]
+\centering\includegraphics[width=\linewidth]{img/graphAdd1.png}
+\caption{Ajout d'une sonde - Etape 1}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering\includegraphics[width=\linewidth]{img/graphAdd2.png}
+\caption{Ajout d'une sonde - Etape 2}
+\end{figure}
+
+
+\subsubsection{Exécution d'un test}
+
+\begin{figure}[!ht]
+\centering\includegraphics[width=\linewidth]{img/graphTest1.png}
+\caption{Exécution d'un test - Etape 1}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering\includegraphics[width=\linewidth]{img/graphTest2.png}
+\caption{Exécution d'un test - Etape 2}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering\includegraphics[width=\linewidth]{img/graphTest3.png}
+\caption{Exécution d'un test - Etape 3}
+\end{figure}
+
+
+
 
 \subsection{Tables de fonctionnement}
 \begin{center}
@@ -248,76 +326,6 @@ Do & Met une action "Do" dans le pile d'actions\\
 \hline
 \end{tabular}
 \end{center}
-
-
-\subsection{Architecture}
-
-On représente ci-dessous l'organisation globale des différents threads qui composent les sonde du réseau.
-Les conventions de représentations sont les suivantes :
-\begin{figure}[!ht]
-\centering\includegraphics[width=\linewidth]{img/graphLegend.png}
-\caption{Légende}
-\end{figure}
-
-\begin{figure}[!ht]
-\centering\includegraphics[width=\linewidth]{img/graphCommander.png}
-\caption{Fonctionnement d'une sonde}
-\end{figure}
-
-Une sonde est composé dans sa version la plus simple de 3 threads et de 3 structures de stockage de données.
-\begin{itemize}
-\item L'objet \cd{ProbeStorage} contient les sondes du réseau (Id, IP), ainsi que les objets représentant les connexions HTTP vers ces sondes.
-\item Le thread \cd{Client} gère une file de messages. Il utilise les connections du \cd{probestorage} pour les envoyer au fur et à mesure.
-\item Le thread \cd{Server} écoute les requêtes HTTP sur le port de communication interne des sondes et transforme les messages reçu en actions qu'il stocke dans une file d'attente.
-\item Le thread \cd{ActionMan} dépile les actions dans l'ordre de priorité et les exécute.
-\end{itemize}
-
-\begin{figure}[!ht]
-\centering\includegraphics[width=\linewidth]{img/graphTest.png}
-\caption{Fonctionnement alternatif lors d'un test}
-\end{figure}
-
-Lors de l'exécution d'un test, un thread particulier, est lancé par les sondes. Le thread \cd{ActionMan} est bloqué jusqu'à l'arrêt du test.
-\begin{itemize}
-\item \cd{TestManager} pour la sonde qui exécute le test.
-\item \cd{TestResponder} pour les sondes qui réagissent au test.
-\end{itemize}
-
-\subsection{Fonctionnement}
-
-\subsubsection{Ajout d'une sonde au réseau}
-
-\begin{figure}[!ht]
-\centering\includegraphics[width=\linewidth]{img/graphAdd1.png}
-\caption{Ajout d'une sonde - Etape 1}
-\end{figure}
-
-\begin{figure}[!ht]
-\centering\includegraphics[width=\linewidth]{img/graphAdd2.png}
-\caption{Ajout d'une sonde - Etape 2}
-\end{figure}
-
-
-\subsubsection{Exécution d'un test}
-
-\begin{figure}[!ht]
-\centering\includegraphics[width=\linewidth]{img/graphTest1.png}
-\caption{Exécution d'un test - Etape 1}
-\end{figure}
-
-\begin{figure}[!ht]
-\centering\includegraphics[width=\linewidth]{img/graphTest2.png}
-\caption{Exécution d'un test - Etape 2}
-\end{figure}
-
-\begin{figure}[!ht]
-\centering\includegraphics[width=\linewidth]{img/graphTest3.png}
-\caption{Exécution d'un test - Etape 3}
-\end{figure}
-
-
-
-
 
 
 
