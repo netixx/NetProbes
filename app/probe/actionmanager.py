@@ -14,7 +14,7 @@ from tests import TestResponder, TestManager
 from server import Server
 import tests
 from commanderServer import CommanderServer
-from exceptions import TestError, TestArgumentError
+from exceptions import TestError, TestArgumentError, TestInProgress
 
 class ActionMan(Thread):
 
@@ -56,7 +56,10 @@ class ActionMan(Thread):
     def manageRemove(action):
         assert isinstance(action, a.Remove)
         debug("ActionMan : managing Remove task")
-        ProbeStorage.delProbe( action.getIdSonde() );
+        try:
+            ProbeStorage.delProbe( action.getIdSonde() );
+        except:
+            debug("ActionMan : Probe not found")
     
     @staticmethod
     def manageDo(action):
@@ -88,10 +91,16 @@ class ActionMan(Thread):
     def managePrepare(action):
         assert(isinstance(action, a.Prepare))
         debug("ActionMan : manage prepare test " + "(" + " ".join(action.getTestId()) + ")")
-        TestResponder.initTest(action.getTestId(), action.getSourceId(), action.getTestOptions())
-        # block all other actions
-        TestResponder.testDone.wait()
-
+        try:
+            TestResponder.initTest(action.getTestId(), action.getSourceId(), action.getTestOptions())
+            # block all other actions
+            TestResponder.testDone.wait()
+        except TestInProgress:
+            debug("ActionMan : Error test in progress")
+        except:
+            debug("ActionMan : Unknown error")
+    
+    
     @staticmethod
     def manageQuit(action):
         assert isinstance(action, a.Quit)

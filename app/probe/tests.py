@@ -131,7 +131,7 @@ from client import Client
 from messages import *
 import consts
 from consts import Identification
-from exceptions import TestError
+from exceptions import TestError, TestAborted
 import time
 
 class TestManager(object):
@@ -141,7 +141,7 @@ class TestManager(object):
     TesteeAnswer are handed down to this object by the Server
     '''
     testManager = None
-
+    
     def __init__(self, test):
         '''
         test : an instance of the test to run
@@ -155,6 +155,7 @@ class TestManager(object):
         self.reports = {}
         self.areReportsCollected = Event()
         self.test = test
+        self.testError = None
 
     def prepare(self):
         # @todo : echanger doPrepare et messages ????
@@ -167,6 +168,9 @@ class TestManager(object):
         #wait for everyone to be ready
         self.isReadyForTest.wait()
         self.isReadyForTest.clear()
+        if self.testError:
+            raise self.testError
+        
         consts.debug("TestManager : Prepare over, executing test")
       
     def performTest(self):
@@ -184,7 +188,17 @@ class TestManager(object):
         self.areReportsCollected.wait()
         self.areReportsCollected.clear()
         consts.debug("TestManager : over done, processing results")
-
+        
+    def abort(self):
+        self.testError = TestAborted("A probe send an abort signal")
+        for target in self.test.getTargets():
+            # this test is aborted!
+            Client.send( Abort(target, self.test.getId()) )
+        consts.debug("TestManager : Abort message broadcast")
+        self.test.doOver()
+        self.isReadyForTest.set()
+        consts.debug("TestManager : Test cancelled")
+    
     def result(self):
         self.test.doResult(self.reports)
         consts.debug("TestManager : results processing over, test is done")
@@ -193,13 +207,15 @@ class TestManager(object):
     def start(self):
         '''
         starts the process of testing
-
         '''
         consts.debug("TestManager : Starting test")
-        self.prepare()
-        self.performTest()
-        self.over()
-        self.result()
+        try:
+            self.prepare()
+            self.performTest()
+            self.over()
+            self.result()
+        except TestError as e:
+            consts.debug("TestManager : An error accured : " + e.getReason())
 
     def getCurrentTestId(self):
         return self.test.getId()
@@ -228,11 +244,13 @@ class TestManager(object):
     @classmethod
     def handleMessage(cls, message):
         consts.debug("TestManager : Handling test message : " + message.__class__.__name__)
-        if(isinstance(message, Result)):
+        if isinstance(message, Result):
             cls.testManager.addReport(message.getSourceId(), message.getReport())
-        elif (isinstance(message, Ready)):
+        elif isinstance(message, Ready):
             cls.testManager.addReady()
-        else :
+        elif isinstance(message, Abort):
+            cls.testManager.abort()
+        else:
             pass
         # todo : implementer
 
@@ -243,7 +261,6 @@ class TestManager(object):
         Method to call in order to start a test.
         It places a new instance of the TestManager into the static field for access purposes
         test : an instance of the test to perform
-
         '''
         consts.debug("TestManager : Trying to start test : " + test.__class__.__name__)
         try:
@@ -254,7 +271,8 @@ class TestManager(object):
         except TestError as e:
             consts.debug("TestManager : Failed to start test : \n" + e.getReason())
             raise
-        
+    
+
 from exceptions import TestInProgress
 
 class TestResponder(object):

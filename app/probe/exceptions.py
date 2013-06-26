@@ -35,3 +35,10 @@ class TestError(Exception):
 
     def getReason(self):
         return self.reason
+
+
+
+class TestAborted(TestError):
+    pass
+    
+    

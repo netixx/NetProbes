@@ -26,7 +26,8 @@ class ProbeStorage(object):
         with c.connectedProbesLock:
             c.connectedProbes[probeID].getConnection().close()
             c.connectedProbes.pop(probeID)
-
+    
+    
     @classmethod
     def addProbe(c, probe):
         assert isinstance(probe, Probe)
