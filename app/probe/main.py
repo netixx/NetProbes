@@ -29,6 +29,11 @@ if __name__ == '__main__':
     debug.add_argument('--debug',
                     help='Starts the app with debug on', action='store_true')
     debug.add_argument('--no-debug', action='store_true', help='Starts the app with debug off')
+
+    commander = parser.add_mutually_exclusive_group()
+    commander.add_argument('--commander',
+                    help='Starts the app with debug on', action='store_true')
+    commander.add_argument('--no-commander', action='store_true', help='Starts the app with debug off')
     args = parser.parse_args()
 
     Identification.PROBE_ID = args.probe_id
@@ -37,6 +42,11 @@ if __name__ == '__main__':
         Params.DEBUG = True
     elif args.no_debug:
         Params.DEBUG = False
+
+    if args.commander:
+        Params.COMMANDER = True
+    elif args.no_commander:
+        Params.COMMANDER = False
 
     server = Server()
     server.start()
