@@ -135,7 +135,7 @@ Pour plus d'information sur l'installation de Python3, consulter cette page :
 \item Lancer l'exécutable python : main.py
 \end{enumerate}
 Remarque: dans les exemples sous Windows suivants, Python3 a été ajouté au path via une commande du type:
-\begin{center} \texttt{ { \color{blue}C:$\backslash$...$\backslash$NetProbes$>$}path \%path\%;c:$\backslash$python33} \end{center}
+\begin{center} \texttt{C:$\backslash$...$\backslash$NetProbes$>$path \%path\%;c:$\backslash$python33} \end{center}
 
 \subsection{Manuel d'utilisation}
 
@@ -143,7 +143,7 @@ Remarque: dans les exemples sous Windows suivants, Python3 a été ajouté au pa
 Les options pour les différents programme sont donnés par l'option -h à l'invocation du main : python main.py -h.
 Ceci est valable pour les deux exécutables que nous fournissons.\\
 Exemple\\
-Sous Windows: \ \ \ \texttt{ { \color{blue}C:$\backslash$...$\backslash$NetProbes$\backslash$app$\backslash$probe$>$}python main.py -h}
+Sous Windows: \ \ \ \texttt{C:$\backslash$...$\backslash$NetProbes$\backslash$app$\backslash$probe$>$python main.py -h}
 
 \subsubsection{Sondes : package probe}
 La première étape de l'utilisation de notre outil consister à faire tourner plusieurs sonde sur différentes machines connectées à un même réseau. L'utilisation des sondes est transparente et autonome. Les commandes d'ajout/suppression et de test étant effectuées par l'interface utilisateur.
@@ -156,17 +156,14 @@ Il est également possible de lui spécifier un identifiant avec l'option -id.
 
 Pour quitter la sonde, la seule solution implémentée est d'utiliser Ctrl+C sous Linux ou de fermer la console sous Windows.
 
-Exemple sous Windows:\\
-\texttt{ { \color{blue} C:$\backslash$...$\backslash$NetProbes$>$}cd app$\backslash$probe}\\
-\texttt{ { \color{blue} C:$\backslash$...$\backslash$NetProbes$\backslash$app$\backslash$probe$>$}python main.py -id sondeA ---no-debug}
-
+Exemple sous Windows: \ \ \ \texttt{C:$\backslash$...$\backslash$NetProbes$\backslash$app$\backslash$probe$>$python main.py -id sondeA --no-debug}
 
 \subsubsection{Interface utilisateur : package commander}
 L'interface permet de commander une sonde de son choix. On peut choisir l'adresse IP de cette sonde au démarrage avec l'option -ip.
 
 Exemple sous Windows:
 \begin{center}
-\texttt{ { \color{blue}C:$\backslash$...$\backslash$NetProbes$\backslash$app$\backslash$commander$>$}python main.py -i gui -ip 127.0.0.1}
+\texttt{C:$\backslash$...$\backslash$NetProbes$\backslash$app$\backslash$commander$>$python main.py -i gui -ip 127.0.0.1}
 \end{center} 
 Un fois la connexion établie, on obtient l'affichage suivant :
 
@@ -287,10 +284,6 @@ Détail des étapes lors de l'ajout d'une sonde au réseau.
 \item A la lecture de ces "Add" de toutes les sondes du réseaux, l'\texttt{actionmanager} de la nouvelle sonde se constitue un répertoire complet des sondes du réseau.
 \end{itemize}
 
-
-
-
-
 \begin{figure}[!ht]
 \centering\includegraphics[width=\linewidth]{img/graphAdd2.png}
 \caption{Ajout d'une sonde - Etape 2}
@@ -365,6 +358,8 @@ Do & Met une action "Do" dans le pile d'actions\\
 \begin{appendices}
 \section{Organisation du code}
 
+\fbox{
+\begin{minipage}{\linewidth}
 \textbf{Thread}
 \begin{itemize}
 \item \cd{Server}
@@ -386,71 +381,106 @@ Do & Met une action "Do" dans le pile d'actions\\
 \item \cd{Client}
 \item \cd{ActionMan}
 \end{itemize}
+\end{minipage}
+}
 
-
-
-\textbf{Object}
-\begin{itemize}
-\item \cd{Message} 
-	\begin{itemize}
-	\item \cd{Add}
-	\item \cd{Hello}
-	\item \cd{Bye}
-	\item \cd{TestMessage}
-	\begin{itemize}
-		\item \cd{Prepare}
-		\item \cd{TesterMessage}
-			\begin{itemize}
-			\item \cd{Over}
-			\item \cd{Abort}
-			\end{itemize}
-		\item \cd{TesteeMessage}
-			\begin{itemize}
-			\item \cd{Ready}
-			\item \cd{Result}
+\fbox{
+\begin{minipage}{\linewidth}
+\textbf{Object}\\
+~
+\hfill
+	\fbox{
+	\begin{minipage}{0.3\linewidth}
+		\cd{Message} 
+		\begin{itemize}
+		\item \cd{Add}
+		\item \cd{Hello}
+		\item \cd{Bye}
+		\item \cd{TestMessage}
+		\begin{itemize}
+			\item \cd{Prepare}
+			\item \cd{TesterMessage}
+				\begin{itemize}
+				\item \cd{Over}
+				\item \cd{Abort}
+				\end{itemize}
+			\item \cd{TesteeMessage}
+				\begin{itemize}
+				\item \cd{Ready}
+				\item \cd{Result}
+				\end{itemize}
 			\end{itemize}
 		\end{itemize}
-	\end{itemize}
-
-\item \cd{Action} 
+		\cd{Probe}
+		\cd{ProbeStorage}
+	\end{minipage}
+	}
+	\hfill
+	\fbox{
+	\begin{minipage}{0.2\linewidth}
+	\cd{Action} 
+		\begin{itemize}
+		\item \cd{Add}
+		\item \cd{Remove}
+		\item \cd{Do}
+		\item \cd{Prepare}
+		\item \cd{Quit}
+		\end{itemize}
+	\end{minipage}
+	}
+	\hfill
+	\fbox{
+	\begin{minipage}{0.3\linewidth}
 	\begin{itemize}
-	\item \cd{Add}
-	\item \cd{Remove}
-	\item \cd{Do}
-	\item \cd{Prepare}
-	\item \cd{Quit}
+	\item \cd{Test}
+		\begin{itemize}
+		\item \cd{Unicast}
+		\item \cd{Multicast}
+		\item \cd{Broadcast}
+		\item \cd{Empty}
+		\end{itemize}
+	
+	\item \cd{TestManager}
+	\item \cd{TestResponder}
 	\end{itemize}
-
-\item \cd{Test}
+	\end{minipage}
+	}
+	\hfill
+	\fbox{
+	\begin{minipage}{0.2\linewidth}
+	\cd{Interface}
+		\begin{itemize}
+		\item \cd{Gui}
+		\item \cd{Cli}
+		\end{itemize}
+	\cd{Parser}
+	\end{minipage}
+	}
+	\hfill
+	\fbox{
+	\begin{minipage}{0.23\linewidth}
 	\begin{itemize}
-	\item \cd{Unicast}
-	\item \cd{Multicast}
-	\item \cd{Broadcast}
-	\item \cd{Empty}
+		\item \cd{Consts}
+		\item \cd{Params}
+		\item \cd{Identification}
 	\end{itemize}
-
-\item \cd{TestManager}
-\item \cd{TestResponder}
-
-\item \cd{Interface}
-	\begin{itemize}
-	\item \cd{Gui}
-	\item \cd{Cli}
-	\end{itemize}
-\item \cd{Parser}
-
-\item \cd{Probe}
-\item \cd{ProbeStorage}
-\item \cd{Consts}
-\item \cd{Params}
-\item \cd{Identification}
-
-\item \cd{Exception}
-	\begin{itemize}
-	\item \cd{NoSuchProbe}
-	\item \cd{TestInProgress}
-	\item \cd{NoSuchCommand}
-	\end{itemize}
-\end{itemize}
+	\end{minipage}
+	}
+	\hfill
+	\fbox{
+	\begin{minipage}{0.25\linewidth}
+	\cd{Exception}
+		\begin{itemize}
+		\item \cd{NoSuchProbe}
+		\item \cd{TestInProgress}
+		\item \cd{NoSuchCommand}
+		\end{itemize}
+	
+	\end{minipage}
+	}
+	\hfill
+	~
+\end{minipage}
+}
 \end{appendices}
 \end{document}
