@@ -1,7 +1,10 @@
 NetProbes
 =========
 
-This project intends to propose a way to test your network.
+This project intends to propose a way to test your network in a distributed fashion.
+
+It does so by establishing a network of probes running on each node you wish to test.
+Once probes are up and running, it is up to you to connect the probes together and start the test.
 
 General layout is as follows :
 
@@ -16,3 +19,5 @@ Synchronisation between the probes is done via http, so be sure that this is all
 ##Notice##
 
 Developpment is in progress and results are currently unknown!!
+
+Implementation is based on python 3 and does not require (as of today) any external package other than the basic python installation.
