@@ -22,6 +22,7 @@ class Params:
     DEBUG = True
     COMMANDER = True
 
+
 class Identification:
     '''
     Identification elements of the probe

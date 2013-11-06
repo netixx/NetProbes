@@ -5,16 +5,16 @@ Created on 13 juin 2013
 '''
 
 from threading import Thread
-import actions as a
+import calls.actions as a
 from probes import Probe, ProbeStorage
 from client import Client
-from consts import *
-from messages import Hello, Bye
+from probe.consts import *
+from calls.messages import Hello, Bye
 from tests import TestResponder, TestManager
 from server import Server
 import tests
 from commanderServer import CommanderServer
-from exceptions import TestError, TestArgumentError, TestInProgress
+from probe.exceptions import TestError, TestArgumentError, TestInProgress
 
 class ActionMan(Thread):
 

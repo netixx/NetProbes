@@ -3,11 +3,9 @@ Transforms a Message into an Action
 
 @author: francois
 '''
-from actions import *
-import messages as m
-import consts
-
-treatedAction = 0
+from . import messages as m
+from probe import consts
+from .actions import Add, Quit, Remove, Prepare, treatedAction
 
 '''
 Matches message class to its corresponding method
@@ -21,7 +19,6 @@ messages = {"Add" : "toAdd",
 def toAction(message):
     consts.debug("Message to Action : transforming message into action")
     assert isinstance(message, m.Message)
-    global treatedAction
     treatedAction += 1
     return globals()[messages.get(message.__class__.__name__)](message)
 

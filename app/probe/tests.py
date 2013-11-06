@@ -1,5 +1,10 @@
 import random
 import importlib
+import logging
+
+LOGGER_NAME = "tests"
+testLogger = logging.getLogger(LOGGER_NAME)
+
 
 '''
 A factory to get the class from the name of the test
@@ -8,7 +13,6 @@ A factory to get the class from the name of the test
 def testFactory(test):
     mod = importlib.import_module("test." + test)
     return getattr(mod, test.capitalize())
-
 
 class Report(object):
     '''
@@ -23,13 +27,14 @@ class Report(object):
     def getProbeId(self):
         return self.probeId
 
-from exceptions import TestArgumentError
+from probe.exceptions import TestArgumentError
 
 class Test(object):
     '''
     Super class for all the tests we can submit our network to
 
     '''
+    logger = testLogger
     options = None
     def __init__(self, options):
         self.targets = []
@@ -128,10 +133,10 @@ class Test(object):
 
 from threading import RLock,Event
 from client import Client
-from messages import *
-import consts
-from consts import Identification
-from exceptions import TestError, TestAborted
+from calls.messages import Prepare, Over, Abort, Ready, Result
+from probe import consts
+from probe.consts import Identification
+from probe.exceptions import TestError, TestAborted
 import time
 
 class TestManager(object):
@@ -273,7 +278,7 @@ class TestManager(object):
             raise
     
 
-from exceptions import TestInProgress
+from probe.exceptions import TestInProgress
 
 class TestResponder(object):
     '''

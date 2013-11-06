@@ -1,13 +1,14 @@
 '''
 Actions that our probes can perform
 '''
-import messagetoaction as MTA
+treatedAction = 0
+
 '''General class, defining priority of the actions'''
 class Action(object):
     def __init__(self):
         # low prioriy
         self.priority = 10
-        self.actionNumber = MTA.treatedAction
+        self.actionNumber = treatedAction
 
     def __lt__(self, other):
         selfPriority = (self.priority, self.actionNumber)

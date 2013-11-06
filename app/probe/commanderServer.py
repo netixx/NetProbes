@@ -4,22 +4,22 @@ Created on 14 juin 2013
 @author: francois
 '''
 
-from consts import Consts, Identification,Params
+from probe.consts import Consts, Identification, Params
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from threading import Thread, Event
-from commanderMessages import CommanderMessage, Add, Delete, Do
-import actions as a
+from common.commanderMessages import CommanderMessage, Add, Delete, Do
+import calls.actions as a
 import pickle
 import urllib
 import datetime
 import http.client
-import messages as m
+import calls.messages as m
 from client import Client
 import consts
 import urllib.parse
 from probes import ProbeStorage
-import probedisp as pd
+import common.probedisp as pd
 from server import Server
 from queue import Queue
 

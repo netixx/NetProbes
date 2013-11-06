@@ -2,10 +2,9 @@ from tests import Test
 from tests import Report
 import socket
 from probes import ProbeStorage
-import consts
 import argparse
-from consts import Identification
-from exceptions import TestArgumentError
+from ..consts import Identification
+from ..exceptions import TestArgumentError
 
 
 class Broadcast(Test):
@@ -50,10 +49,10 @@ class Broadcast(Test):
         Does the actual test
     '''
     def doTest(self):
-        consts.debug("BroadCast : Starting test")
-        consts.debug("BroadCast : Sending message")
+        self.logger.info("BroadCast : Starting test")
+        self.logger.info("BroadCast : Sending message")
         self.socket.sendto(self.messageSend.encode(self.ENCODING), ('<broadcast>' , self.options.port))
-        consts.debug("BroadCast : Waiting for response message")
+        self.logger.info("BroadCast : Waiting for response message")
 #         self.socket.settimeout(self.options.timeout)
 
     '''

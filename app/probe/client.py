@@ -5,11 +5,11 @@ Created on 7 juin 2013
 '''
 import urllib, pickle
 from threading import Thread, Event
-from consts import Consts,Params, debug, Identification
+from probe.consts import Consts, debug, Identification
 from queue import Queue
-from messages import Message
+from calls.messages import Message
 from probes import ProbeStorage
-from exceptions import NoSuchProbe
+from probe.exceptions import NoSuchProbe
 import copy
 
 

@@ -2,11 +2,10 @@ from tests import Test
 from tests import Report
 import socket
 from probes import ProbeStorage
-import consts
 import argparse
 import struct
-from consts import Identification
-from exceptions import TestArgumentError
+from ..consts import Identification
+from ..exceptions import TestArgumentError
 
 class Multicast(Test):
     
@@ -54,7 +53,7 @@ class Multicast(Test):
         Does the actual test
     '''
     def doTest(self):
-        consts.debug("Multicast : Starting test / Sending message")
+        self.logger.info("Multicast : Starting test / Sending message")
         self.socket.sendto(self.messageSend.encode(self.ENCODING), (self.options.m_address, self.options.port))
         
 
@@ -99,11 +98,11 @@ class Multicast(Test):
         cls.rcvSocket.bind( ('', cls.options.port) )
         
         ''' On ajoute la sonde au groupe multicast  '''
-        consts.debug("Multicast : On ajoute la sonde au groupe multicast")
+        cls.logger.info("Multicast : On ajoute la sonde au groupe multicast")
         group = socket.inet_aton(cls.options.m_address)
         mreq = struct.pack('4sL', group, socket.INADDR_ANY)
         cls.rcvSocket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-        consts.debug("Multicast : Sonde ajoutée au groupe multicast")
+        cls.logger.info("Multicast : Sonde ajoutée au groupe multicast")
         
 
     '''
@@ -111,19 +110,19 @@ class Multicast(Test):
     '''
     @classmethod
     def replyTest(cls):
-        consts.debug("Multicast : Waiting for message")
+        cls.logger.info("Multicast : Waiting for message")
         try:
             cls.rcvSocket.settimeout(cls.options.timeout)
             msg, address = cls.rcvSocket.recvfrom( len(cls.messageSend) )
             msg = msg.decode(cls.ENCODING)
-            consts.debug("Multicast : Message received")
+            cls.logger.info("Multicast : Message received")
             cls.msgReceived = msg == cls.messageSend
         except socket.timeout:
             cls.msgReceived = False
-            consts.debug("Multicast : ReplyTest -> socket timeout")
+            cls.logger.info("Multicast : ReplyTest -> socket timeout")
         except:
             cls.msgReceived = False
-            consts.debug("Multicast : ReplyTest -> unknown error")
+            cls.logger.info("Multicast : ReplyTest -> unknown error")
 
 
     '''

@@ -6,13 +6,13 @@ Created on 16 juin 2013
 from threading import Thread
 import time
 import shlex
-from commanderMessages import Add, Do, Delete
+from common.commanderMessages import Add, Do, Delete
 import pickle
 from consts import Consts
 import urllib
 from http.client import HTTPConnection
-from probedisp import Probe
-from exceptions import NoSuchCommand
+from common.probedisp import Probe
+from commander.exceptions import NoSuchCommand
 import argparse
 from threading import Event
 from http.client import CannotSendRequest

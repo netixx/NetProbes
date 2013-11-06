@@ -3,23 +3,38 @@ Created on 7 juin 2013
 
 @author: francois
 @todo: catcher connexions impossibles
-@todo : gérer les do
-@todo :ecrire les tests
+@todo: gérer les do
+@todo: ecrire les tests
+@todo: changer l'architecture démarrage
+@todo: changer de full mesh à partial
+@todo: contraintes de sécurité
+
 '''
+
+
 import os
 import sys
 
 directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(directory)
 sys.path.append(directory + "/../common")
+sys.path.append(directory + "/../../lib")
 
 from client import Client
-from messages import Add
 from server import Server
-from probes import ProbeStorage, Probe
 from commanderServer import CommanderServer
-from consts import Params, Identification
+from probe.consts import Params, Identification
 from actionmanager import ActionMan
 import argparse
+import tools.logs as logs
+import logging
+
+LOGGER_NAME = "probe"
+
+def addLogs():
+    logger = logging.getLogger(LOGGER_NAME)
+    logs.addStdoutAndStdErr(logger)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Starts the commander for a probe')
@@ -64,8 +79,7 @@ if __name__ == '__main__':
     c.start()
     c.isUp.wait()
 
-
-    # c.send( Add("id", "probeid", "probeip") )
-    # c.quit()
-    # c.join()
-    # print("done")
+#     c.send(Add("id", "probeid", "probeip"))
+#     c.quit()
+#     c.join()
+#     print("done")

@@ -5,8 +5,8 @@ Storage of the probes and probe object
 '''
 from threading import RLock
 import http.client;
-from consts import Consts, Identification
-from exceptions import NoSuchProbe
+from probe.consts import Consts, Identification
+from probe.exceptions import NoSuchProbe
 
 class ProbeStorage(object):
     '''

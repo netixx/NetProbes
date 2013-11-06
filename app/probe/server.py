@@ -4,16 +4,16 @@ Server that listens to probe messages
 @author: francois
 '''
 import consts
-from consts import Consts, Identification
+from probe.consts import Consts, Identification
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from threading import Thread, Event
-from messages import Message, Hello, TesterMessage, TesteeAnswer
-import messagetoaction as MTA
+from calls.messages import Message, Hello, TesterMessage, TesteeAnswer
+import calls.messagetoaction as MTA
 from probes import Probe, ProbeStorage
 import pickle
 import urllib
-from actions import Action
+from probe.calls.actions import Action
 from queue import PriorityQueue
 import datetime
 from tests import TestManager, TestResponder
