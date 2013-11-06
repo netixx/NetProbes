@@ -6,7 +6,8 @@ Storage of the probes and probe object
 from threading import RLock
 import http.client;
 from probe.consts import Consts, Identification
-from probe.exceptions import NoSuchProbe
+from probe.exceptions import NoSuchProbe, ProbeConnection
+from http.client import HTTPException
 
 class ProbeStorage(object):
     '''
@@ -15,63 +16,75 @@ class ProbeStorage(object):
     Contains the local probe (the probe of the computer it's running on)
 
     '''
-    connectedProbes = {}
-    connectedProbesLock = RLock()
+    knownProbes = {}
+    knownProbesLock = RLock()
         
     def __init__(self):
         pass
 
     @classmethod
     def delProbe(c, probeID):
-        with c.connectedProbesLock:
-            c.connectedProbes[probeID].getConnection().close()
-            c.connectedProbes.pop(probeID)
+        with c.knownProbesLock:
+            c.knownProbes[probeID].disconnect()
+            c.knownProbes.pop(probeID)
     
-    
+
     @classmethod
-    def addProbe(c, probe):
+    def addProbe(cls, probe):
         assert isinstance(probe, Probe)
-        with c.connectedProbesLock:
-            c.connectedProbes[probe.getId()] = probe
+        with cls.knownProbesLock:
+            cls.knownProbes[probe.getId()] = probe
+
+    @classmethod
+    def connectToProbe(cls, probeId):
+        probe = cls.getProbeById(cls, probeId)
+        if not probe.connected:
+            probe.getConnection().connect()
+
+    @classmethod
+    def disconnectFromProbe(cls, probeId):
+        probe = cls.getProbeById(cls, probeId)
+        if probe.connected:
+            probe.getConnection().close()
 
     @classmethod
     def getProbeById(c, probeId):
-        with c.connectedProbesLock:
+        with c.knownProbesLock:
             try :
-                return c.connectedProbes[probeId]
+                return c.knownProbes[probeId]
             except KeyError:
                 raise NoSuchProbe
 
     @classmethod
     def closeAllConnections(cls):
-        with cls.connectedProbesLock:
-            for probeId in cls.connectedProbes.keys():
-                cls.connectedProbes[probeId].getConnection().close()
-            cls.connectedProbes.clear()
-    
+        with cls.knownProbesLock:
+            for probeId in cls.knownProbes.keys():
+                cls.knownProbes[probeId].disconnect()
+
+    @classmethod
+    def clearAllProbes(cls):
+        cls.closeAllConnections()
+        cls.knownProbes.clear()
+
     @classmethod
     def numberOfConnections(cls):
-        with cls.connectedProbesLock:
-            return len(cls.connectedProbes)
+        with cls.knownProbesLock:
+            return len([k for k, probe in cls.knownProbes.items() if probe.connected])
     
     @classmethod
     def getAllProbes(cls):
-        with cls.connectedProbesLock:
-            return cls.connectedProbes.values()
+        with cls.knownProbesLock:
+            return cls.knownProbes.values()
 
     @classmethod
     def getIdAllOtherProbes(cls):
-        with cls.connectedProbesLock:
-            ret = []
-            for probeId in cls.connectedProbes.keys():
-                if (probeId != Identification.PROBE_ID):
-                    ret.append(probeId)
-            return ret
+        with cls.knownProbesLock:
+            return [ probeId for probeId in cls.knownProbes.keys() if probeId != Identification.PROBE_ID]
 
     @classmethod
     def getKeys(cls):
-        with cls.connectedProbesLock:
-            return cls.connectedProbes.keys()
+        with cls.knownProbesLock:
+            return cls.knownProbes.keys()
 
 
 class Probe(object):
@@ -82,8 +95,9 @@ class Probe(object):
         self.IP = IP
         self.ID = ID
         self.status = status
-        self.connection = http.client.HTTPConnection(self.getIp(), Consts.PORT_NUMBER)
-        self.connection.connect();
+        self.__connection = http.client.HTTPConnection(self.getIp(), Consts.PORT_NUMBER)
+        self.connected = False
+
         
     def getIp(self):
         return self.IP
@@ -91,5 +105,24 @@ class Probe(object):
     def getId(self):
         return self.ID
 
+    def connect(self):
+        try:
+            self.__connection.connect()
+            self.connected = True
+        except HTTPException:
+            raise ProbeConnection("Connection to probe %s:%s failed" % (self.id, self.ip))
+
+    def disconnect(self):
+        self.__connection.close()
+        self.connected = False
+
     def getConnection(self):
-        return self.connection
+        return self.__connection
+    
+    def __getstate__(self):
+        """Choose what to write when pickling"""
+        return (self.ID, self.IP)
+
+    def __setstate__(self, state):
+        """Choose what to read when pickling"""
+        self.ID, self.IP = state

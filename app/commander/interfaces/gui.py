@@ -11,7 +11,7 @@ import consts
 
 class Gui(Interface):
 
-    TREE_COLUMNS = ("Probe id", "Probe ip")
+    TREE_COLUMNS = ("Probe id", "Probe ip", "Status")
     RESULT_DIPLAY_HEIGHT = 10
     def __init__(self, ip):
         self.commandHistory = []
@@ -109,7 +109,7 @@ class Gui(Interface):
 
     @staticmethod
     def probesToItems(probes):
-        return [(str(probe.getId()), probe.getIp()) for probe in probes]
+        return [(str(probe.getId()), probe.getIp(), probe.getStatus()) for probe in probes]
 
     def updateResults(self):
         while(self.isRunning):

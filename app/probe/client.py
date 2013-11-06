@@ -7,11 +7,9 @@ import urllib, pickle
 from threading import Thread, Event
 from probe.consts import Consts, debug, Identification
 from queue import Queue
-from calls.messages import Message
+from calls.messages import Message, BroadCast
 from probes import ProbeStorage
 from probe.exceptions import NoSuchProbe
-import copy
-
 
 
 class Client(Thread):
@@ -21,7 +19,7 @@ class Client(Thread):
     Connection is established as a Probe is added to ProbeStorage through ProbeStorage.addProbe through http on the port given by Consts.PORT_NUMBER
     
     '''
-    messagePile = Queue()
+    messageStack = Queue()
     stop = False
     
     def __init__(self):
@@ -40,31 +38,51 @@ class Client(Thread):
     def send(cls, message):
         debug("Client : Giving a message " + message.__class__.__name__ + " to the client")
         assert isinstance(message, Message)
-        cls.messagePile.put(message)
+        cls.messageStack.put(message)
     
     @classmethod
-    def broadcast(cls, message, toMyself = True):
+    def broadcast(cls, message, toMyself = False):
         debug("Client : Broadcasting the message : " + message.__class__.__name__)
-        with ProbeStorage.connectedProbesLock:
-            for probeId in ProbeStorage.getKeys():
-                if probeId != Identification.PROBE_ID or toMyself :
-                    msg = copy.deepcopy(message)
-                    msg.setTarget(probeId)
-                    cls.send(msg)
+        #propagation phas
+        if isinstance(message, BroadCast):
+            prop = message.getNextTargets()
+        else:
+            prop = ProbeStorage.getIdAllOtherProbes()
+            if toMyself:
+                prop.append(Identification.PROBE_ID)
+            
+        if len(prop) > 0:
+            splitSize = min(Consts.PROPAGATION_RATE, len(prop))
+            j = splitSize
+            step = len(prop) / splitSize
+            for i in range(0, splitSize - 1):
+                propIds = prop[j:j + step]
+                j += step
+                cls.send(BroadCast(message, propIds))
+            # be sure to propagate to all probes
+            cls.send(BroadCast(message, prop[j:]))
+# 
+#         with ProbeStorage.knownProbesLock:
+#             for probeId in ProbeStorage.getKeys():
+#                 if probeId != Identification.PROBE_ID or toMyself :
+#                     msg = copy.deepcopy(message)
+#                     msg.setTarget(probeId)
+#                     cls.send(msg)
                 
     def run(self):
         self.isUp.set()
         debug("Client : starting the client")
-        while not Client.stop or not Client.messagePile.empty():
-            message = Client.messagePile.get()
-                #try:
-            self.sendMessage(message)
-            Client.messagePile.task_done()
+        while not Client.stop or not Client.messageStack.empty():
+            message = Client.messageStack.get()
+            try:
+                self.sendMessage(message)
+            finally:
+                Client.messageStack.task_done()
                 #except:
                 #    print("Error occured sending a message")
                 
                 #if conn.getresponse().status != 200 :
-                #    self.messagePile.add( message )
+                #    self.messageStack.add( message )
 
     def sendMessage(self, message):
         debug("Client : Sending the message : " + message.__class__.__name__)
@@ -77,17 +95,25 @@ class Client(Thread):
         #set the header as header for POST
         headers = {"Content-type": "application/x-www-form-urlencoded;charset="+ Consts.POST_MESSAGE_ENCODING, "Accept": "text/plain"}
         try :
-            conn = ProbeStorage.getProbeById(message.targetId).getConnection()
+            target = ProbeStorage.getProbeById(message.targetId)
+            disconnectOnCompletion = False
+            if not target.connected :
+                target.connect()
+                disconnectOnCompletion = True
+            conn = target.getConnection()
             conn.request("POST", "", params, headers)
             debug("Client : Message : " + message.__class__.__name__ + " has been sent")
             response = conn.getresponse()
             if response.status != 200 :
                 debug("Client : Wrong status ! Trying to resend")
                 self.send(message)
+            if disconnectOnCompletion:
+                # TODO: optimise if target is still in the stack
+                target.disconnect()
         except NoSuchProbe:
             debug("The probe you requested to send a message to : '" + message.targetId + "', is currently unkown to me.")
        
 
     @classmethod
     def allMessagesSent(cls):
-        cls.messagePile.join()
+        cls.messageStack.join()

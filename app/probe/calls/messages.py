@@ -12,39 +12,35 @@ class Message(object):
 class Add(Message):
     '''
     Message to add a new probe
-    If the hello flag is set to true, then the recepient of
+    If the hello flag is set to true, then the recipient of
     the message is expected to send a hello message to the probe (probeId, probeIp)
 
     '''
-    def __init__(self, targetId, probeID, probeIP, hello=False):
+    def __init__(self, targetId, probeID, probeIP, doHello = False):
         Message.__init__(self, targetId)
         self.probeID = probeID
         self.probeIP = probeIP
-        self.doHello = hello
+        self.doHello = doHello
     
-    def getHello(self):
-        return self.doHello
+
+'''Establish a connection to a probe so that tests can be performed with this probe'''
+class Connect(Message):
+    def __init__(self, targetId):
+        Message.__init__(self, targetId)
+        self.targetId = targetId
 
 
 class Hello(Message):
     '''
-    Means " Hello, my name is myId"
-    Enables the contacted probe (targetId, remoteIp) to add the probe with id myId to the list of known probes
+    Tells a new probe about all other probes
 
     '''
-    def __init__(self, targetId, myId, remoteIp=None):
+    def __init__(self, targetId, probeList):
         Message.__init__(self, targetId)
-        self.myId = myId
-        self.remoteIP = remoteIp
-        
-    def setRemoteIP(self, remoteIP):
-        self.remoteIP = remoteIP
-        
-    def getRemoteIP(self):
-        return self.remoteIP
-    
-    def getRemoteID(self):
-        return self.myId
+        self.probeList = probeList
+
+    def getProbeList(self):
+        return self.probeList
     
 class Bye(Message):
     ''' Means "I am leaving the system" '''
@@ -55,6 +51,18 @@ class Bye(Message):
     def getLeavingID(self):
         return self.leavingId
 
+
+class BroadCast(Message):
+    def __init__(self, targetId, payload, propagateTo = []):
+        Message.__init__(self, targetId)
+        self.propagate = propagateTo
+        self.payload = payload
+
+    def getNextTargets(self):
+        return self.propagate
+
+    def getMessage(self):
+        return self.payload
 
 '''----- Messages to manage tests -----'''
 

@@ -13,7 +13,7 @@ class Consts:
     POST_MESSAGE_KEYWORD = "@message"
     POST_MESSAGE_ENCODING = "latin-1"
     COMMANDER_PORT_NUMBER = 6000
-
+    PROPAGATION_RATE = 5
 
 class Params:
     '''

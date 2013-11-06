@@ -11,6 +11,9 @@ class NoSuchProbe(Exception):
     '''
     pass
 
+class ProbeConnection(Exception):
+    pass
+
 class TestInProgress(Exception):
     '''
         You requested to do a test but another test is in progress

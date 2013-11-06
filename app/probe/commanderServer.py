@@ -4,14 +4,13 @@ Created on 14 juin 2013
 @author: francois
 '''
 
-from probe.consts import Consts, Identification, Params
+from probe.consts import Consts
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
-from threading import Thread, Event
-from common.commanderMessages import CommanderMessage, Add, Delete, Do
+from threading import Thread
+from common.commanderMessages import Add, Delete, Do
 import calls.actions as a
 import pickle
-import urllib
 import datetime
 import http.client
 import calls.messages as m
@@ -22,6 +21,7 @@ from probes import ProbeStorage
 import common.probedisp as pd
 from server import Server
 from queue import Queue
+import copy
 
 class CommanderServer(Thread):
 
@@ -86,7 +86,15 @@ class CommanderServer(Thread):
                 if (getPath == "/probes"):
                     consts.debug("CommanderServer : Giving the probes")
                     probes = ProbeStorage.getAllProbes()
-                    message = pickle.dumps([pd.Probe(probe.getId(), probe.getIp()) for probe in probes])
+                    dprobes = []
+                    for probe in probes:
+                        status= []
+                        status.append(pd.ProbeStatus.ADDED)
+                        if probe.connected :
+                            status.append(pd.ProbeStatus.CONNECTED)
+                        pd.Probe(probe.getId(), probe.getIp(), pd.statusFactory(status))
+
+                    message = pickle.dumps(dprobes)
                 elif (getPath == "/results"):
                     consts.debug("CommanderServer : Asked for results")
                     # blocant!
@@ -114,11 +122,15 @@ class CommanderServer(Thread):
                     consts.debug("CommanderServer : Id of probe with ip " + str(message.targetIp) + " is " + str(probeId))
                     connection.close()
                     
-                    addMessage = m.Add("", probeId, message.targetIp, hello=True)
+                    addMessage = m.Add("", probeId, message.targetIp)
+                    selfAddMessage = copy.deepcopy(addMessage)
+                    selfAddMessage.doHello = True
+                    Server.treatMessage(selfAddMessage)
+
                     #addMessage = m.Add(Identification.PROBE_ID, probeId, message.targetIp, hello=True)
                     Client.broadcast(addMessage)
+
                     
-                
                 if(isinstance(message,Delete)):
                     consts.debug("CommanderServer : trying to delete probe with ID " + str(message.targetId))
                     byeMessage = m.Bye(message.targetId, message.targetId)
@@ -127,7 +139,6 @@ class CommanderServer(Thread):
                 if(isinstance(message, Do)):
                     consts.debug("CommanderServer : trying to do a test : " + message.test)
                     Server.addTask(a.Do(message.test, message.testOptions))
-
 
 
 

@@ -5,13 +5,14 @@ Transforms a Message into an Action
 '''
 from . import messages as m
 from probe import consts
-from .actions import Add, Quit, Remove, Prepare, treatedAction
+from .actions import Add, Quit, Remove, Prepare, treatedAction, UpdateProbes
 
 '''
 Matches message class to its corresponding method
 
 '''
 messages = {"Add" : "toAdd",
+            "Connect" : "toConnect",
             "Bye" : "toBye",
             "Hello" : "toHello",
             "Prepare" : "toPrepare"}
@@ -25,8 +26,10 @@ def toAction(message):
 
 def toAdd(addMessage):
     assert isinstance(addMessage,m.Add)
-    return Add(addMessage.probeIP, addMessage.probeID, hello=addMessage.getHello())
+    return Add(addMessage.probeIP, addMessage.probeID, addMessage.getNextTargets())
 
+def toConnect(connectMessage):
+    pass
 
 def toBye(byeMessage):
     assert isinstance(byeMessage,m.Bye)
@@ -40,9 +43,10 @@ def toBye(byeMessage):
 
 def toHello(message):
     assert isinstance(message, m.Hello)
-    return Add(message.getRemoteIP(), message.getRemoteID(), hello=False)
+    return UpdateProbes(message.getProbeList())
 
 
 def toPrepare(message):
     assert isinstance(message, m.Prepare)
     return Prepare(message.getTestId(), message.getSourceId(), message.getTestOptions())
+

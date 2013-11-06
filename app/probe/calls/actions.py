@@ -31,11 +31,12 @@ class Add(Action):
     def getIdSonde(self):
         return self.idSonde
 
-    def setHello(self, doHello):
-        self.doHello = doHello
+class UpdateProbes(Action):
+    def __init__(self, probeList):
+        self.probeList = probeList
 
-    def getHello(self):
-        return self.doHello
+    def getProbeList(self):
+        return self.probeList
 
 '''Removes a probe from the network'''
 class Remove(Action):

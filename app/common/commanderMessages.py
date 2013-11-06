@@ -8,7 +8,7 @@ class CommanderMessage(object):
     def __init__(self, targetId):
         self.targetId = targetId;
 
-
+'''Adds a probe in the directory of available probes'''
 class Add(object):
     def __init__(self, targetIp):
         self.targetIp = targetIp
@@ -24,4 +24,3 @@ class Do(CommanderMessage):
 class Delete(CommanderMessage):
     def __init__(self, targetId):
         CommanderMessage.__init__(self, targetId)
-    

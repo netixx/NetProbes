@@ -8,7 +8,7 @@ from probe.consts import Consts, Identification
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from threading import Thread, Event
-from calls.messages import Message, Hello, TesterMessage, TesteeAnswer
+from calls.messages import Message, TesterMessage, TesteeAnswer, BroadCast
 import calls.messagetoaction as MTA
 from probes import Probe, ProbeStorage
 import pickle
@@ -17,7 +17,7 @@ from probe.calls.actions import Action
 from queue import PriorityQueue
 import datetime
 from tests import TestManager, TestResponder
-
+from client import Client
 
 class Server(Thread):
     '''
@@ -71,7 +71,8 @@ class Server(Thread):
         self.listener.close()
         self.actionQueue.join()
 
-    def treatMessage(self, message):
+    @classmethod
+    def treatMessage(cls, message):
         consts.debug("Server : treating message " + message.__class__.__name__)
         assert isinstance(message, Message)
         # if probe is in test mode, give the message right to the TestManager!
@@ -81,6 +82,9 @@ class Server(Thread):
         elif (isinstance(message, TesterMessage)):
             consts.debug("Server : Handling TesterMessage")
             TestResponder.handleMessage(message)
+        elif isinstance(message, BroadCast):
+            Server.addTask(MTA.toAction(message.getMessage()))
+            Client.broadcast(message)
         else:
             Server.addTask(MTA.toAction(message))
 
@@ -125,8 +129,8 @@ class Server(Thread):
                 message = bytes(args.get(Consts.POST_MESSAGE_KEYWORD)[0], Consts.POST_MESSAGE_ENCODING)
                 # transform our bytes into an object
                 message = pickle.loads(message)
-                if (isinstance(message, Hello)):
-                    message.setRemoteIP(self.client_address[0])
+#                 if (isinstance(message, Hello)):
+#                     message.setRemoteIP(self.client_address[0])
 
                 self.send_response(200)
                 self.send_header("Content-type", "text/plain")

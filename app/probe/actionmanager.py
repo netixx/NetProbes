@@ -9,7 +9,7 @@ import calls.actions as a
 from probes import Probe, ProbeStorage
 from client import Client
 from probe.consts import *
-from calls.messages import Hello, Bye
+from calls.messages import Hello, Bye, Add
 from tests import TestResponder, TestManager
 from server import Server
 import tests
@@ -23,7 +23,8 @@ class ActionMan(Thread):
             "Transfer" : "manageTransfer",
             "Do" : "manageDo",
             "Quit" : "manageQuit",
-            "Prepare" : "managePrepare" }
+            "Prepare" : "managePrepare",
+            "UpdateProbe" : "manageUpdateProbe" }
     
     def __init__(self):
         #init the thread
@@ -41,17 +42,23 @@ class ActionMan(Thread):
             getattr(ActionMan, ActionMan.manager.get(task.__class__.__name__))(task)
             Server.taskDone()
     
-    
     @staticmethod
     def manageAdd(action):
         assert isinstance(action, a.Add)
         debug("ActionMan : managing Add task")
-        
-        ProbeStorage.addProbe(Probe(action.getIdSonde(), action.getIpSonde()));
-        
-        if action.getHello():
-            Client.send( Hello(action.getIdSonde(), Identification.PROBE_ID ) );
-        
+        #add the probe to the local DHT
+        ProbeStorage.addProbe(Probe(action.getIdSonde(), action.getIpSonde()))
+
+        if action.doHello:
+            # tell the new probe about all other probe
+            Client.send(Hello(action.getIdSonde(), ProbeStorage.getAllProbes()))
+
+    @staticmethod
+    def manageUpdateProbe(action):
+        assert isinstance(action, a.UpdateProbes)
+        for probe in action.getProbeList():
+            ProbeStorage.addProbe(probe)
+
     @staticmethod
     def manageRemove(action):
         assert isinstance(action, a.Remove)
