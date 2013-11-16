@@ -1,0 +1,3 @@
+[submodule "lib/tools"]
+	path = lib/tools
+	url = git@github.com:netixx/python-tools.git
