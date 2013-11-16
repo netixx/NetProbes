@@ -3,8 +3,8 @@ from tests import Report
 import socket
 from probes import ProbeStorage
 import argparse
-from ..consts import Identification
-from ..exceptions import TestArgumentError
+from consts import Identification
+from exceptions import TestArgumentError
 
 
 class Broadcast(Test):

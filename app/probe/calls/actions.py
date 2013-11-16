@@ -1,10 +1,15 @@
 '''
 Actions that our probes can perform
+    Internal representations of the task at hand
+Each Action has a priority, the lower the priority, the faster the action will be executed
+Action class and subclasses are not sent over the network, only messages are (cf messages.py)
+
 '''
 treatedAction = 0
 
-'''General class, defining priority of the actions'''
 class Action(object):
+    '''General class, defining priority of the actions'''
+
     def __init__(self):
         # low prioriy
         self.priority = 10
@@ -15,9 +20,9 @@ class Action(object):
         otherPriority = (other.priority, other.actionNumber)
         return selfPriority < otherPriority
 
-
-'''Add action : adds a probe to the network'''
 class Add(Action):
+    '''Add action : adds a probe to the overlay of probes'''
+
     def __init__(self, ipSonde, idSonde, hello=False):
         Action.__init__(self)
         self.ipSonde = ipSonde
@@ -31,15 +36,18 @@ class Add(Action):
     def getIdSonde(self):
         return self.idSonde
 
+
 class UpdateProbes(Action):
+    '''Add the given list of probes to the hashtable (probestorage)'''
     def __init__(self, probeList):
         self.probeList = probeList
 
     def getProbeList(self):
         return self.probeList
 
-'''Removes a probe from the network'''
+
 class Remove(Action):
+    '''Tells the probe to remove another probe from the overlay'''
     def __init__(self, idSonde):
         Action.__init__(self)
         self.idSonde = idSonde
@@ -49,8 +57,10 @@ class Remove(Action):
         return self.idSonde
       
 
-'''Do action : does a test'''
+
 class Do(Action):
+    '''Do action : does a test'''
+
     priority = 2
     def __init__(self, testClass, testOptions):
         Action.__init__(self)
@@ -64,8 +74,9 @@ class Do(Action):
     def getOptions(self):
         return self.testOptions
 
-'''Prepare action : prepare for a test'''
+
 class Prepare(Action):
+    '''Prepare action : prepare for a test'''
 
     def __init__(self, testId, sourceId, testOptions):
         super().__init__()
@@ -83,8 +94,12 @@ class Prepare(Action):
     def getTestOptions(self):
         return self.testOptions
 
-'''Tells the probe to quit the network, closing all connections'''
+
 class Quit(Action):
+    '''Tells this probe to quit the overlay,
+    closing all connections to other probes
+
+    '''
     def __init__(self):
         Action.__init__(self)
         self.priority = 2

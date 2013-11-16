@@ -1,84 +1,119 @@
+# coding=UTF-8
 '''
+Main launcher for the probe.
+    Sets the global variable (constants and variables read from the command line)
+
 Created on 7 juin 2013
 
 @author: francois
 @todo: catcher connexions impossibles
-@todo: gérer les do
+@todo: gerer les do
 @todo: ecrire les tests
-@todo: changer l'architecture démarrage
-@todo: changer de full mesh à partial
-@todo: contraintes de sécurité
+@todo: changer l'architecture demarrage
+@todo: contraintes de securite
 
 '''
-
 
 import os
 import sys
 
 directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(directory)
-sys.path.append(directory + "/../common")
-sys.path.append(directory + "/../../lib")
+sys.path.append(os.path.abspath(os.path.join(directory, "..")))
+sys.path.append(os.path.abspath(os.path.join(directory, "..", "..", "lib")))
 
-from client import Client
-from server import Server
-from commanderServer import CommanderServer
-from probe.consts import Params, Identification
-from actionmanager import ActionMan
+DATA_DIR = os.path.join(directory, "..", "..", "data")
+LOGS_DIR = os.path.join(DATA_DIR, "logs")
+
+LOG_FORMAT = "%(levelname)s %(asctime)s %(threadName)s (%(module)s)\t: %(message)s"
+TEST_LOG_FORMAT = "%(levelname)s %(asctime)s %(name)s (%(module)s)\t: %(message)s"
+
+from managers.tests import LOGGER_NAME as TESTS_LOGGER_NAME
+from managers.actions import ActionMan
+from inout.client import Client
+from inout.server import Server
+from inout.commanderServer import CommanderServer
+from consts import Params, Identification
 import argparse
 import tools.logs as logs
 import logging
 
-LOGGER_NAME = "probe"
+from logging import Formatter
 
 def addLogs():
-    logger = logging.getLogger(LOGGER_NAME)
-    logs.addStdoutAndStdErr(logger)
+    if not os.path.exists(DATA_DIR):
+        os.mkdir(DATA_DIR)
+    if not os.path.exists(LOGS_DIR):
+        os.mkdir(LOGS_DIR)
 
+    logger = logging.getLogger()
+    logLevel = logging.INFO
+    if Params.DEBUG:
+        logLevel = logging.DEBUG
+
+    formatter = Formatter(LOG_FORMAT)
+
+    logs.addStdoutAndStdErr(logLevel, logger, formatter)
+
+    logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, "probe.log"), 30, logger, formatter)
+
+    testLogger = logging.getLogger(TESTS_LOGGER_NAME);
+    testFormatter = Formatter(TEST_LOG_FORMAT)
+
+    logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, "tests.log"), 30, testLogger, testFormatter)
+    testLogger.propagate = True
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Starts the commander for a probe')
-    parser.add_argument('-id', '--probe-id', metavar='interface',
-                   help='Enter an int that represent the id of the probe', default=11223344556677)
-    debug = parser.add_mutually_exclusive_group()
-    debug.add_argument('--debug',
-                    help='Starts the app with debug on', action='store_true')
-    debug.add_argument('--no-debug', action='store_true', help='Starts the app with debug off')
+    parser.add_argument('-id', '--probe-id',
+                        dest = 'probe_id',
+                        metavar = 'probeId',
+                        help = 'Enter an string that represent the id of the probe',
+                        default = Identification.PROBE_ID)
 
-    commander = parser.add_mutually_exclusive_group()
-    commander.add_argument('--commander',
-                    help='Starts the app with debug on', action='store_true')
-    commander.add_argument('--no-commander', action='store_true', help='Starts the app with debug off')
+    parser.add_argument('--debug',
+                    dest = 'debug',
+                    action = 'store_true',
+                    help = "Enable debug mode.")
+
+    parser.add_argument('--commander',
+                    dest = 'commander',
+                    action = 'store_true',
+                    help = "Start the commander server with this probe.")
+
     args = parser.parse_args()
 
     Identification.PROBE_ID = args.probe_id
 
     if args.debug:
         Params.DEBUG = True
-    elif args.no_debug:
-        Params.DEBUG = False
 
     if args.commander:
         Params.COMMANDER = True
-    elif args.no_commander:
-        Params.COMMANDER = False
 
-    server = Server()
-    server.start()
-    server.isUp.wait()
+    addLogs()
 
-    a = ActionMan()
-    a.start()
-
-    if Params.COMMANDER:
-        commander = CommanderServer()
-        commander.start();
-
-    # ProbeStorage.addProbe( Probe("id", "10.0.0.1" ) )
-    c = Client()
-    c.start()
-    c.isUp.wait()
-
+   
+    try :
+        logging.getLogger().info("Starting probe")
+        server = Server()
+        server.start()
+        server.isUp.wait()
+    
+        a = ActionMan()
+        a.start()
+    
+        if Params.COMMANDER:
+            commander = CommanderServer()
+            commander.start();
+    
+        # ProbeStorage.addProbe( Probe("id", "10.0.0.1" ) )
+        c = Client()
+        c.start()
+        c.isUp.wait()
+        logging.getLogger().info("Startup Done")
+    except :
+        logging.getLogger().critical("Critical error in probe", exc_info = 1)
 #     c.send(Add("id", "probeid", "probeip"))
 #     c.quit()
 #     c.join()

@@ -3,8 +3,8 @@ Server that listens to probe messages
 
 @author: francois
 '''
-import consts
-from probe.consts import Consts, Identification
+
+from consts import Consts, Identification
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from threading import Thread, Event
@@ -16,8 +16,9 @@ import urllib
 from probe.calls.actions import Action
 from queue import PriorityQueue
 import datetime
-from tests import TestManager, TestResponder
-from client import Client
+from managers.tests import TestManager, TestResponder
+from .client import Client
+import logging
 
 class Server(Thread):
     '''
@@ -30,6 +31,7 @@ class Server(Thread):
 
     #the list of actions to be done
     actionQueue = PriorityQueue()
+    logger = logging.getLogger()
     
     def __init__(self):
         self.listener = __class__.Listener(self)
@@ -42,13 +44,13 @@ class Server(Thread):
     
     @classmethod
     def addTask(cls, action):
-        consts.debug("Server : Queued new Action " + action.__class__.__name__)
+        cls.logger.debug("Queued new Action " + action.__class__.__name__)
         assert isinstance(action, Action)
         cls.actionQueue.put((action.priority, action))
     
     @classmethod
     def getTask(cls):
-        consts.debug("Server : Polled new action from queue")
+        cls.logger.debug("Polled new action from queue")
         result = cls.actionQueue.get(True)[1]
         return result
     
@@ -61,26 +63,26 @@ class Server(Thread):
         cls.actionQueue.join()
     
     def run(self):
-        consts.debug("Server : starting server")
+        self.logger.info("Starting server")
         self.listener.start()
         self.isUp.set()
         
     
     def quit(self):
-        consts.debug("Server : closing server")
+        self.logger.info("Closing server")
         self.listener.close()
         self.actionQueue.join()
 
     @classmethod
     def treatMessage(cls, message):
-        consts.debug("Server : treating message " + message.__class__.__name__)
+        cls.logger.debug("Server : treating message " + message.__class__.__name__)
         assert isinstance(message, Message)
         # if probe is in test mode, give the message right to the TestManager!
         if (isinstance(message, TesteeAnswer)):
-            consts.debug("Server : Handling TesteeAnswer")
+            cls.logger.debug("Server : Handling TesteeAnswer")
             TestManager.handleMessage(message)
         elif (isinstance(message, TesterMessage)):
-            consts.debug("Server : Handling TesterMessage")
+            cls.logger.debug("Server : Handling TesterMessage")
             TestResponder.handleMessage(message)
         elif isinstance(message, BroadCast):
             Server.addTask(MTA.toAction(message.getMessage()))
@@ -117,7 +119,7 @@ class Server(Thread):
                 SimpleHTTPRequestHandler.__init__(self, request, client_address, server_socket)
             
             def do_POST(self):
-                consts.debug("Server : handling POST request from another probe")
+                Server.logger.debug("Handling POST request from another probe")
                 contentLength = self.headers.get("content-length")
                 #read content
                 args = self.rfile.read(int(contentLength))
@@ -143,7 +145,7 @@ class Server(Thread):
                 self.server.server.treatMessage(message)
             
             def do_GET(self):
-                consts.debug("Server : handling get request, giving my ID : " + str(Identification.PROBE_ID))
+                Server.logger.debug("Server : handling get request, giving my ID : " + str(Identification.PROBE_ID))
                 myId = str(Identification.PROBE_ID).encode(Consts.POST_MESSAGE_ENCODING)
                 #answer with your id
                 self.send_response(200)

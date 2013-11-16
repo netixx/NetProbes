@@ -3,11 +3,12 @@ Customized exceptions for the probes
 
 @author: francois
 '''
+__all__ = ['NoSuchProbe', 'ProbeConnection', 'TestInProgress', 'TestArgumentError', 'TestError', 'TestAborted']
 
 
 class NoSuchProbe(Exception):
     '''
-        The probe asked for is unknown
+        The probe asked for is unknown to this probe
     '''
     pass
 

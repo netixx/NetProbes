@@ -6,19 +6,18 @@ Transforms a Message into an Action
 from . import messages as m
 from probe import consts
 from .actions import Add, Quit, Remove, Prepare, treatedAction, UpdateProbes
+import logging
 
-'''
-Matches message class to its corresponding method
-
-'''
+'''Matches message class to its corresponding method'''
 messages = {"Add" : "toAdd",
             "Connect" : "toConnect",
             "Bye" : "toBye",
             "Hello" : "toHello",
             "Prepare" : "toPrepare"}
+logger = logging.getLogger()
 
 def toAction(message):
-    consts.debug("Message to Action : transforming message into action")
+    logger.debug("Message to Action : transforming message into action")
     assert isinstance(message, m.Message)
     treatedAction += 1
     return globals()[messages.get(message.__class__.__name__)](message)
@@ -34,10 +33,10 @@ def toConnect(connectMessage):
 def toBye(byeMessage):
     assert isinstance(byeMessage,m.Bye)
     if byeMessage.getLeavingID() == consts.Identification.PROBE_ID:
-        consts.debug("Message to Action : Probe quit message")
+        logger.debug("Message to Action : Probe quit message")
         return Quit()
     else:
-        consts.debug("Message to Action : remove probe message")
+        logger.debug("Message to Action : remove probe message")
         return Remove( byeMessage.getLeavingID() )
 
 

@@ -1,11 +1,10 @@
-from tests import Test
-from tests import Report
+from tests import Test, Report
 import socket
 from probes import ProbeStorage
 import argparse
 import struct
-from ..consts import Identification
-from ..exceptions import TestArgumentError
+from consts import Identification
+from exceptions import TestArgumentError
 
 class Multicast(Test):
     

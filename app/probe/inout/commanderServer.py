@@ -1,10 +1,12 @@
 '''
+Server that listens for commands sent by the commander package
+
 Created on 14 juin 2013
 
 @author: francois
 '''
 
-from probe.consts import Consts
+from consts import Consts
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from threading import Thread
@@ -14,21 +16,26 @@ import pickle
 import datetime
 import http.client
 import calls.messages as m
-from client import Client
-import consts
+from .client import Client
 import urllib.parse
 from probes import ProbeStorage
 import common.probedisp as pd
-from server import Server
+from .server import Server
 from queue import Queue
 import copy
+import logging
 
 class CommanderServer(Thread):
+    """Results are pushed to the results queue.
+    When the become available, the Listener pushes the results to the commander
 
+    """
     resultsQueue = Queue()
+    logger = logging.getLogger()
 
     def __init__(self):
         Thread.__init__(self)
+        self.setName("CommanderServer")
         self.listener = CommanderServer.Listener()
 
     def run(self):
@@ -47,6 +54,7 @@ class CommanderServer(Thread):
         def __init__(self):
             HTTPServer.__init__(self, ("", Consts.COMMANDER_PORT_NUMBER), __class__.RequestHandler)
             Thread.__init__(self)
+            self.setName("CommanderServer")
 
         def run(self):
             self.serve_forever();
@@ -60,7 +68,7 @@ class CommanderServer(Thread):
                 SimpleHTTPRequestHandler.__init__(self, request, client_address, server_socket)
 
             def do_POST(self):
-                consts.debug("CommanderServer : Handling a command")
+                CommanderServer.logger.debug("Handling a command")
                 contentLength = self.headers.get("content-length")
                 # read content
                 args = self.rfile.read(int(contentLength))
@@ -81,10 +89,10 @@ class CommanderServer(Thread):
                 self.handleMessage(message)
 
             def do_GET(self):
-                consts.debug("CommanderServer : handling get Request")
+                CommanderServer.logger.debug("Handling get Request")
                 getPath = urllib.parse.urlparse(self.path).path
                 if (getPath == "/probes"):
-                    consts.debug("CommanderServer : Giving the probes")
+                    CommanderServer.logger.debug("Giving the list of probes")
                     probes = ProbeStorage.getAllProbes()
                     dprobes = []
                     for probe in probes:
@@ -96,10 +104,10 @@ class CommanderServer(Thread):
 
                     message = pickle.dumps(dprobes)
                 elif (getPath == "/results"):
-                    consts.debug("CommanderServer : Asked for results")
+                    CommanderServer.logger.debug("Asked for results of tests")
                     # blocant!
                     message = CommanderServer.getResult().encode(Consts.POST_MESSAGE_ENCODING)
-                    consts.debug("CommanderServer : Giving the results")
+                    CommanderServer.logger.debug("Giving the results")
                 else :
                     message = "Commander server running, state your command ...".encode(Consts.POST_MESSAGE_ENCODING)
                 # answer with your id
@@ -112,14 +120,14 @@ class CommanderServer(Thread):
 
             
             def handleMessage(self, message):
-                consts.debug("CommanderServer : handling constructed message")
+                CommanderServer.logger.debug("Handling constructed message")
                 if(isinstance(message, Add)):
-                    consts.debug("CommanderServer : trying to add probe with ip " + str(message.targetIp))
+                    CommanderServer.logger.info("Trying to add probe with ip " + str(message.targetIp))
                     connection = http.client.HTTPConnection(message.targetIp, Consts.PORT_NUMBER);
                     connection.connect()
                     connection.request("GET", "", "", {})
                     probeId = connection.getresponse().read().decode()
-                    consts.debug("CommanderServer : Id of probe with ip " + str(message.targetIp) + " is " + str(probeId))
+                    CommanderServer.logger.info("Id of probe with ip " + str(message.targetIp) + " is " + str(probeId))
                     connection.close()
                     
                     addMessage = m.Add("", probeId, message.targetIp)
@@ -132,12 +140,12 @@ class CommanderServer(Thread):
 
                     
                 if(isinstance(message,Delete)):
-                    consts.debug("CommanderServer : trying to delete probe with ID " + str(message.targetId))
+                    CommanderServer.logger.info("Trying to delete probe with ID " + str(message.targetId))
                     byeMessage = m.Bye(message.targetId, message.targetId)
                     Client.send(byeMessage)
 
                 if(isinstance(message, Do)):
-                    consts.debug("CommanderServer : trying to do a test : " + message.test)
+                    CommanderServer.logger.info("Trying to do a test : " + message.test)
                     Server.addTask(a.Do(message.test, message.testOptions))
 
 

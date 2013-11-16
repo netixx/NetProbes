@@ -19,8 +19,8 @@ class Params:
     '''
     Parameters for the runtime
     '''
-    DEBUG = True
-    COMMANDER = True
+    DEBUG = False
+    COMMANDER = False
 
 
 class Identification:
@@ -28,8 +28,3 @@ class Identification:
     Identification elements of the probe
     '''
     PROBE_ID = "1122334455667788"
-
-
-def debug(message):
-    if (Params.DEBUG):
-        print(message)

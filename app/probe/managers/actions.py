@@ -1,4 +1,10 @@
 '''
+Manages actions from the stack of actions to be performed
+    This actually performs the Actions
+
+The ActionMan is an independent thread waiting for one or more
+action to be pushed to the stack.
+
 Created on 13 juin 2013
 
 @author: Gaspard FEREY
@@ -7,17 +13,19 @@ Created on 13 juin 2013
 from threading import Thread
 import calls.actions as a
 from probes import Probe, ProbeStorage
-from client import Client
-from probe.consts import *
-from calls.messages import Hello, Bye, Add
-from tests import TestResponder, TestManager
-from server import Server
-import tests
-from commanderServer import CommanderServer
+from calls.messages import Hello, Bye
+from .tests import TestResponder, TestManager
+from inout.server import Server
+from inout.client import Client
+from inout.commanderServer import CommanderServer
+from . import tests
 from probe.exceptions import TestError, TestArgumentError, TestInProgress
+import logging
+from consts import Identification
 
 class ActionMan(Thread):
 
+    '''Links Action classes to (static) methods'''
     manager = { "Add" : "manageAdd",
             "Remove" : "manageRemove",
             "Transfer" : "manageTransfer",
@@ -26,6 +34,8 @@ class ActionMan(Thread):
             "Prepare" : "managePrepare",
             "UpdateProbe" : "manageUpdateProbe" }
     
+    logger = logging.getLogger()
+
     def __init__(self):
         #init the thread
         Thread.__init__(self)
@@ -33,7 +43,7 @@ class ActionMan(Thread):
         self.stop = False
     
     def quit(self):
-        debug("Action Manager : Killing ActionMan !")
+        self.logger.info("Stopping ActionMan !")
         self.stop = True
     
     def run(self):
@@ -45,7 +55,7 @@ class ActionMan(Thread):
     @staticmethod
     def manageAdd(action):
         assert isinstance(action, a.Add)
-        debug("ActionMan : managing Add task")
+        ActionMan.logger.info("Managing Add task")
         #add the probe to the local DHT
         ProbeStorage.addProbe(Probe(action.getIdSonde(), action.getIpSonde()))
 
@@ -62,18 +72,18 @@ class ActionMan(Thread):
     @staticmethod
     def manageRemove(action):
         assert isinstance(action, a.Remove)
-        debug("ActionMan : managing Remove task")
+        ActionMan.logger.info("Managing Remove task")
         try:
             ProbeStorage.delProbe( action.getIdSonde() );
         except:
-            debug("ActionMan : Probe not found")
+            ActionMan.logger.warning("Probe not found in hashtable")
     
     @staticmethod
     def manageDo(action):
         assert isinstance(action, a.Do)
-        debug("ActionMan : managing Do task")
+        ActionMan.logger.info("Managing Do task")
         # instantiate the right test
-        debug("ActionMan : Starting test " + action.getTest())
+        ActionMan.logger.info("Starting test " + action.getTest())
 
         try:
             try:
@@ -81,15 +91,15 @@ class ActionMan(Thread):
                 test = test(action.getOptions())
                 # This line blocks the ActionMan
                 TestManager.initTest(test)
-                debug("ActionMan : Test Over " + test.__class__.__name__)
+                ActionMan.logger.info("Test Over " + test.__class__.__name__)
                 result = test.getResult()
-                debug("ActionMan : Result of the test is a follows : \n" + result)
+                ActionMan.logger.info("Result of the test is a follows : \n" + result)
                 CommanderServer.addResult(result)
             except TestArgumentError as e:
                 raise TestError(e.getUsage())
 
         except TestError as e:
-            debug("ActionMan : Test failed because :" + e.getReason())
+            ActionMan.logger.warning("Test failed because :" + e.getReason(), exc_inf = 1)
             CommanderServer.addResult(e.getReason())
         
         # @todo : send result to whoever!
@@ -97,25 +107,25 @@ class ActionMan(Thread):
     @staticmethod
     def managePrepare(action):
         assert(isinstance(action, a.Prepare))
-        debug("ActionMan : manage prepare test " + "(" + " ".join(action.getTestId()) + ")")
+        ActionMan.logger.info("Manage prepare test " + "(" + " ".join(action.getTestId()) + ")")
         try:
             TestResponder.initTest(action.getTestId(), action.getSourceId(), action.getTestOptions())
             # block all other actions
             TestResponder.testDone.wait()
         except TestInProgress:
-            debug("ActionMan : Error test in progress")
+            ActionMan.logger.warning("Error : a test is in progress already")
         except:
-            debug("ActionMan : Unknown error")
+            ActionMan.logger.error("Unknown error during prepare", exc_info = 1)
     
     
     @staticmethod
     def manageQuit(action):
         assert isinstance(action, a.Quit)
-        debug("ActionMan : managing Quit task")
+        ActionMan.logger.info("Managing Quit task")
         Client.broadcast( Bye("", Identification.PROBE_ID), toMyself = False )
         ''' Other commands to close all connections, etc '''
         Client.allMessagesSent()
         ProbeStorage.closeAllConnections()
-        debug("ActionMan : All connections closed")
+        ActionMan.logger.info("All connections closed")
         ProbeStorage.addProbe(Probe(str(Identification.PROBE_ID), "localhost"))
-        debug("ActionMan : readded the localhost probe")
+        ActionMan.logger.info("Re-added the localhost probe, ready to proceed again")

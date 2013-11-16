@@ -1,26 +1,29 @@
 '''
+Sends Message instances to other probes
+    Thread that waits for a message to be added to the messageStack
+
 Created on 7 juin 2013
 
 @author: francois
 '''
 import urllib, pickle
 from threading import Thread, Event
-from probe.consts import Consts, debug, Identification
+from consts import Consts, Identification
 from queue import Queue
 from calls.messages import Message, BroadCast
 from probes import ProbeStorage
-from probe.exceptions import NoSuchProbe
-
+from exceptions import NoSuchProbe
+import logging
 
 class Client(Thread):
     '''
     Client Thread : talks to the Server through http
     Server can be local (localhost) or remote
-    Connection is established as a Probe is added to ProbeStorage through ProbeStorage.addProbe through http on the port given by Consts.PORT_NUMBER
     
     '''
     messageStack = Queue()
     stop = False
+    logger = logging.getLogger()
     
     def __init__(self):
         Thread.__init__(self)
@@ -30,19 +33,19 @@ class Client(Thread):
     
     @classmethod
     def quit(cls):
-        debug("Client : Killing the Client")
+        cls.logger.info("Stopping the Client")
         ProbeStorage.closeAllConnections()
         cls.stop = True
     
     @classmethod
     def send(cls, message):
-        debug("Client : Giving a message " + message.__class__.__name__ + " to the client")
+        cls.logger.debug("Adding a message " + message.__class__.__name__ + " to the client stack")
         assert isinstance(message, Message)
         cls.messageStack.put(message)
     
     @classmethod
     def broadcast(cls, message, toMyself = False):
-        debug("Client : Broadcasting the message : " + message.__class__.__name__)
+        cls.logger.debug("Broadcasting the message : " + message.__class__.__name__)
         #propagation phas
         if isinstance(message, BroadCast):
             prop = message.getNextTargets()
@@ -53,9 +56,9 @@ class Client(Thread):
             
         if len(prop) > 0:
             splitSize = min(Consts.PROPAGATION_RATE, len(prop))
-            j = splitSize
+            j = 0
             step = len(prop) / splitSize
-            for i in range(0, splitSize - 1):
+            while j < len(prop):
                 propIds = prop[j:j + step]
                 j += step
                 cls.send(BroadCast(message, propIds))
@@ -71,7 +74,7 @@ class Client(Thread):
                 
     def run(self):
         self.isUp.set()
-        debug("Client : starting the client")
+        self.logger.info("Starting the client")
         while not Client.stop or not Client.messageStack.empty():
             message = Client.messageStack.get()
             try:
@@ -85,7 +88,7 @@ class Client(Thread):
                 #    self.messageStack.add( message )
 
     def sendMessage(self, message):
-        debug("Client : Sending the message : " + message.__class__.__name__)
+        self.logger.debug("Sending the message : " + message.__class__.__name__)
         #serialize our message
         serializedMessage = pickle.dumps( message, 3)
         #put it in a dictionnary
@@ -93,7 +96,7 @@ class Client(Thread):
         #transform dictionnary into string
         params = urllib.parse.urlencode(params, doseq = True, encoding=Consts.POST_MESSAGE_ENCODING)
         #set the header as header for POST
-        headers = {"Content-type": "application/x-www-form-urlencoded;charset="+ Consts.POST_MESSAGE_ENCODING, "Accept": "text/plain"}
+        headers = {"Content-type": "application/x-www-form-urlencoded;charset=%s" % Consts.POST_MESSAGE_ENCODING, "Accept": "text/plain"}
         try :
             target = ProbeStorage.getProbeById(message.targetId)
             disconnectOnCompletion = False
@@ -102,16 +105,16 @@ class Client(Thread):
                 disconnectOnCompletion = True
             conn = target.getConnection()
             conn.request("POST", "", params, headers)
-            debug("Client : Message : " + message.__class__.__name__ + " has been sent")
+            self.logger.info("Message : " + message.__class__.__name__ + " has been sent")
             response = conn.getresponse()
             if response.status != 200 :
-                debug("Client : Wrong status ! Trying to resend")
+                self.logger.warning("Wrong status received! Trying to resend message.")
                 self.send(message)
             if disconnectOnCompletion:
                 # TODO: optimise if target is still in the stack
                 target.disconnect()
         except NoSuchProbe:
-            debug("The probe you requested to send a message to : '" + message.targetId + "', is currently unkown to me.")
+            self.logger.error("The probe you requested to send a message to : '%s', is currently unknown to me.", message.targetId)
        
 
     @classmethod
