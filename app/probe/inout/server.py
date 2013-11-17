@@ -10,10 +10,10 @@ from socketserver import ThreadingMixIn
 from threading import Thread, Event
 from calls.messages import Message, TesterMessage, TesteeAnswer, BroadCast
 import calls.messagetoaction as MTA
-from probes import Probe, ProbeStorage
+from managers.probes import Probe, ProbeStorage
 import pickle
 import urllib
-from probe.calls.actions import Action
+from calls.actions import Action
 from queue import PriorityQueue
 import datetime
 from managers.tests import TestManager, TestResponder

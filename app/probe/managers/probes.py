@@ -70,7 +70,7 @@ class ProbeStorage(object):
     def numberOfConnections(cls):
         with cls.knownProbesLock:
             return len([k for k, probe in cls.knownProbes.items() if probe.connected])
-    
+
     @classmethod
     def getAllProbes(cls):
         with cls.knownProbesLock:

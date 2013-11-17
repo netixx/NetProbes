@@ -4,7 +4,7 @@ Module gathering the constants of the probe
 @author: francois
 '''
 
-class Consts:
+class Consts(object):
     '''
     The 'real' consts
     '''
@@ -15,7 +15,7 @@ class Consts:
     COMMANDER_PORT_NUMBER = 6000
     PROPAGATION_RATE = 5
 
-class Params:
+class Params(object):
     '''
     Parameters for the runtime
     '''
@@ -23,7 +23,7 @@ class Params:
     COMMANDER = False
 
 
-class Identification:
+class Identification(object):
     '''
     Identification elements of the probe
     '''

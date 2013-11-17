@@ -4,7 +4,7 @@ Transforms a Message into an Action
 @author: francois
 '''
 from . import messages as m
-from probe import consts
+from consts import Identification
 from .actions import Add, Quit, Remove, Prepare, treatedAction, UpdateProbes
 import logging
 
@@ -32,7 +32,7 @@ def toConnect(connectMessage):
 
 def toBye(byeMessage):
     assert isinstance(byeMessage,m.Bye)
-    if byeMessage.getLeavingID() == consts.Identification.PROBE_ID:
+    if byeMessage.getLeavingID() == Identification.PROBE_ID:
         logger.debug("Message to Action : Probe quit message")
         return Quit()
     else:

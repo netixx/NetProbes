@@ -11,7 +11,7 @@ from threading import Thread, Event
 from consts import Consts, Identification
 from queue import Queue
 from calls.messages import Message, BroadCast
-from probes import ProbeStorage
+from managers.probes import ProbeStorage
 from exceptions import NoSuchProbe
 import logging
 

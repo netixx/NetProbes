@@ -12,14 +12,14 @@ Created on 13 juin 2013
 
 from threading import Thread
 import calls.actions as a
-from probes import Probe, ProbeStorage
+from managers.probes import Probe, ProbeStorage
 from calls.messages import Hello, Bye
 from .tests import TestResponder, TestManager
 from inout.server import Server
 from inout.client import Client
 from inout.commanderServer import CommanderServer
 from . import tests
-from probe.exceptions import TestError, TestArgumentError, TestInProgress
+from exceptions import TestError, TestArgumentError, TestInProgress
 import logging
 from consts import Identification
 

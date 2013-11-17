@@ -21,6 +21,7 @@ directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(directory)
 sys.path.append(os.path.abspath(os.path.join(directory, "..")))
 sys.path.append(os.path.abspath(os.path.join(directory, "..", "..", "lib")))
+sys.path.append(os.path.abspath(os.path.join(directory, "..", "..", "lib", 'tools')))
 
 DATA_DIR = os.path.join(directory, "..", "..", "data")
 LOGS_DIR = os.path.join(DATA_DIR, "logs")

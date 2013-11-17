@@ -18,7 +18,7 @@ import http.client
 import calls.messages as m
 from .client import Client
 import urllib.parse
-from probes import ProbeStorage
+from managers.probes import ProbeStorage
 import common.probedisp as pd
 from .server import Server
 from queue import Queue
