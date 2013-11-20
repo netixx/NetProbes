@@ -37,13 +37,13 @@ class ProbeStorage(object):
 
     @classmethod
     def connectToProbe(cls, probeId):
-        probe = cls.getProbeById(cls, probeId)
+        probe = cls.getProbeById(probeId)
         if not probe.connected:
             probe.getConnection().connect()
 
     @classmethod
     def disconnectFromProbe(cls, probeId):
-        probe = cls.getProbeById(cls, probeId)
+        probe = cls.getProbeById(probeId)
         if probe.connected:
             probe.getConnection().close()
 

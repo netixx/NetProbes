@@ -9,6 +9,7 @@ The probe that receives the test uses the TestResponder class methods
 import importlib
 import logging
 from tests import Test, LOGGER_NAME
+from managers.probes import ProbeStorage
 
 testLogger = logging.getLogger(LOGGER_NAME)
 
@@ -56,6 +57,7 @@ class TestManager(object):
         #prepare everyone
         self.test.doPrepare()
         for target in self.test.getTargets():
+            ProbeStorage.connectToProbe(target)
             # prepare for the test width given id
             Client.send(Prepare(target, self.test.getId(), Identification.PROBE_ID, self.test.getOptions()))
 
@@ -95,6 +97,8 @@ class TestManager(object):
     
     def result(self):
         self.test.doResult(self.reports)
+        for target in self.test.getTargets():
+            ProbeStorage.disconnectFromProbe(target)
         testLogger.info("TestManager : results processing over, test is done")
 
 

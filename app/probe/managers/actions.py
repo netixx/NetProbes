@@ -87,7 +87,10 @@ class ActionMan(Thread):
 
         try:
             try:
-                test = tests.testFactory(action.getTest())
+                try :
+                    test = tests.testFactory(action.getTest())
+                except ImportError as e:
+                    raise TestError("Test class not found")
                 test = test(action.getOptions())
                 # This line blocks the ActionMan
                 TestManager.initTest(test)
