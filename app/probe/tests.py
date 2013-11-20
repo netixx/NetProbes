@@ -6,6 +6,7 @@ The Test and Report class are root classes for all tests
 import random
 import importlib
 import logging
+from managers.probes import ProbeStorage
 
 LOGGER_NAME = "tests"
 testLogger = logging.getLogger(LOGGER_NAME)
@@ -132,3 +133,13 @@ class Test(object):
 
     def getOptions(self):
         return self.options
+
+class TestServices(object):
+    
+    @staticmethod
+    def getProbeIpById(probeId):
+        return ProbeStorage.getProbeById(probeId).getIp()
+
+    @staticmethod
+    def getIdAllOtherProbes():
+        return ProbeStorage.getIdAllOtherProbes()

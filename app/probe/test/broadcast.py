@@ -1,7 +1,5 @@
-from tests import Test
-from tests import Report
+from tests import Test, TestServices, Report
 import socket
-from probes import ProbeStorage
 import argparse
 from consts import Identification
 from exceptions import TestArgumentError
@@ -31,7 +29,7 @@ class Broadcast(Test):
 
         try:
             opts = parser.parse_args(options)
-            self.targets = ProbeStorage.getIdAllOtherProbes()
+            self.targets = TestServices.getIdAllOtherProbes()
             self.options = opts
         except (argparse.ArgumentError, SystemExit):
             raise TestArgumentError(parser.format_usage())

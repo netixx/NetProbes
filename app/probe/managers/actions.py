@@ -91,7 +91,7 @@ class ActionMan(Thread):
                 try :
                     test = tests.testFactory(action.getTest())
                 except ImportError as e:
-                    raise TestError("Test class not found")
+                    raise TestError("Could not load test class")
                 test = test(action.getOptions())
                 # This line blocks the ActionMan
                 TestManager.initTest(test)
@@ -103,7 +103,7 @@ class ActionMan(Thread):
                 raise TestError(e.getUsage())
 
         except TestError as e:
-            ActionMan.logger.warning("Test failed because :" + e.getReason(), exc_info = 1)
+            ActionMan.logger.warning("Test failed because : %s", e.getReason(), exc_info = 1)
             CommanderServer.addResult(e.getReason())
         
         # @todo : send result to whoever!

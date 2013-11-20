@@ -1,6 +1,5 @@
-from tests import Test, Report
+from tests import Test, Report, TestServices
 import socket
-from probes import ProbeStorage
 import argparse
 import struct
 from consts import Identification

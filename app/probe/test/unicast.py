@@ -1,6 +1,5 @@
-from tests import Test, Report
+from tests import Test, Report, TestServices
 import socket
-from probes import ProbeStorage
 import argparse
 from consts import Identification
 from exceptions import TestArgumentError
@@ -60,7 +59,7 @@ class Unicast(Test):
         self.logger.info("Unicast : Starting test")
         try:
             self.socket.settimeout(self.options.timeout)
-            self.socket.connect((ProbeStorage.getProbeById(self.targets[0]).getIp() , self.options.port))
+            self.socket.connect((TestServices.getProbeIpById(self.targets[0]) , self.options.port))
             self.logger.info("Unicast : Sending message")
             self.socket.sendall(self.messageSend.encode(self.ENCODING))
             self.logger.info("Unicast : Waiting for response message")
