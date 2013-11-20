@@ -4,6 +4,7 @@ Created on 13 juin 2013
 @author: francois
 '''
 from tests import Test, Report
+from consts import Identification
 
 class Empty(Test):
 
@@ -23,4 +24,4 @@ class Empty(Test):
     
     @staticmethod
     def replyOver():
-        return Report()
+        return Report(Identification.PROBE_ID)

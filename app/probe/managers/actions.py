@@ -103,7 +103,7 @@ class ActionMan(Thread):
                 raise TestError(e.getUsage())
 
         except TestError as e:
-            ActionMan.logger.warning("Test failed because :" + e.getReason(), exc_inf = 1)
+            ActionMan.logger.warning("Test failed because :" + e.getReason(), exc_info = 1)
             CommanderServer.addResult(e.getReason())
         
         # @todo : send result to whoever!
