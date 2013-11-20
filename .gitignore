@@ -1,4 +1,4 @@
-*.log
+*.log.*
 
 .settings
 *.py[cod]
