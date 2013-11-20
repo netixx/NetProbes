@@ -16,6 +16,7 @@ from commander.exceptions import NoSuchCommand
 import argparse
 from threading import Event
 from http.client import CannotSendRequest
+from exceptions import ProbeConnectionFailed
 
 class Interface(object):
     targetIp = "127.0.0.1"
@@ -31,23 +32,21 @@ class Interface(object):
         try :
             self.connection = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
             self.connection.connect()
+            try:
+                self.connectionProbes = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
+                self.connectionProbes.connect()
+                try :
+                    self.connectionResults = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
+                    self.connectionResults.connect()
+                except:
+                    self.addResult("Results cannot be fetched")
+                    raise
+            except:
+                raise
         except:
-            self.updateStatus("Connection to probe impossible, commands cannot be executed")
-            raise
+            raise ProbeConnectionFailed("Commands cannot be executed")
 
-        try:
-            self.connectionProbes = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
-            self.connectionProbes.connect()
-        except:
-            raise
-
-        try :
-            self.connectionResults = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
-            self.connectionResults.connect()
-        except:
-            self.addResult("Connection to the probe impossible, results cannot be fetched")
-            raise
-
+       
     def doCommand(self, command):
         self.updateStatus("Executing command : " + command)
         time.sleep(0.3)
@@ -106,9 +105,12 @@ class Interface(object):
         pass
 
     def quit(self):
-        self.connection.close()
-        self.connectionProbes.close()
-        self.connectionResults.close()
+        try:
+            self.connection.close()
+            self.connectionProbes.close()
+            self.connectionResults.close()
+        except:
+            pass
 
 '''
     Parses a command from user input into a commanderMessage

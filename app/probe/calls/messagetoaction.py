@@ -5,9 +5,10 @@ Transforms a Message into an Action
 '''
 from . import messages as m
 from consts import Identification
-from .actions import Add, Quit, Remove, Prepare, treatedAction, UpdateProbes
+from .actions import Add, Quit, Remove, Prepare, UpdateProbes
 import logging
 
+treatedAction = 0
 '''Matches message class to its corresponding method'''
 messages = {"Add" : "toAdd",
             "Connect" : "toConnect",
@@ -19,13 +20,14 @@ logger = logging.getLogger()
 def toAction(message):
     logger.debug("Message to Action : transforming message into action")
     assert isinstance(message, m.Message)
+    global treatedAction
     treatedAction += 1
     return globals()[messages.get(message.__class__.__name__)](message)
 
 
 def toAdd(addMessage):
     assert isinstance(addMessage,m.Add)
-    return Add(addMessage.probeIP, addMessage.probeID, addMessage.getNextTargets())
+    return Add(addMessage.probeIP, addMessage.probeID, addMessage.doHello)
 
 def toConnect(connectMessage):
     pass

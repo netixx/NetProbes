@@ -11,7 +11,10 @@ import os
 import sys
 
 directory = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(directory + "/../common")
+sys.path.append(directory)
+sys.path.append(os.path.abspath(os.path.join(directory, "..")))
+sys.path.append(os.path.abspath(os.path.join(directory, "..", "..", "lib")))
+sys.path.append(os.path.abspath(os.path.join(directory, "..", "..", "lib", 'tools', 'tools')))
 
 def interfaceFactory(intOption, ip):
     mod = importlib.import_module("interfaces." + intOption)

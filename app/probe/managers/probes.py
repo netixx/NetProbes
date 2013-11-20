@@ -91,13 +91,11 @@ class Probe(object):
     '''
     Represents a probe
     '''
-    def __init__(self, ID, IP, status="connected"):
+    def __init__(self, ID, IP):
         self.IP = IP
         self.ID = ID
-        self.status = status
         self.__connection = http.client.HTTPConnection(self.getIp(), Consts.PORT_NUMBER)
         self.connected = False
-
         
     def getIp(self):
         return self.IP

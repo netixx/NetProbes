@@ -8,6 +8,7 @@ from tkinter import *
 from interface import Interface
 from tkinter.ttk import Treeview
 import consts
+from exceptions import ProbeConnectionFailed
 
 class Gui(Interface):
 
@@ -24,12 +25,17 @@ class Gui(Interface):
         self.mainWin.title("Commander for probe with ip : " + ip)
         self.isRunning = True
         self.mainWin.protocol("WM_DELETE_WINDOW", self.quit)
-        Interface.__init__(self, ip)
+
         # define the threads
-        self.thProbe = Thread(target=self.updateProbes, name="Probe updater", daemon=True)
-        self.thProbeTrigger = Thread(target=self.probeFetcherScheduler, name="Probe Scheduler", daemon=True)
-        self.thResults = Thread(target=self.updateResults, name="Results Updater", daemon=True)
-        self.thResultsTrigger = Thread(target=self.resultFetcherScheduler, name="Results Scheduler", daemon=True)
+        self.thProbe = Thread(target = self.updateProbes, name = "Probe updater", daemon = True)
+        self.thProbeTrigger = Thread(target = self.probeFetcherScheduler, name = "Probe Scheduler", daemon = True)
+        self.thResults = Thread(target = self.updateResults, name = "Results Updater", daemon = True)
+        self.thResultsTrigger = Thread(target = self.resultFetcherScheduler, name = "Results Scheduler", daemon = True)
+        
+        try:
+            Interface.__init__(self, ip)
+        except ProbeConnectionFailed as e:
+            self.updateStatus("Connection impossible : " + e.getConsequence())
 
 
     def start(self):

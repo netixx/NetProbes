@@ -32,7 +32,7 @@ class ActionMan(Thread):
             "Do" : "manageDo",
             "Quit" : "manageQuit",
             "Prepare" : "managePrepare",
-            "UpdateProbe" : "manageUpdateProbe" }
+            "UpdateProbes" : "manageUpdateProbes" }
     
     logger = logging.getLogger()
 
@@ -61,13 +61,13 @@ class ActionMan(Thread):
 
         if action.doHello:
             # tell the new probe about all other probe
-            Client.send(Hello(action.getIdSonde(), ProbeStorage.getAllProbes()))
+            Client.send(Hello(action.getIdSonde(), list(ProbeStorage.getAllProbes())))
 
     @staticmethod
-    def manageUpdateProbe(action):
+    def manageUpdateProbes(action):
         assert isinstance(action, a.UpdateProbes)
         for probe in action.getProbeList():
-            ProbeStorage.addProbe(probe)
+            ProbeStorage.addProbe(Probe(probe.getId(), probe.getIp()))
 
     @staticmethod
     def manageRemove(action):

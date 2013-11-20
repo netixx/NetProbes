@@ -26,8 +26,8 @@ sys.path.append(os.path.abspath(os.path.join(directory, "..", "..", "lib", 'tool
 DATA_DIR = os.path.join(directory, "..", "..", "data")
 LOGS_DIR = os.path.join(DATA_DIR, "logs")
 
-LOG_FORMAT = "%(levelname)s %(asctime)s %(threadName)s (%(module)s)\t: %(message)s"
-TEST_LOG_FORMAT = "%(levelname)s %(asctime)s %(name)s (%(module)s)\t: %(message)s"
+LOG_FORMAT = "%(levelname)s\t%(asctime)s %(threadName)s (%(module)s)\t: %(message)s"
+TEST_LOG_FORMAT = "%(levelname)s\t%(asctime)s %(name)s (%(module)s)\t: %(message)s"
 
 from managers.tests import LOGGER_NAME as TESTS_LOGGER_NAME
 from managers.actions import ActionMan

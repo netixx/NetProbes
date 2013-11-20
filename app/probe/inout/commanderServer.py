@@ -6,7 +6,7 @@ Created on 14 juin 2013
 @author: francois
 '''
 
-from consts import Consts
+from consts import Consts, Params, Identification
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from threading import Thread
@@ -39,6 +39,7 @@ class CommanderServer(Thread):
         self.listener = CommanderServer.Listener()
 
     def run(self):
+        self.logger.info("Starting the Commander Server")
         self.listener.start()
 
     @classmethod
@@ -97,10 +98,12 @@ class CommanderServer(Thread):
                     dprobes = []
                     for probe in probes:
                         status= []
+                        if probe.getId() == Identification.PROBE_ID:
+                            status.append(pd.ProbeStatus.LOCAL)
                         status.append(pd.ProbeStatus.ADDED)
                         if probe.connected :
                             status.append(pd.ProbeStatus.CONNECTED)
-                        pd.Probe(probe.getId(), probe.getIp(), pd.statusFactory(status))
+                        dprobes.append(pd.Probe(probe.getId(), probe.getIp(), pd.statusFactory(status)))
 
                     message = pickle.dumps(dprobes)
                 elif (getPath == "/results"):

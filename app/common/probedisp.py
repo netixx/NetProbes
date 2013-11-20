@@ -21,6 +21,7 @@ class Probe(object):
         return self.status
 
 class ProbeStatus(object):
+    LOCAL = "local"
     ADDED = "added"
     CONNECTED = "connected"
     READY = "ready"

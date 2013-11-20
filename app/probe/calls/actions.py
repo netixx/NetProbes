@@ -5,7 +5,6 @@ Each Action has a priority, the lower the priority, the faster the action will b
 Action class and subclasses are not sent over the network, only messages are (cf messages.py)
 
 '''
-treatedAction = 0
 
 class Action(object):
     '''General class, defining priority of the actions'''
@@ -13,6 +12,7 @@ class Action(object):
     def __init__(self):
         # low prioriy
         self.priority = 10
+        from .messagetoaction import treatedAction
         self.actionNumber = treatedAction
 
     def __lt__(self, other):
@@ -40,6 +40,7 @@ class Add(Action):
 class UpdateProbes(Action):
     '''Add the given list of probes to the hashtable (probestorage)'''
     def __init__(self, probeList):
+        Action.__init__(self)
         self.probeList = probeList
 
     def getProbeList(self):
