@@ -43,13 +43,18 @@ class Hello(Message):
     Tells a new probe about all other probes
 
     '''
-    def __init__(self, targetId, probeList):
+    def __init__(self, targetId, probeList, sourceId):
         Message.__init__(self, targetId)
         self.probeList = probeList
+        self.remoteIp = None
+        self.sourceId = sourceId
 
     def getProbeList(self):
         return self.probeList
     
+    def setRemoteIp(self, ip):
+        self.remoteIp = ip
+
 class Bye(Message):
     ''' Means "I am leaving the system" '''
 

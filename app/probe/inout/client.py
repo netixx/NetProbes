@@ -88,7 +88,7 @@ class Client(Thread):
                 #    self.messageStack.add( message )
 
     def sendMessage(self, message):
-        self.logger.debug("Sending the message : " + message.__class__.__name__)
+        self.logger.debug("Sending the message : %s to %s with ip %s", message.__class__.__name__ , message.targetId, ProbeStorage.getProbeById(message.targetId).getIp())
         #serialize our message
         serializedMessage = pickle.dumps( message, 3)
         #put it in a dictionnary

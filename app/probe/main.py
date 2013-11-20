@@ -94,7 +94,7 @@ if __name__ == '__main__':
 
     addLogs()
 
-   
+    logging.getLogger().debug("test")
     try :
         logging.getLogger().info("Starting probe")
         server = Server()

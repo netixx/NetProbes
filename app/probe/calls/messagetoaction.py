@@ -7,6 +7,7 @@ from . import messages as m
 from consts import Identification
 from .actions import Add, Quit, Remove, Prepare, UpdateProbes
 import logging
+from managers.probes import Probe
 
 treatedAction = 0
 '''Matches message class to its corresponding method'''
@@ -44,7 +45,9 @@ def toBye(byeMessage):
 
 def toHello(message):
     assert isinstance(message, m.Hello)
-    return UpdateProbes(message.getProbeList())
+    probes = message.getProbeList()
+    probes.append(Probe(message.sourceId, message.remoteIp))
+    return UpdateProbes(probes)
 
 
 def toPrepare(message):

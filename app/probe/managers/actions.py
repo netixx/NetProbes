@@ -61,13 +61,14 @@ class ActionMan(Thread):
 
         if action.doHello:
             # tell the new probe about all other probe
-            Client.send(Hello(action.getIdSonde(), list(ProbeStorage.getAllProbes())))
+            Client.send(Hello(action.getIdSonde(), list(ProbeStorage.getAllOtherProbes()), sourceId = Identification.PROBE_ID))
 
     @staticmethod
     def manageUpdateProbes(action):
         assert isinstance(action, a.UpdateProbes)
         for probe in action.getProbeList():
-            ProbeStorage.addProbe(Probe(probe.getId(), probe.getIp()))
+            if probe.getId() != Identification.PROBE_ID:
+                ProbeStorage.addProbe(Probe(probe.getId(), probe.getIp()))
 
     @staticmethod
     def manageRemove(action):

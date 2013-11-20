@@ -8,7 +8,7 @@ from consts import Consts, Identification
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from threading import Thread, Event
-from calls.messages import Message, TesterMessage, TesteeAnswer, BroadCast
+from calls.messages import Message, TesterMessage, TesteeAnswer, BroadCast, Hello
 import calls.messagetoaction as MTA
 from managers.probes import Probe, ProbeStorage
 import pickle
@@ -75,16 +75,17 @@ class Server(Thread):
 
     @classmethod
     def treatMessage(cls, message):
-        cls.logger.debug("Server : treating message " + message.__class__.__name__)
+        cls.logger.debug("Treating message " + message.__class__.__name__)
         assert isinstance(message, Message)
         # if probe is in test mode, give the message right to the TestManager!
         if (isinstance(message, TesteeAnswer)):
             cls.logger.debug("Server : Handling TesteeAnswer")
             TestManager.handleMessage(message)
         elif (isinstance(message, TesterMessage)):
-            cls.logger.debug("Server : Handling TesterMessage")
+            cls.logger.debug("Handling TesterMessage")
             TestResponder.handleMessage(message)
         elif isinstance(message, BroadCast):
+            cls.logger.debug("Handling Broadcast")
             Server.addTask(MTA.toAction(message.getMessage()))
             Client.broadcast(message)
         else:
@@ -131,8 +132,9 @@ class Server(Thread):
                 message = bytes(args.get(Consts.POST_MESSAGE_KEYWORD)[0], Consts.POST_MESSAGE_ENCODING)
                 # transform our bytes into an object
                 message = pickle.loads(message)
-#                 if (isinstance(message, Hello)):
-#                     message.setRemoteIP(self.client_address[0])
+
+                if (isinstance(message, Hello)):
+                    message.setRemoteIp(self.client_address[0])
 
                 self.send_response(200)
                 self.send_header("Content-type", "text/plain")

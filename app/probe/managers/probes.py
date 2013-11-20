@@ -75,6 +75,10 @@ class ProbeStorage(object):
     def getAllProbes(cls):
         with cls.knownProbesLock:
             return cls.knownProbes.values()
+    @classmethod
+    def getAllOtherProbes(cls):
+        with cls.knownProbesLock:
+            return [ probe for probe in cls.knownProbes.values() if probe.getId() != Identification.PROBE_ID]
 
     @classmethod
     def getIdAllOtherProbes(cls):
