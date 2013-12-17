@@ -57,9 +57,9 @@ class Client(Thread):
         if len(prop) > 0:
             splitSize = min(Consts.PROPAGATION_RATE, len(prop))
             j = 0
-            step = len(prop) / splitSize
+            step = (int) (len(prop) / splitSize)
             while j < len(prop):
-                propIds = prop[j:j + step]
+                propIds = prop[j:(j + step)]
                 j += step
                 cls.send(BroadCast(message, propIds))
             # be sure to propagate to all probes

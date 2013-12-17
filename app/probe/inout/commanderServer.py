@@ -136,10 +136,13 @@ class CommanderServer(Thread):
                     addMessage = m.Add("", probeId, message.targetIp)
                     selfAddMessage = copy.deepcopy(addMessage)
                     selfAddMessage.doHello = True
+                    # Do broadcast before adding the probe so that it doesn't receive unnecessary message
+                    # addMessage = m.Add(Identification.PROBE_ID, probeId, message.targetIp, hello=True)
+                    Client.broadcast(addMessage)
+
                     Server.treatMessage(selfAddMessage)
 
-                    #addMessage = m.Add(Identification.PROBE_ID, probeId, message.targetIp, hello=True)
-                    Client.broadcast(addMessage)
+
 
                     
                 if(isinstance(message,Delete)):
