@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # coding=UTF-8
 '''
 Main launcher for the probe.
