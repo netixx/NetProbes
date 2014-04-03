@@ -18,6 +18,10 @@ testLogger = logging.getLogger(LOGGER_NAME)
 A factory to get the class from the name of the test
 
 '''
+
+__all__ = ['TestManager', 'TestResponder']
+
+
 def testFactory(test):
     mod = importlib.import_module("test." + test)
     return getattr(mod, test.capitalize())
@@ -29,13 +33,8 @@ from consts import Identification
 from exceptions import TestError, TestAborted
 import time
 
-class TestManager(object):
-    '''
-    In charge of running a test
-    Started by the probes who receives the Do message/command
-    TesteeAnswer are handed down to this object by the Server
-    '''
-    testManager = None
+
+class _TestManager(object):
     
     def __init__(self, test):
         '''
@@ -139,6 +138,35 @@ class TestManager(object):
                 self.areReportsCollected.set()
 
 
+class TestManager(object):
+    '''
+    In charge of running a test
+    Started by the probes who receives the Do message/command
+    TesteeAnswer are handed down to this object by the Server
+    '''
+    testManager = None
+
+    @classmethod
+    def initTest(cls, test):
+        '''
+        Method to call in order to start a test.
+        It places a new instance of the TestManager into the static field for access purposes
+        test : an instance of the test to perform
+        '''
+        testLogger.debug("TestManager : Trying to start test : " + test.__class__.__name__)
+        try:
+            if cls.testManager is not None:
+                raise TestInProgress("Test with id : %s is already running" % test.getId())
+            cls.testManager = _TestManager(test)
+            testLogger.info("TestManager : creating test with id : " + "(" + " ".join(test.getId()) + ")")
+            cls.testManager.start()
+            testLogger.info("TestManager : Test " + test.__class__.__name__ + " is done.")
+        except TestError as e:
+            testLogger.error("TestManager : Failed to start test : \n" + e.getReason(), exc_info = 1)
+            raise
+        finally:
+            cls.testManager = None
+    
     @classmethod
     def handleMessage(cls, message):
         testLogger.debug("TestManager : Handling test message : " + message.__class__.__name__)
@@ -150,26 +178,7 @@ class TestManager(object):
             cls.testManager.abort()
         else:
             pass
-        # todo : implementer
 
-
-    @classmethod
-    def initTest(cls, test):
-        '''
-        Method to call in order to start a test.
-        It places a new instance of the TestManager into the static field for access purposes
-        test : an instance of the test to perform
-        '''
-        testLogger.debug("TestManager : Trying to start test : " + test.__class__.__name__)
-        try:
-            cls.testManager = TestManager(test)
-            testLogger.info("TestManager : creating test with id : " + "(" + " ".join(test.getId()) + ")")
-            cls.testManager.start()
-            testLogger.info("TestManager : Test " + test.__class__.__name__ + " is done.")
-        except TestError as e:
-            testLogger.error("TestManager : Failed to start test : \n" + e.getReason(), exc_info = 1)
-            raise
-    
 
 from probe.exceptions import TestInProgress
 

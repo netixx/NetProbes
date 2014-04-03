@@ -8,9 +8,9 @@ Created on 7 juin 2013
 '''
 import urllib, pickle
 from threading import Thread, Event
-from consts import Consts, Identification
+from consts import Consts, Identification, Urls
 from queue import Queue
-from calls.messages import Message, BroadCast
+from calls.messages import Message, BroadCast, TestMessage, StatusMessage
 from managers.probes import ProbeStorage
 from exceptions import NoSuchProbe
 import logging
@@ -29,8 +29,7 @@ class Client(Thread):
         Thread.__init__(self)
         self.setName("Client")
         self.isUp = Event()
-    
-    
+
     @classmethod
     def quit(cls):
         cls.logger.info("Stopping the Client")
@@ -78,7 +77,10 @@ class Client(Thread):
         while not Client.stop or not Client.messageStack.empty():
             message = Client.messageStack.get()
             try:
-                self.sendMessage(message)
+                if isinstance(message, StatusMessage):
+                    self.sendStatusMessage(message)
+                else:
+                    self.sendMessage(message)
             finally:
                 Client.messageStack.task_done()
                 #except:
@@ -87,36 +89,73 @@ class Client(Thread):
                 #if conn.getresponse().status != 200 :
                 #    self.messageStack.add( message )
 
+    def __sendRequest(self, connection, requestType, requestUrl = "", params = "", header = {}):
+        connection.request(requestType, requestUrl, params, header)
+        self.logger.debug("Request %s @ %s has been sent", requestType, requestUrl)
+        return connection.getresponse()
+
+    def _sendMessage(self, targetProbe, requestType, requestUrl, params, headers):
+        try :
+            disconnectOnCompletion = False
+            if not targetProbe.connected :
+                targetProbe.connect()
+                disconnectOnCompletion = True
+            conn = targetProbe.getConnection()
+
+            response = self.__sendRequest(conn, requestType, requestUrl, params, headers)
+
+            if disconnectOnCompletion:
+                # TODO: optimise if target is still in the stack
+                targetProbe.disconnect()
+            return response
+        except :
+            pass
+
     def sendMessage(self, message):
         self.logger.debug("Sending the message : %s to %s with ip %s", message.__class__.__name__ , message.targetId, ProbeStorage.getProbeById(message.targetId).getIp())
-        #serialize our message
-        serializedMessage = pickle.dumps( message, 3)
-        #put it in a dictionnary
-        params = {Consts.POST_MESSAGE_KEYWORD : serializedMessage}
-        #transform dictionnary into string
-        params = urllib.parse.urlencode(params, doseq = True, encoding=Consts.POST_MESSAGE_ENCODING)
-        #set the header as header for POST
-        headers = {"Content-type": "application/x-www-form-urlencoded;charset=%s" % Consts.POST_MESSAGE_ENCODING, "Accept": "text/plain"}
         try :
             target = ProbeStorage.getProbeById(message.targetId)
-            disconnectOnCompletion = False
-            if not target.connected :
-                target.connect()
-                disconnectOnCompletion = True
-            conn = target.getConnection()
-            conn.request("POST", "", params, headers)
-            self.logger.info("Message : " + message.__class__.__name__ + " has been sent")
-            response = conn.getresponse()
+            # serialize our message
+            serializedMessage = pickle.dumps(message, 3)
+            # put it in a dictionnary
+            params = {Consts.POST_MESSAGE_KEYWORD : serializedMessage}
+            # transform dictionnary into string
+            params = urllib.parse.urlencode(params, doseq = True, encoding = Consts.POST_MESSAGE_ENCODING)
+            # set the header as header for POST
+            headers = {"Content-type": "application/x-www-form-urlencoded;charset=%s" % Consts.POST_MESSAGE_ENCODING, "Accept": "text/plain"}
+            urlQuery = ""
+            if isinstance(message, TestMessage):
+                urlQuery = Urls.SRV_TESTS_QUERY
+
+            response = self._sendMessage(target, Consts.HTTP_POST_REQUEST, urlQuery, params, headers)
+
             if response.status != 200 :
                 self.logger.warning("Wrong status received! Trying to resend message.")
                 self.send(message)
-            if disconnectOnCompletion:
-                # TODO: optimise if target is still in the stack
-                target.disconnect()
         except NoSuchProbe:
             self.logger.error("The probe you requested to send a message to : '%s', is currently unknown to me.", message.targetId)
        
-
+    def sendStatusMessage(self, statusMessage):
+        try :
+            target = ProbeStorage.getProbeById(statusMessage.targetId)
+            response = self._sendMessage(target, Consts.HTTP_GET_REQUEST, Urls.SRV_STATUS_QUERY)
+    
+            contentLength = response.headers.get("content-length")
+            # read content
+            args = self.rfile.read(int(contentLength))
+            # convert from bytes to string
+            args = str(args, Consts.POST_MESSAGE_ENCODING)
+            # parse our string to a dictionary
+            args = urllib.parse.parse_qs(args, keep_blank_values = True, strict_parsing = True, encoding = Consts.POST_MESSAGE_ENCODING)
+            # get our object as string and transform it to bytes
+            probeStatus = bytes(args.get(Consts.POST_MESSAGE_KEYWORD)[0], Consts.POST_MESSAGE_ENCODING)
+            # transform our bytes into an object
+            probeStatus = pickle.loads(probeStatus)
+            return probeStatus
+        except NoSuchProbe:
+            pass
+        
+        
     @classmethod
     def allMessagesSent(cls):
         cls.messageStack.join()

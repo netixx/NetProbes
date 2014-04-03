@@ -26,8 +26,10 @@ class Report(object):
     Send after over signal is received. Often encapsulated in a Result message
 
     '''
-    def __init__(self, probeId, isSuccess=True):
+    def __init__(self, probeId, isSuccess = True):
         self.isSuccess = isSuccess
+        # TODO: complete
+        self.testId = None
         self.probeId = probeId
 
     def getProbeId(self):
@@ -143,3 +145,7 @@ class TestServices(object):
     @staticmethod
     def getIdAllOtherProbes():
         return ProbeStorage.getIdAllOtherProbes()
+
+    @staticmethod
+    def getCurrentTestId():
+        return

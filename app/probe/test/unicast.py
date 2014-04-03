@@ -26,10 +26,10 @@ class Unicast(Test):
     '''
     def parseOptions(self, options):
         # creating the parsers
-        parser = argparse.ArgumentParser(description="Parses the unicast test target")
+        parser = argparse.ArgumentParser(prog = self.__class__.__name__, description = "Parses the unicast test target")
         parser.add_argument('target', metavar='target', nargs=1)
         parser.add_argument('--port', type=int, metavar='port', default=self.port)
-        parser.add_argument('--protocol', metavar='protocol', default='tcp', choices=['tcp', 'udp'])
+        parser.add_argument('--protocol', metavar = 'protocol', default = 'tcp', choices = ['tcp', 'udp'])
         parser.add_argument('--timeout', metavar='timeout', default=self.timeout, type=float)
         try:
             opts = parser.parse_args(options)
@@ -122,7 +122,7 @@ class Unicast(Test):
             cls.rcvSocket.settimeout(cls.options.timeout)
             if cls.rcvSocket.type == socket.SOCK_STREAM:
                 connection, address = cls.rcvSocket.accept()
-                cls.logger.info("Unicast : Waiting for tcp message")
+                cls.logger.info("Unicast : Waiting for TCP message")
                 msg = connection.recv(len(cls.messageSend))
                 cls.logger.info("Unicast : Message received")
                 cls.msgReceived = True

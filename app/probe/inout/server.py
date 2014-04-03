@@ -4,13 +4,14 @@ Server that listens to probe messages
 @author: francois
 '''
 
-from consts import Consts, Identification
+from consts import Consts, Identification, Urls
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from threading import Thread, Event
-from calls.messages import Message, TesterMessage, TesteeAnswer, BroadCast, Hello
+from calls.messages import Message, TesterMessage, TesteeAnswer, BroadCast, Hello, \
+    TestMessage
 import calls.messagetoaction as MTA
-from managers.probes import Probe, ProbeStorage
+from managers.probes import ProbeStorage
 import pickle
 import urllib
 from calls.actions import Action
@@ -39,7 +40,7 @@ class Server(Thread):
         Thread.__init__(self)
         self.setName("Server")
         self.isUp = Event()
-        ProbeStorage.addProbe(Probe(str(Identification.PROBE_ID), "localhost"))
+        ProbeStorage.addSelfProbe()
     
     
     @classmethod
@@ -77,19 +78,29 @@ class Server(Thread):
     def treatMessage(cls, message):
         cls.logger.debug("Treating message " + message.__class__.__name__)
         assert isinstance(message, Message)
-        # if probe is in test mode, give the message right to the TestManager!
-        if (isinstance(message, TesteeAnswer)):
-            cls.logger.debug("Server : Handling TesteeAnswer")
-            TestManager.handleMessage(message)
-        elif (isinstance(message, TesterMessage)):
-            cls.logger.debug("Handling TesterMessage")
-            TestResponder.handleMessage(message)
+        if isinstance(message, TestMessage):
+            cls.treatTestMessage(message)
         elif isinstance(message, BroadCast):
             cls.logger.debug("Handling Broadcast")
             Server.addTask(MTA.toAction(message.getMessage()))
             Client.broadcast(message)
         else:
             Server.addTask(MTA.toAction(message))
+
+    @classmethod
+    def treatTestMessage(cls, message):
+        assert isinstance(message, TestMessage)
+        # if probe is in test mode, give the message right to the TestManager!
+        if (isinstance(message, TesteeAnswer)):
+            cls.logger.debug("Handling TesteeAnswer")
+            TestManager.handleMessage(message)
+        elif (isinstance(message, TesterMessage)):
+            cls.logger.debug("Handling TesterMessage")
+            TestResponder.handleMessage(message)
+        else:
+            Server.addTask(MTA.toAction(message))
+
+
 
     class Listener(ThreadingMixIn,HTTPServer, Thread):
         '''
@@ -147,6 +158,15 @@ class Server(Thread):
                 self.server.server.treatMessage(message)
             
             def do_GET(self):
+                query = urllib.parse.urlparse(self.path).path
+                if query == Urls.SRV_ID_QUERY:
+                    self.giveId()
+                elif query == Urls.SRV_STATUS_QUERY:
+                    self.giveStatus()
+                else:
+                    self.giveId()
+
+            def giveId(self):
                 Server.logger.debug("Server : handling get request, giving my ID : " + str(Identification.PROBE_ID))
                 myId = str(Identification.PROBE_ID).encode(Consts.POST_MESSAGE_ENCODING)
                 #answer with your id
@@ -156,3 +176,15 @@ class Server(Thread):
                 self.send_header("Last-Modified", str(datetime.datetime.now()))
                 self.end_headers()
                 self.wfile.write(myId)
+
+            def giveStatus(self):
+                from managers.actions import ActionMan
+#                 Server.logger.debug("Server : handling get request, giving my ID : " + str(Identification.PROBE_ID))
+                status = str(ActionMan.getStatus()).encode(Consts.POST_MESSAGE_ENCODING)
+                # answer with your id
+                self.send_response(200)
+                self.send_header("Content-type", "text/plain")
+                self.send_header("Content-Length", len(status))
+                self.send_header("Last-Modified", str(datetime.datetime.now()))
+                self.end_headers()
+                self.wfile.write(status)

@@ -156,3 +156,32 @@ class Result(TesteeAnswer):
 
     def getSourceId(self):
         return self.sourceId
+
+
+
+class StatusMessage(Message):
+    pass
+
+
+class StatusRequest(StatusMessage):
+
+    def __init__(self, idProbe):
+        StatusMessage.__init__(self, idProbe)
+        self.response = None
+
+    def getResponse(self):
+        return self.response
+
+    def setResponse(self, response):
+        self.response = response
+
+class StatusResponse(StatusMessage):
+    def __init__(self, idProbe):
+        StatusMessage.__init__(self, idProbe)
+        self.stati = []
+
+    def addStatus(self, status):
+        self.stati.append(status)
+
+    def getStatus(self):
+        return self.stati

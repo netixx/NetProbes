@@ -70,7 +70,7 @@ if __name__ == '__main__':
                         dest = 'probe_id',
                         metavar = 'probeId',
                         help = 'Enter an string that represent the id of the probe',
-                        default = Identification.PROBE_ID)
+                        default = Identification.randomId())
 
     parser.add_argument('--debug',
                     dest = 'debug',
@@ -94,7 +94,6 @@ if __name__ == '__main__':
 
     addLogs()
 
-    logging.getLogger().debug("test")
     try :
         logging.getLogger().info("Starting probe")
         server = Server()

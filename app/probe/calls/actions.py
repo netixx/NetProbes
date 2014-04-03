@@ -20,6 +20,9 @@ class Action(object):
         otherPriority = (other.priority, other.actionNumber)
         return selfPriority < otherPriority
 
+    def __str__(self):
+        return "%s action no %d" % (self.__class__.__name__, self.actionNumber)
+
 class Add(Action):
     '''Add action : adds a probe to the overlay of probes'''
 
@@ -42,6 +45,7 @@ class UpdateProbes(Action):
     def __init__(self, probeList):
         Action.__init__(self)
         self.probeList = probeList
+        self.priority = 3
 
     def getProbeList(self):
         return self.probeList
@@ -52,7 +56,7 @@ class Remove(Action):
     def __init__(self, idSonde):
         Action.__init__(self)
         self.idSonde = idSonde
-        self.priority = 3
+        self.priority = 5
 
     def getIdSonde(self):
         return self.idSonde
@@ -67,7 +71,7 @@ class Do(Action):
         Action.__init__(self)
         self.testClass = testClass
         self.testOptions = testOptions
-        self.priority = 1
+        self.priority = 4
 
     def getTest(self):
         return self.testClass
@@ -103,4 +107,4 @@ class Quit(Action):
     '''
     def __init__(self):
         Action.__init__(self)
-        self.priority = 2
+        self.priority = 10

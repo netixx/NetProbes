@@ -20,10 +20,12 @@ from .client import Client
 import urllib.parse
 from managers.probes import ProbeStorage
 import common.probedisp as pd
+import common.consts as cconsts
 from .server import Server
 from queue import Queue
 import copy
 import logging
+from consts import Urls
 
 class CommanderServer(Thread):
     """Results are pushed to the results queue.
@@ -45,6 +47,10 @@ class CommanderServer(Thread):
     @classmethod
     def addResult(cls, result):
         cls.resultsQueue.put(result)
+
+    @classmethod
+    def addError(cls, error):
+        cls.resultsQueue.put("E: " + error)
 
     @classmethod
     def getResult(cls):
@@ -92,7 +98,7 @@ class CommanderServer(Thread):
             def do_GET(self):
                 CommanderServer.logger.debug("Handling get Request")
                 getPath = urllib.parse.urlparse(self.path).path
-                if (getPath == "/probes"):
+                if (getPath == cconsts.CmdSrvUrls.CMDSRV_PROBES_QUERY):
                     CommanderServer.logger.debug("Giving the list of probes")
                     probes = ProbeStorage.getAllProbes()
                     dprobes = []
@@ -106,7 +112,7 @@ class CommanderServer(Thread):
                         dprobes.append(pd.Probe(probe.getId(), probe.getIp(), pd.statusFactory(status)))
 
                     message = pickle.dumps(dprobes)
-                elif (getPath == "/results"):
+                elif (getPath == cconsts.CmdSrvUrls.CMDSRV_RESULT_QUERY):
                     CommanderServer.logger.debug("Asked for results of tests")
                     # blocant!
                     message = CommanderServer.getResult().encode(Consts.POST_MESSAGE_ENCODING)
@@ -126,13 +132,8 @@ class CommanderServer(Thread):
                 CommanderServer.logger.debug("Handling constructed message")
                 if(isinstance(message, Add)):
                     CommanderServer.logger.info("Trying to add probe with ip " + str(message.targetIp))
-                    connection = http.client.HTTPConnection(message.targetIp, Consts.PORT_NUMBER);
-                    connection.connect()
-                    connection.request("GET", "", "", {})
-                    probeId = connection.getresponse().read().decode()
-                    CommanderServer.logger.info("Id of probe with ip " + str(message.targetIp) + " is " + str(probeId))
-                    connection.close()
-                    
+                    probeId = self.getRemoteId(message.targetIp)
+
                     addMessage = m.Add("", probeId, message.targetIp)
                     selfAddMessage = copy.deepcopy(addMessage)
                     selfAddMessage.doHello = True
@@ -155,4 +156,11 @@ class CommanderServer(Thread):
                     Server.addTask(a.Do(message.test, message.testOptions))
 
 
-
+            def getRemoteId(self, targetIp):
+                connection = http.client.HTTPConnection(targetIp, Consts.PORT_NUMBER);
+                connection.connect()
+                connection.request("GET", Urls.SRV_ID_QUERY, "", {})
+                probeId = connection.getresponse().read().decode()
+                CommanderServer.logger.info("Id of probe with ip " + str(targetIp) + " is " + str(probeId))
+                connection.close()
+                return probeId

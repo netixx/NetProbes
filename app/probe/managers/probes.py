@@ -7,7 +7,7 @@ from threading import RLock
 import http.client;
 from consts import Consts, Identification
 from exceptions import NoSuchProbe, ProbeConnection
-from http.client import HTTPException
+from http.client import HTTPException, NotConnected
 
 class ProbeStorage(object):
     '''
@@ -23,10 +23,10 @@ class ProbeStorage(object):
         pass
 
     @classmethod
-    def delProbe(c, probeID):
+    def delProbeById(c, probeid):
         with c.knownProbesLock:
-            c.knownProbes[probeID].disconnect()
-            c.knownProbes.pop(probeID)
+            c.knownProbes[probeid].disconnect()
+            c.knownProbes.pop(probeid)
     
 
     @classmethod
@@ -48,10 +48,10 @@ class ProbeStorage(object):
             probe.getConnection().close()
 
     @classmethod
-    def getProbeById(c, probeId):
-        with c.knownProbesLock:
+    def getProbeById(cls, probeId):
+        with cls.knownProbesLock:
             try :
-                return c.knownProbes[probeId]
+                return cls.knownProbes[probeId]
             except KeyError:
                 raise NoSuchProbe
 
@@ -69,8 +69,12 @@ class ProbeStorage(object):
     @classmethod
     def numberOfConnections(cls):
         with cls.knownProbesLock:
-            return len([k for k, probe in cls.knownProbes.items() if probe.connected])
-
+            return len(cls.getConnectedProbes())
+    
+    @classmethod
+    def getConnectedProbes(cls):
+        return [k for k, probe in cls.knownProbes.items() if probe.connected]
+    
     @classmethod
     def getAllProbes(cls):
         with cls.knownProbesLock:
@@ -89,23 +93,31 @@ class ProbeStorage(object):
     def getKeys(cls):
         with cls.knownProbesLock:
             return cls.knownProbes.keys()
+        
+    @staticmethod
+    def newProbe(idProbe, ip):
+        return Probe(idProbe, ip)
+        
+    @classmethod
+    def addSelfProbe(cls):
+        cls.addProbe(cls.newProbe(Identification.PROBE_ID, Consts.LOCAL_IP_ADDR))
 
 
 class Probe(object):
     '''
     Represents a probe
     '''
-    def __init__(self, ID, IP):
-        self.IP = IP
-        self.ID = ID
+    def __init__(self, idProbe, ip):
+        self.ip = ip
+        self.id = idProbe
         self.__connection = http.client.HTTPConnection(self.getIp(), Consts.PORT_NUMBER)
         self.connected = False
         
     def getIp(self):
-        return self.IP
+        return self.ip
 
     def getId(self):
-        return self.ID
+        return self.id
 
     def connect(self):
         try:
@@ -115,16 +127,19 @@ class Probe(object):
             raise ProbeConnection("Connection to probe %s:%s failed" % (self.id, self.ip))
 
     def disconnect(self):
-        self.__connection.close()
-        self.connected = False
+        try :
+            self.__connection.close()
+            self.connected = False
+        except NotConnected:
+            self.connected = False
 
     def getConnection(self):
         return self.__connection
     
     def __getstate__(self):
         """Choose what to write when pickling"""
-        return (self.ID, self.IP)
+        return (self.id, self.ip)
 
     def __setstate__(self, state):
         """Choose what to read when pickling"""
-        self.ID, self.IP = state
+        self.id, self.ip = state
