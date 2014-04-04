@@ -1,24 +1,31 @@
-from tests import Test, Report, TestServices
-import socket
-import argparse
+'''
+Implementation of a unicast test
+Protocols tcp and udp are supported
+
+'''
+__all__ = ['TesterUnicast', 'TesteeUnicast']
+
+import socket, argparse
 from consts import Identification
 from exceptions import TestArgumentError
+from tests import Report, TestServices, TesterTest, TesteeTest
 
-class Unicast(Test):
-    
+class Unicast(object):
     ENCODING = "latin1"
     port = 5678
     timeout = 3.0
     messageSend = "Unicast Test"
     messageReply = "Unicast Reply"
-    
-    msgReceived = False
-    msgSent = False
-    success = False
 
-    def __init__(self, options):
-        super().__init__(options)
+    def __init__(self):
         self.socket = None
+
+    @staticmethod
+    def protocolToUnix(protocol):
+        if (protocol == 'udp'):
+            return socket.SOCK_DGRAM
+
+        return socket.SOCK_STREAM
 
     ''' Methods for the probe which starts the test'''
     '''
@@ -28,10 +35,10 @@ class Unicast(Test):
     def parseOptions(self, options):
         # creating the parsers
         parser = argparse.ArgumentParser(prog = self.__class__.__name__, description = "Parses the unicast test target")
-        parser.add_argument('target', metavar='target', nargs=1)
-        parser.add_argument('--port', type=int, metavar='port', default=self.port)
+        parser.add_argument('target', metavar = 'target', nargs = 1)
+        parser.add_argument('--port', type = int, metavar = 'port', default = self.port)
         parser.add_argument('--protocol', metavar = 'protocol', default = 'tcp', choices = ['tcp', 'udp'])
-        parser.add_argument('--timeout', metavar='timeout', default=self.timeout, type=float)
+        parser.add_argument('--timeout', metavar = 'timeout', default = self.timeout, type = float)
         try:
             opts = parser.parse_args(options)
             self.targets = opts.target
@@ -39,14 +46,11 @@ class Unicast(Test):
         except (argparse.ArgumentError, SystemExit):
             raise TestArgumentError(parser.format_usage())
 
+class TesterUnicast(TesterTest, Unicast):
 
-    @staticmethod
-    def protocolToUnix(protocol):
-        if (protocol == 'udp'):
-            return socket.SOCK_DGRAM
-
-        return socket.SOCK_STREAM
-
+    def __init__(self, options):
+        Unicast.__init__(self)
+        TesterTest.__init__(self, options)
     '''
         Prepare yourself for the test
     '''
@@ -100,74 +104,78 @@ class Unicast(Test):
 
         self.result += "\n Id tested :" + " ".join(ok) + " ".join(fail)
 
-    ''' Methods for the probe(s) which receive the test'''
 
-    rcvSocket = None
+class TesteeUnicast(TesteeTest, Unicast):
+
+    def __init__(self, options, testId):
+        Unicast.__init__(self)
+        TesteeTest.__init__(self, options, testId)
+        self.msgReceived = False
+        self.msgSent = False
+        self.success = False
+
     '''
         Actions that the probe must perform in order to be ready
     '''
-    @classmethod
-    def replyPrepare(cls):
-        cls.rcvSocket = socket.socket(socket.AF_INET, cls.protocolToUnix(cls.options.protocol))
-        cls.rcvSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        cls.rcvSocket.bind(("", cls.options.port))
-        if(cls.rcvSocket.type == socket.SOCK_STREAM):
-            cls.rcvSocket.listen(1)
+    def replyPrepare(self):
+        self.socket = socket.socket(socket.AF_INET, self.protocolToUnix(self.options.protocol))
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.socket.bind(("", self.options.port))
+        if(self.socket.type == socket.SOCK_STREAM):
+            self.socket.listen(1)
 
     '''
         Actions that must be taken when the probe received the test
     '''
-    @classmethod
-    def replyTest(cls):
-        cls.logger.debug("Unicast : Replying to unicast test")
+    def replyTest(self):
+        self.logger.debug("Unicast : Replying to unicast test")
         try:
-            cls.rcvSocket.settimeout(cls.options.timeout)
-            print(repr(cls.rcvSocket.type))
+            self.socket.settimeout(self.options.timeout)
+            print(repr(self.socket.type))
             print(repr(socket.SOCK_STREAM))
-            if cls.options.protocol == "tcp":
-                cls.logger.debug("Unicast : Accepting TCP connections")
-                connection, address = cls.rcvSocket.accept()
-                cls.logger.info("Unicast : Waiting for TCP message")
-                msg = connection.recv(len(cls.messageSend))
-                cls.logger.info("Unicast : Message received")
-                cls.msgReceived = True
-                if (msg.decode(cls.ENCODING) == cls.messageSend):
-                    connection.sendall(cls.messageReply.encode(cls.ENCODING))
-                    cls.msgSent = True
+            if self.options.protocol == "tcp":
+                self.logger.debug("Unicast : Accepting TCP connections")
+                connection, address = self.socket.accept()
+                self.logger.info("Unicast : Waiting for TCP message")
+                msg = connection.recv(len(self.messageSend))
+                self.logger.info("Unicast : Message received")
+                self.msgReceived = True
+                if (msg.decode(self.ENCODING) == self.messageSend):
+                    connection.sendall(self.messageReply.encode(self.ENCODING))
+                    self.msgSent = True
                 
-            elif cls.options.protocol == "udp":
-                cls.logger.info("Unicast : Waiting for UDP message")
-                msg , adr = cls.rcvSocket.recvfrom( len(cls.messageSend) )
-                cls.logger.info("Unicast : Message received")
-                cls.msgReceived = True
-                if (msg.decode(cls.ENCODING) == cls.messageSend):
-                    cls.rcvSocket.sendto( cls.messageReply.encode( cls.ENCODING), adr )
-                    cls.msgSent = True
+            elif self.options.protocol == "udp":
+                self.logger.info("Unicast : Waiting for UDP message")
+                msg , adr = self.socket.recvfrom(len(self.messageSend))
+                self.logger.info("Unicast : Message received")
+                self.msgReceived = True
+                if (msg.decode(self.ENCODING) == self.messageSend):
+                    self.socket.sendto(self.messageReply.encode(self.ENCODING), adr)
+                    self.msgSent = True
 
         except socket.timeout:
-                cls.msgReceived = False
-                cls.logger.info("Unicast : Unable to receive message : Socket timeout")
+                self.msgReceived = False
+                self.logger.info("Unicast : Unable to receive message : Socket timeout")
         except:
-            cls.msgReceived = False
-            cls.logger.info("Unicast : Unable to receive message")
+            self.msgReceived = False
+            self.logger.info("Unicast : Unable to receive message")
             
     
     '''
         Actions that the probe must perform when the test is over
         generates the report and returns it!!!
     '''
-    @classmethod
-    def replyOver(cls):
-        cls.logger.info("Unicast : Replying over")
-        if cls.rcvSocket.type == socket.SOCK_STREAM:
+    def replyOver(self):
+        self.logger.info("Unicast : Replying over")
+        if self.socket.type == socket.SOCK_STREAM:
             try:
-                cls.rcvSocket.shutdown(socket.SHUT_RDWR)
+                self.socket.shutdown(socket.SHUT_RDWR)
             except:
-                cls.logger.info("Unicast : unable to shutdown socket")
+                self.logger.info("Unicast : unable to shutdown socket")
 
-        cls.rcvSocket.close()
+        self.socket.close()
         report = Report(Identification.PROBE_ID)
-        if not (cls.msgReceived and cls.msgSent):
+        if not (self.msgReceived and self.msgSent):
             report.isSuccess = False
-        cls.logger.info("Unicast : Report created")
+        self.logger.info("Unicast : Report created")
         return report

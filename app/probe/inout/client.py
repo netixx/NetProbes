@@ -1,19 +1,24 @@
 '''
 Sends Message instances to other probes
     Thread that waits for a message to be added to the messageStack
+    and sends message as soon as one is added
 
-Created on 7 juin 2013
+It also implements a mechanism to broadcast a message to all probes
 
 @author: francois
+
 '''
+__all__ = ['Client']
+
 import urllib, pickle
 from threading import Thread, Event
-from consts import Consts, Identification, Urls
 from queue import Queue
+import logging
+
+from consts import Consts, Identification, Urls
 from calls.messages import Message, BroadCast, TestMessage, StatusMessage
 from managers.probes import ProbeStorage
 from exceptions import NoSuchProbe
-import logging
 
 class Client(Thread):
     '''
@@ -21,6 +26,7 @@ class Client(Thread):
     Server can be local (localhost) or remote
     
     '''
+
     messageStack = Queue()
     stop = False
     logger = logging.getLogger()
@@ -30,22 +36,47 @@ class Client(Thread):
         self.setName("Client")
         self.isUp = Event()
 
+    def run(self):
+        self.isUp.set()
+        self.logger.info("Starting the Client")
+        while not Client.stop or not Client.messageStack.empty():
+            message = Client.messageStack.get()
+            try:
+                if isinstance(message, StatusMessage):
+                    self.sendStatusMessage(message)
+                else:
+                    self.sendMessage(message)
+            finally:
+                Client.messageStack.task_done()
+
     @classmethod
     def quit(cls):
         cls.logger.info("Stopping the Client")
-        ProbeStorage.closeAllConnections()
         cls.stop = True
+        ProbeStorage.closeAllConnections()
     
     @classmethod
     def send(cls, message):
-        cls.logger.debug("Adding a message " + message.__class__.__name__ + " to the client stack")
+        '''
+        Send message to target probe
+        message : message to send (contains the targetId)
+        
+        '''
+        cls.logger.debug("Adding a message %s to the client stack", message.__class__.__name__)
         assert isinstance(message, Message)
         cls.messageStack.put(message)
     
     @classmethod
     def broadcast(cls, message, toMyself = False):
-        cls.logger.debug("Broadcasting the message : " + message.__class__.__name__)
-        #propagation phas
+        '''
+        If called with a Broadcast message, the method will send
+        messages to all targets listed in the broadcast
+        If called with a Message instance, the method will send a message
+        to all known probes
+
+        '''
+        cls.logger.debug("Broadcasting the message : %s", message.__class__.__name__)
+        # propagation phase
         if isinstance(message, BroadCast):
             prop = message.getNextTargets()
         else:
@@ -63,32 +94,12 @@ class Client(Thread):
                 cls.send(BroadCast(message, propIds))
             # be sure to propagate to all probes
             cls.send(BroadCast(message, prop[j:]))
-# 
-#         with ProbeStorage.knownProbesLock:
-#             for probeId in ProbeStorage.getKeys():
-#                 if probeId != Identification.PROBE_ID or toMyself :
-#                     msg = copy.deepcopy(message)
-#                     msg.setTarget(probeId)
-#                     cls.send(msg)
-                
-    def run(self):
-        self.isUp.set()
-        self.logger.info("Starting the client")
-        while not Client.stop or not Client.messageStack.empty():
-            message = Client.messageStack.get()
-            try:
-                if isinstance(message, StatusMessage):
-                    self.sendStatusMessage(message)
-                else:
-                    self.sendMessage(message)
-            finally:
-                Client.messageStack.task_done()
-                #except:
-                #    print("Error occured sending a message")
-                
-                #if conn.getresponse().status != 200 :
-                #    self.messageStack.add( message )
 
+    @classmethod
+    def allMessagesSent(cls):
+        cls.messageStack.join()
+        
+    '''Inner functions'''
     def __sendRequest(self, connection, requestType, requestUrl = "", params = "", header = {}):
         connection.request(requestType, requestUrl, params, header)
         self.logger.debug("Request %s @ %s has been sent", requestType, requestUrl)
@@ -112,7 +123,10 @@ class Client(Thread):
             pass
 
     def sendMessage(self, message):
-        self.logger.debug("Sending the message : %s to %s with ip %s", message.__class__.__name__ , message.targetId, ProbeStorage.getProbeById(message.targetId).getIp())
+        self.logger.debug("Sending the message : %s to %s with ip %s",
+                          message.__class__.__name__ ,
+                          message.targetId,
+                          ProbeStorage.getProbeById(message.targetId).getIp())
         try :
             target = ProbeStorage.getProbeById(message.targetId)
             # serialize our message
@@ -154,8 +168,3 @@ class Client(Thread):
             return probeStatus
         except NoSuchProbe:
             pass
-        
-        
-    @classmethod
-    def allMessagesSent(cls):
-        cls.messageStack.join()

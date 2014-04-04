@@ -1,21 +1,28 @@
-from tests import Test, TestServices, Report
+'''
+Implementation of a broadcast test
+
+'''
+__all__ = ['TesterBroadcast', 'TesteeBroadcast']
+
+from tests import TestServices, Report, TesterTest, TesteeTest
 import socket
 import argparse
 from consts import Identification
 from exceptions import TestArgumentError
 
 
-class Broadcast(Test):
+class Broadcast(object):
     
     ENCODING = "latin1"
-    port = 5678
-    timeout = 3.0
+    DEFAULT_PORT = 5678
+    DEFAULT_TIMEOUT = 3.0
+
     messageSend = "Unicast Test"
     
-    msgReceived = False
-    def __init__(self, options):
-        super().__init__(options)
+    def __init__(self):
         self.socket = None
+        self.port = self.DEFAULT_PORT
+        self.timeout = self.DEFAULT_TIMEOUT
 
     ''' Methods for the probe which starts the test'''
     '''
@@ -34,7 +41,12 @@ class Broadcast(Test):
         except (argparse.ArgumentError, SystemExit):
             raise TestArgumentError(parser.format_usage())
 
-    
+class TesterBroadcast(TesterTest, Broadcast):
+
+    def __init__(self, options):
+        TesterTest.__init__(self, options)
+        Broadcast.__init__(self)
+
     '''
         Prepare yourself for the test
     '''
@@ -81,34 +93,36 @@ class Broadcast(Test):
 
     ''' Methods for the probe(s) which receive the test'''
 
-    rcvSocket = None
+class TesteeBroadcast(TesteeTest, Broadcast):
+
+    def __init__(self, options, testId):
+        TesteeTest.__init__(self, options, testId)
+        Broadcast.__init__(self)
+        self.msgReceived = False
+
     '''
         Actions that the probe must perform in order to be ready
     '''
-    @classmethod
-    def replyPrepare(cls):
-        cls.rcvSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        cls.rcvSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        cls.rcvSocket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        cls.rcvSocket.bind(('', cls.options.port))
+    def replyPrepare(self):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.socket.bind(('', self.options.port))
 
     '''
         Actions that must be taken when the probe received the test
     '''
-    @classmethod
-    def replyTest(cls):
-        message , address = cls.rcvSocket.recvfrom(len(cls.messageSend))
-        if (message.decode(cls.ENCODING) == cls.messageSend):
-            cls.msgReceived = True
+    def replyTest(self):
+        message , address = self.socket.recvfrom(len(self.messageSend))
+        if (message.decode(self.ENCODING) == self.messageSend):
+            self.msgReceived = True
             
-
     '''
         Actions that the probe must perform when the test is over
         generates the report and returns it!!!
     '''
-    @classmethod
-    def replyOver(cls):
-        cls.rcvSocket.close()
+    def replyOver(self):
+        self.socket.close()
         report = Report(Identification.PROBE_ID)
-        report.isSuccess = cls.msgReceived
+        report.isSuccess = self.msgReceived
         return report

@@ -5,6 +5,8 @@ Each Action has a priority, the lower the priority, the faster the action will b
 Action class and subclasses are not sent over the network, only messages are (cf messages.py)
 
 '''
+__all__ = ['Action', 'Add', 'UpdateProbes', 'Remove',
+           'Do', 'Prepare', 'Quit', ]
 
 class Action(object):
     '''General class, defining priority of the actions'''
@@ -27,7 +29,7 @@ class Add(Action):
     '''Add action : adds a probe to the overlay of probes'''
 
     def __init__(self, ipSonde, idSonde, hello=False):
-        Action.__init__(self)
+        super().__init__()
         self.ipSonde = ipSonde
         self.idSonde = idSonde
         self.doHello = hello
@@ -43,7 +45,7 @@ class Add(Action):
 class UpdateProbes(Action):
     '''Add the given list of probes to the hashtable (probestorage)'''
     def __init__(self, probeList):
-        Action.__init__(self)
+        super().__init__()
         self.probeList = probeList
         self.priority = 3
 
@@ -54,7 +56,7 @@ class UpdateProbes(Action):
 class Remove(Action):
     '''Tells the probe to remove another probe from the overlay'''
     def __init__(self, idSonde):
-        Action.__init__(self)
+        super().__init__()
         self.idSonde = idSonde
         self.priority = 5
 
@@ -68,30 +70,34 @@ class Do(Action):
 
     priority = 2
     def __init__(self, testClass, testOptions):
-        Action.__init__(self)
+        super().__init__()
         self.testClass = testClass
         self.testOptions = testOptions
         self.priority = 4
 
-    def getTest(self):
+    def getTestName(self):
         return self.testClass
 
-    def getOptions(self):
+    def getTestOptions(self):
         return self.testOptions
 
 
 class Prepare(Action):
     '''Prepare action : prepare for a test'''
 
-    def __init__(self, testId, sourceId, testOptions):
+    def __init__(self, testName, testId, testOptions, sourceId):
         super().__init__()
         self.testId = testId
+        self.testName = testName
         self.sourceId = sourceId
         self.testOptions = testOptions
         self.priority = 1
 
     def getTestId(self):
         return self.testId
+
+    def getTestName(self):
+        return self.testName
 
     def getSourceId(self):
         return self.sourceId
@@ -106,5 +112,5 @@ class Quit(Action):
 
     '''
     def __init__(self):
-        Action.__init__(self)
+        super().__init__()
         self.priority = 10

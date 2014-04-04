@@ -4,47 +4,54 @@ Message to exchange information between probes
 
 The messages are serialized before being sent and unserialized when received
 They are then matched to the corresponding Action by the messagetoaction class
+when received at the end host
 
 '''
+__all__ = ['Message', 'Add', 'Hello', 'Bye',
+           'BroadCast', 'TestMessage', 'Prepare', 'TesterMessage',
+           'Over', 'Abort', 'TesteeAnswer', 'Ready',
+           'Result']
 
 class Message(object):
-    '''  Super class to implement a message between probes  '''
+    '''
+    Super class to implement a message between probes
+    Message are sent by the client to the targetId
+
+    '''
     def __init__(self, targetId):
         self.targetId = targetId;
     
     def setTarget(self, targetId):
         self.targetId = targetId
 
+    def getTarget(self):
+        return self.targetId
+
 
 '''----- Network discovery messages -----'''
 
 class Add(Message):
     '''
-    Message to add a new probe
+    Message to add a new probe (probeId, probeIp) to the overlay
     If the hello flag is set to true, then the recipient of
-    the message is expected to send a hello message to the probe (probeId, probeIp)
+    this message is expected to send a hello message to the probe (probeId, probeIp)
 
     '''
     def __init__(self, targetId, probeID, probeIP, doHello = False):
-        Message.__init__(self, targetId)
+        super().__init__(targetId)
         self.probeID = probeID
         self.probeIP = probeIP
         self.doHello = doHello
-    
-class Connect(Message):
-    '''Establish a connection to a probe so that tests can be performed with this probe'''
-    def __init__(self, targetId):
-        Message.__init__(self, targetId)
-        self.targetId = targetId
 
 
 class Hello(Message):
     '''
     Tells a new probe about all other probes
+    Sends the list of probes to a new probe
 
     '''
     def __init__(self, targetId, probeList, sourceId):
-        Message.__init__(self, targetId)
+        super().__init__(targetId)
         self.probeList = probeList
         self.remoteIp = None
         self.sourceId = sourceId
@@ -59,7 +66,7 @@ class Bye(Message):
     ''' Means "I am leaving the system" '''
 
     def __init__(self, targetId, leavingId):
-        Message.__init__(self, targetId)
+        super().__init__(targetId)
         self.leavingId = leavingId
         
     def getLeavingID(self):
@@ -67,13 +74,15 @@ class Bye(Message):
 
 
 class BroadCast(Message):
-    '''Encapsulation of a given message as payload
-        This allows broadcast of a message through (a subset of) the overlay
+    '''
+    Encapsulation of a given message as payload
+    This allows broadcast of a message through (a subset of) the overlay
     @see: Client class for algorithmic implementation of the Broadcast
 
     '''
+
     def __init__(self, targetId, payload, propagateTo = []):
-        Message.__init__(self, targetId)
+        super().__init__(targetId)
         self.propagate = propagateTo
         self.payload = payload
 
@@ -83,9 +92,17 @@ class BroadCast(Message):
     def getMessage(self):
         return self.payload
 
+
 '''----- Messages to manage tests -----'''
 
 class TestMessage(Message):
+    """
+    Basic superclass for tests
+    All tests are identified by a testId which is used for demultiplexing
+    at the other end
+
+    """
+
     def __init__(self, targetId, testId):
         super().__init__(targetId)
         self.testId = testId
@@ -94,20 +111,24 @@ class TestMessage(Message):
         return self.testId
 
 class Prepare(TestMessage):
-    ''' Means "Get ready for the given test,
-    stop processing other messages and answer when you're ready"
+    ''' Means "Get ready for the given test"'''
 
-    '''
-    def __init__(self, targetId, testId, sourceId, testOptions):
+
+    def __init__(self, targetId, testId, testName, testOptions, sourceId):
         super().__init__(targetId, testId)
         self.sourceId = sourceId
         self.testOptions = testOptions
+        self.testName = testName
 
     def getSourceId(self):
         return self.sourceId
 
     def getTestOptions(self):
         return self.testOptions
+
+    def getTestName(self):
+        return self.testName
+
 
 '''----- Messages send by the probe starting the test after its been started-----'''
 
@@ -116,14 +137,16 @@ class TesterMessage(TestMessage):
 
 class Over(TesterMessage):
     ''' Means "Test is over, give me your report" '''
+
     def __init__(self, targetId, testId):
         super().__init__(targetId, testId)
 
 class Abort(TesterMessage):
-    ''' Means "Never mind, this test is cancelled,
-    forget about it, resume answering to other messages"
+    ''' Means "Never mind, this test is cancelled
+    End the test at once
 
     '''
+
     def __init__(self, targetId, testId):
         super().__init__(targetId, testId)
         
@@ -133,10 +156,8 @@ class TesteeAnswer(TestMessage):
     pass
 
 class Ready(TesteeAnswer):
-    ''' Means "I'm ready to perform your test,
-    I won't answer to other messages and my sockets/whatever are ready"
+    ''' Means "I'm ready to perform your test"'''
 
-    '''
     def __init__(self, targetId, testId):
         super().__init__(targetId, testId)
 
@@ -146,6 +167,7 @@ class Result(TesteeAnswer):
     Often comes in response to a Over message
 
     '''
+
     def __init__(self, targetId, testId, sourceId, report):
         super().__init__(targetId, testId)
         self.report = report
@@ -158,7 +180,7 @@ class Result(TesteeAnswer):
         return self.sourceId
 
 
-
+''' For future uses'''
 class StatusMessage(Message):
     pass
 
@@ -174,6 +196,7 @@ class StatusRequest(StatusMessage):
 
     def setResponse(self, response):
         self.response = response
+
 
 class StatusResponse(StatusMessage):
     def __init__(self, idProbe):

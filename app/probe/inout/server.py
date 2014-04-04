@@ -3,28 +3,28 @@ Server that listens to probe messages
 
 @author: francois
 '''
+__all__ = ['Server']
 
-from consts import Consts, Identification, Urls
-from http.server import HTTPServer, SimpleHTTPRequestHandler
-from socketserver import ThreadingMixIn
-from threading import Thread, Event
+from .client import Client
+from calls.actions import Action
 from calls.messages import Message, TesterMessage, TesteeAnswer, BroadCast, Hello, \
     TestMessage
 import calls.messagetoaction as MTA
+from consts import Consts, Identification, Urls
 from managers.probes import ProbeStorage
-import pickle
-import urllib
-from calls.actions import Action
-from queue import PriorityQueue
-import datetime
 from managers.tests import TestManager, TestResponder
-from .client import Client
-import logging
+from queue import PriorityQueue
+from socketserver import ThreadingMixIn
+from threading import Thread, Event
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+import datetime, logging, pickle, urllib
 
 class Server(Thread):
     '''
-    Server thread listens on the given port to a POST request containing a serialization of a Message object
-    It then transforms this Message into a corresponding Action that is added to the Queue of actions that the server must execute
+    Server thread listens on the given port to a POST request containing
+    a serialization of a Message object
+    It then transforms this Message into a corresponding Action
+    that is added to the Queue of actions that the server must execute
 
     It also listens to get request an replies its id to whoever asks it!
     
@@ -42,10 +42,14 @@ class Server(Thread):
         self.isUp = Event()
         ProbeStorage.addSelfProbe()
     
-    
+    def run(self):
+        self.logger.info("Starting Server")
+        self.listener.start()
+        self.isUp.set()
+
     @classmethod
     def addTask(cls, action):
-        cls.logger.debug("Queued new Action " + action.__class__.__name__)
+        cls.logger.debug("Queued new Action %s", action.__class__.__name__)
         assert isinstance(action, Action)
         cls.actionQueue.put((action.priority, action))
     
@@ -63,20 +67,19 @@ class Server(Thread):
     def allTaskDone(cls):
         cls.actionQueue.join()
     
-    def run(self):
-        self.logger.info("Starting server")
-        self.listener.start()
-        self.isUp.set()
-        
-    
     def quit(self):
-        self.logger.info("Closing server")
+        self.logger.info("Closing Server")
         self.listener.close()
         self.actionQueue.join()
 
     @classmethod
     def treatMessage(cls, message):
-        cls.logger.debug("Treating message " + message.__class__.__name__)
+        '''Handles the receptions of a Message (called by the listener)
+        For regular actions, addTask is called after translation of the message
+        For TesterMessages and TesteeMessages, treatTestMessage is called
+
+        '''
+        cls.logger.debug("Treating message %s", message.__class__.__name__)
         assert isinstance(message, Message)
         if isinstance(message, TestMessage):
             cls.treatTestMessage(message)
@@ -89,6 +92,7 @@ class Server(Thread):
 
     @classmethod
     def treatTestMessage(cls, message):
+        cls.logger.debug("Handling Tester or Testee message")
         assert isinstance(message, TestMessage)
         # if probe is in test mode, give the message right to the TestManager!
         if (isinstance(message, TesteeAnswer)):
@@ -167,7 +171,7 @@ class Server(Thread):
                     self.giveId()
 
             def giveId(self):
-                Server.logger.debug("Server : handling get request, giving my ID : " + str(Identification.PROBE_ID))
+                Server.logger.debug("Server : handling get request, giving my ID : %s", Identification.PROBE_ID)
                 myId = str(Identification.PROBE_ID).encode(Consts.POST_MESSAGE_ENCODING)
                 #answer with your id
                 self.send_response(200)

@@ -1,35 +1,32 @@
 '''
 Server that listens for commands sent by the commander package
-
-Created on 14 juin 2013
+Adds action directly to the server action queue
+@see: commander.main
 
 @author: francois
 '''
+__all__ = ['CommanderServer']
 
-from consts import Consts, Params, Identification
+import copy, logging, http.client, pickle, datetime, urllib.parse
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+from queue import Queue
 from socketserver import ThreadingMixIn
 from threading import Thread
+
 from common.commanderMessages import Add, Delete, Do
-import calls.actions as a
-import pickle
-import datetime
-import http.client
-import calls.messages as m
-from .client import Client
-import urllib.parse
-from managers.probes import ProbeStorage
 import common.probedisp as pd
 import common.consts as cconsts
+import calls.actions as a
+import calls.messages as m
+from managers.probes import ProbeStorage
+from consts import Consts, Identification, Urls
+from .client import Client
 from .server import Server
-from queue import Queue
-import copy
-import logging
-from consts import Urls
 
 class CommanderServer(Thread):
     """Results are pushed to the results queue.
-    When the become available, the Listener pushes the results to the commander
+    When the become available, the Listener pushes the
+    results to the commander instance
 
     """
     resultsQueue = Queue()
@@ -142,17 +139,13 @@ class CommanderServer(Thread):
                     Client.broadcast(addMessage)
 
                     Server.treatMessage(selfAddMessage)
-
-
-
-                    
                 if(isinstance(message,Delete)):
-                    CommanderServer.logger.info("Trying to delete probe with ID " + str(message.targetId))
+                    CommanderServer.logger.info("Trying to delete probe with ID %s", message.targetId)
                     byeMessage = m.Bye(message.targetId, message.targetId)
                     Client.send(byeMessage)
 
                 if(isinstance(message, Do)):
-                    CommanderServer.logger.info("Trying to do a test : " + message.test)
+                    CommanderServer.logger.info("Trying to do a test : %s", message.test)
                     Server.addTask(a.Do(message.test, message.testOptions))
 
 

@@ -3,7 +3,9 @@ Customized exceptions for the probes
 
 @author: francois
 '''
-__all__ = ['NoSuchProbe', 'ProbeConnection', 'TestInProgress', 'TestArgumentError', 'TestError', 'TestAborted']
+__all__ = ['NoSuchProbe', 'ProbeConnection', 'ToManyTestsInProgress',
+           'TestInProgress', 'ActionError', 'TestArgumentError',
+           'TestError', 'TestAborted']
 
 
 class NoSuchProbe(Exception):
@@ -12,8 +14,17 @@ class NoSuchProbe(Exception):
     '''
     pass
 
+
 class ProbeConnection(Exception):
     pass
+
+
+class ToManyTestsInProgress(Exception):
+    '''
+        Maximum number of allowed test has been reached
+    '''
+    pass
+
 
 class TestInProgress(Exception):
     '''
@@ -42,6 +53,7 @@ class TestArgumentError(Exception):
     def getUsage(self):
         return "Wrong argument : " + self.usage
 
+
 class TestError(ActionError):
 
     def __init__(self, reason):
@@ -49,6 +61,7 @@ class TestError(ActionError):
 
     def getReason(self):
         return self.reason
+
 
 class TestAborted(TestError):
     pass

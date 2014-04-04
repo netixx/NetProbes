@@ -1,24 +1,30 @@
-from tests import Test, Report, TestServices
-import socket
-import argparse
-import struct
+'''
+Implementation of a multicast test
+
+'''
+__all__ = ['TesterMulticast', 'TesteeMulticast']
+
+import socket, argparse, struct
 from consts import Identification
 from exceptions import TestArgumentError
+from tests import Report, TesterTest, TesteeTest
 
-class Multicast(Test):
+class Multicast(object):
     
     ENCODING = "latin1"
-    port = 6789
-    timeout = 3.0
-    ttl = 20
-    broadcast_address = "224.1.1.1"
+    DEFAULT_PORT = 6789
+    DEFAULT_TIMEOUT = 3.0
+    DEFAULT_TTL = 20
+    DEFAULT_BCAST_ADDRESS = "224.1.1.1"
     messageSend = "Multicast Test"
     
-    msgReceived = False
     def __init__(self, options):
-        super().__init__(options)
         self.socket = None
-
+        self.port = self.DEFAULT_PORT
+        self.timeout = self.DEFAULT_TIMEOUT
+        self.ttl = self.DEFAULT_TTL
+        self.broadcast_address = self.DEFAULT_BCAST_ADDRESS
+        
     ''' Methods for the probe which starts the test'''
     '''
         Parse the options for the current test
@@ -26,7 +32,7 @@ class Multicast(Test):
     '''
     def parseOptions(self, options):
         parser = argparse.ArgumentParser(description="Parses the multicast test target")
-        parser.add_argument('target', metavar='target', nargs="+")
+        parser.add_argument('targets', metavar = 'targets', nargs = "+")
         parser.add_argument('--port', type=int, metavar='port', default=self.port)
         parser.add_argument('--timeout', metavar='timeout', default=self.timeout, type=float)
         parser.add_argument('--ttl', metavar='ttl', default=self.ttl, type=int)
@@ -34,12 +40,17 @@ class Multicast(Test):
 
         try:
             opts = parser.parse_args(options)
-            self.targets = opts.target
+            self.targets = opts.targets
             self.options = opts
         except (argparse.ArgumentError, SystemExit):
             raise TestArgumentError(parser.format_usage())
 
 
+class TesterMulticast(TesterTest, Multicast):
+    
+    def __init__(self, options, testId):
+        Multicast.__init__(self, options)
+        TesterTest.__init__(self, options)
     '''
         Prepare yourself for the test
     '''
@@ -80,56 +91,55 @@ class Multicast(Test):
             self.result = "Fail, probe did not receive the message."
 
         self.result += "\n Id ok : " + ", ".join(ok) + "\n Id fail : " + ", ".join(fail)
-        
+
+
+class TesteeMulticast(TesteeTest, Multicast):
     
-    
-    ''' Methods for the probe(s) which receive the test'''
-    
-    rcvSocket = None
-    
+    def __init__(self, options, testId):
+        Multicast.__init__(self)
+        TesteeTest.__init__(self, options, testId)
+        self.msgReceived = False
+
     '''
         Actions that the probe must perform in order to be ready
     '''
-    @classmethod
-    def replyPrepare(cls):
-        cls.rcvSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        cls.rcvSocket.bind( ('', cls.options.port) )
+    def replyPrepare(self):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.bind(('', self.options.port))
         
         ''' On ajoute la sonde au groupe multicast  '''
-        cls.logger.info("Multicast : On ajoute la sonde au groupe multicast")
-        group = socket.inet_aton(cls.options.m_address)
+        self.logger.info("Multicast : On ajoute la sonde au groupe multicast")
+        group = socket.inet_aton(self.options.m_address)
         mreq = struct.pack('4sL', group, socket.INADDR_ANY)
-        cls.rcvSocket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-        cls.logger.info("Multicast : Sonde ajoutée au groupe multicast")
+        self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+        self.logger.info("Multicast : Sonde ajoutée au groupe multicast")
         
 
     '''
         Actions that must be taken when the probe received the test
     '''
-    @classmethod
-    def replyTest(cls):
-        cls.logger.info("Multicast : Waiting for message")
+    def replyTest(self):
+        self.logger.info("Multicast : Waiting for message")
         try:
-            cls.rcvSocket.settimeout(cls.options.timeout)
-            msg, address = cls.rcvSocket.recvfrom( len(cls.messageSend) )
-            msg = msg.decode(cls.ENCODING)
-            cls.logger.info("Multicast : Message received")
-            cls.msgReceived = msg == cls.messageSend
+            self.socket.settimeout(self.options.timeout)
+            msg, address = self.socket.recvfrom(len(self.messageSend))
+            msg = msg.decode(self.ENCODING)
+            self.logger.info("Multicast : Message received")
+            self.msgReceived = msg == self.messageSend
         except socket.timeout:
-            cls.msgReceived = False
-            cls.logger.info("Multicast : ReplyTest -> socket timeout")
+            self.msgReceived = False
+            self.logger.info("Multicast : ReplyTest -> socket timeout")
         except:
-            cls.msgReceived = False
-            cls.logger.info("Multicast : ReplyTest -> unknown error")
+            self.msgReceived = False
+            self.logger.info("Multicast : ReplyTest -> unknown error")
 
 
     '''
         Actions that the probe must perform when the test is over
         generates the report and returns it!!!
     '''
-    @classmethod
-    def replyOver(cls):
-        cls.rcvSocket.close()
+    def replyOver(self):
+        self.socket.close()
         report = Report(Identification.PROBE_ID)
-        report.isSuccess = cls.msgReceived
+        report.isSuccess = self.msgReceived
         return report

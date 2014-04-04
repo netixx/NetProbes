@@ -3,12 +3,9 @@ Module gathering the constants of the probe
 
 @author: francois
 '''
+__all__ = ['Consts', 'Urls', 'Params', 'Identification']
 
 class Consts(object):
-    '''
-    The 'real' consts
-    '''
-
     PORT_NUMBER = 5000
     POST_MESSAGE_KEYWORD = "@message"
     POST_MESSAGE_ENCODING = "latin-1"
@@ -18,10 +15,12 @@ class Consts(object):
     HTTP_POST_REQUEST = "POST"
     HTTP_GET_REQUEST = "GET"
 
+
 class Urls(object):
     SRV_TESTS_QUERY = "/tests"
     SRV_ID_QUERY = "/id"
     SRV_STATUS_QUERY = "/status"
+
 
 class Params(object):
     '''
@@ -29,6 +28,8 @@ class Params(object):
     '''
     DEBUG = False
     COMMANDER = False
+    MAX_OUTGOING_TESTS = 1
+    MAX_INCOMMING_TESTS = 1
 
 
 class Identification(object):

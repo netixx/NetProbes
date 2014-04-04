@@ -12,11 +12,10 @@ from consts import Consts
 import urllib
 from http.client import HTTPConnection
 from common.probedisp import Probe
-from commander.exceptions import NoSuchCommand
 import argparse
 from threading import Event
 from http.client import CannotSendRequest
-from exceptions import ProbeConnectionFailed
+from exceptions import ProbeConnectionFailed, NoSuchCommand
 
 class Interface(object):
     targetIp = "127.0.0.1"
