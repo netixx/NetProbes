@@ -8,9 +8,9 @@ from interface import Interface
 
 class Cli(Interface):
     DISPLAY_WIDTH = 100
-    HEADING = ("Probe Id", "Probe Ip")
-    PROBE_TEMPLATE = "%s %s %s"
-    CMD_PREFIX = "cmd"
+    HEADING = ("Probe Id \t Probe Ip \t Status\n")
+    PROBE_TEMPLATE = "%s \t %s \t %s\n"
+    CMD_PREFIX = "do"
     DISP_CMD = "disp"
     EXIT_CMD = "exit"
     
@@ -19,7 +19,7 @@ class Cli(Interface):
         Interface.__init__(self, probeIp)
 #         Thread.__init__(self)
 #         self.setName("Cli")
-        self.prompt = probeIp + " >"
+        self.prompt = probeIp + " > "
         self.isRunning = True
         # wins and boxes
         self.status = None
@@ -33,7 +33,6 @@ class Cli(Interface):
             try :
                 cmd = input(self.prompt)
                 if cmd.startswith(self.CMD_PREFIX):
-                    cmd = cmd[len(self.CMD_PREFIX) + 1:]
                     self.doCommand(cmd)
                 elif cmd == self.DISP_CMD:
                     print(self.getProbes())
@@ -54,7 +53,7 @@ class Cli(Interface):
         return "cmd"
 
     def getProbes(self):
-        probes = ""
+        probes = self.HEADING
         for probe in self.fetchProbes():
             probes += self.PROBE_TEMPLATE % (probe.getId(), probe.getIp(), probe.getStatus())
         return probes

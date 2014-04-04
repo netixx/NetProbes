@@ -52,7 +52,7 @@ class _TestManager(object):
         self.testError = None
 
     def prepare(self):
-        # @todo : echanger doPrepare et messages ????
+        # TODO: echanger doPrepare et messages ????
         #prepare everyone
         self.test.doPrepare()
         for target in self.test.getTargets():
@@ -227,7 +227,7 @@ class TestResponder(object):
     @classmethod
     def replyPrepare(cls):
         cls.getTest().replyPrepare()
-        Client.send( Ready(cls.sourceId, cls.getCurrentTestId() ) )
+        Client.send(Ready(cls.sourceId, cls.getCurrentTestId()))
         cls.getTest().replyTest()
         
 
@@ -239,8 +239,8 @@ class TestResponder(object):
             cls.testId = testId
             cls.getTest().options = options
             cls.sourceId = sourceId
-            cls.replyPrepare()
             testLogger.info("TestResponder : responding new test with id : " + "(" + " ".join(cls.testId) + ")" + " from source : " + sourceId)
+            cls.replyPrepare()
             cls.testDone.clear()
             
         else:
