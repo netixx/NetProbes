@@ -15,6 +15,7 @@ class Unicast(Test):
     msgReceived = False
     msgSent = False
     success = False
+
     def __init__(self, options):
         super().__init__(options)
         self.socket = None
@@ -118,9 +119,13 @@ class Unicast(Test):
     '''
     @classmethod
     def replyTest(cls):
+        cls.logger.debug("Unicast : Replying to unicast test")
         try:
             cls.rcvSocket.settimeout(cls.options.timeout)
-            if cls.rcvSocket.type == socket.SOCK_STREAM:
+            print(repr(cls.rcvSocket.type))
+            print(repr(socket.SOCK_STREAM))
+            if cls.options.protocol == "tcp":
+                cls.logger.debug("Unicast : Accepting TCP connections")
                 connection, address = cls.rcvSocket.accept()
                 cls.logger.info("Unicast : Waiting for TCP message")
                 msg = connection.recv(len(cls.messageSend))
@@ -130,7 +135,7 @@ class Unicast(Test):
                     connection.sendall(cls.messageReply.encode(cls.ENCODING))
                     cls.msgSent = True
                 
-            elif cls.rcvSocket.type == socket.SOCK_DGRAM:
+            elif cls.options.protocol == "udp":
                 cls.logger.info("Unicast : Waiting for UDP message")
                 msg , adr = cls.rcvSocket.recvfrom( len(cls.messageSend) )
                 cls.logger.info("Unicast : Message received")
@@ -138,7 +143,7 @@ class Unicast(Test):
                 if (msg.decode(cls.ENCODING) == cls.messageSend):
                     cls.rcvSocket.sendto( cls.messageReply.encode( cls.ENCODING), adr )
                     cls.msgSent = True
-                    
+
         except socket.timeout:
                 cls.msgReceived = False
                 cls.logger.info("Unicast : Unable to receive message : Socket timeout")
