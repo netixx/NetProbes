@@ -10,6 +10,8 @@ from consts import Identification
 from exceptions import TestArgumentError
 from tests import Report, TestServices, TesterTest, TesteeTest
 
+name = "Unicast"
+
 class Unicast(object):
     ENCODING = "latin1"
     port = 5678
@@ -19,6 +21,8 @@ class Unicast(object):
 
     def __init__(self):
         self.socket = None
+        self.options = None
+        self.name = name
 
     @staticmethod
     def protocolToUnix(protocol):
@@ -32,7 +36,7 @@ class Unicast(object):
         Parse the options for the current test
         should populate at least the targets list
     '''
-    def parseOptions(self, options):
+    def parseOptions(self):
         # creating the parsers
         parser = argparse.ArgumentParser(prog = self.__class__.__name__, description = "Parses the unicast test target")
         parser.add_argument('target', metavar = 'target', nargs = 1)
@@ -40,17 +44,19 @@ class Unicast(object):
         parser.add_argument('--protocol', metavar = 'protocol', default = 'tcp', choices = ['tcp', 'udp'])
         parser.add_argument('--timeout', metavar = 'timeout', default = self.timeout, type = float)
         try:
-            opts = parser.parse_args(options)
+            opts = parser.parse_args(self.opts)
             self.targets = opts.target
             self.options = opts
         except (argparse.ArgumentError, SystemExit):
             raise TestArgumentError(parser.format_usage())
 
-class TesterUnicast(TesterTest, Unicast):
+class TesterUnicast(Unicast, TesterTest):
 
     def __init__(self, options):
         Unicast.__init__(self)
         TesterTest.__init__(self, options)
+        self.parseOptions()
+
     '''
         Prepare yourself for the test
     '''
@@ -110,6 +116,7 @@ class TesteeUnicast(TesteeTest, Unicast):
     def __init__(self, options, testId):
         Unicast.__init__(self)
         TesteeTest.__init__(self, options, testId)
+        self.parseOptions()
         self.msgReceived = False
         self.msgSent = False
         self.success = False
@@ -131,8 +138,6 @@ class TesteeUnicast(TesteeTest, Unicast):
         self.logger.debug("Unicast : Replying to unicast test")
         try:
             self.socket.settimeout(self.options.timeout)
-            print(repr(self.socket.type))
-            print(repr(socket.SOCK_STREAM))
             if self.options.protocol == "tcp":
                 self.logger.debug("Unicast : Accepting TCP connections")
                 connection, address = self.socket.accept()

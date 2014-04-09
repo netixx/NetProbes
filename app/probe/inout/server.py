@@ -134,6 +134,11 @@ class Server(Thread):
             def __init__(self, request, client_address, server_socket):
                 SimpleHTTPRequestHandler.__init__(self, request, client_address, server_socket)
             
+            def log_message(self, format, *args):
+                Server.logger.debug("Process message : %s -- [%s] %s" % (self.address_string(),
+                                                                                    self.log_date_time_string(),
+                                                                                    format % args))
+
             def do_POST(self):
                 Server.logger.debug("Handling POST request from another probe")
                 contentLength = self.headers.get("content-length")

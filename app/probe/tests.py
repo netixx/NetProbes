@@ -19,6 +19,11 @@ LOGGER_NAME = "tests"
 testLogger = logging.getLogger(LOGGER_NAME)
 TESTEE_MODE = "Testee"
 TESTER_MODE = "Tester"
+"""Timeouts, in seconds"""
+DEFAULT_PREPARE_TIMEOUT = 100
+DEFAULT_DO_TIMEOUT = 100
+DEFAULT_RESULT_TIMEOUT = 100
+DEFAULT_OVER_TIMEOUT = 100
 
 class Report(object):
     '''
@@ -41,15 +46,12 @@ class _Test(object):
 
     '''
     logger = testLogger
-    options = None
 
-    def __init__(self):
+    def __init__(self, testId, options):
         self.result = None
         self.errors = None
-        self.ID = None
-        self.name = self.__class__.__name__
-        self.options = None
-
+        self.ID = testId
+        self.opts = options
 
     def getId(self):
         return self.ID
@@ -58,7 +60,7 @@ class _Test(object):
         return self.name
 
     def getOptions(self):
-        return self.options
+        return self.opts
 
     def getResult(self):
         '''
@@ -67,15 +69,17 @@ class _Test(object):
         return self.result
 
 class TesterTest(_Test):
+    prepareTimeout = DEFAULT_PREPARE_TIMEOUT
+    doTimeout = DEFAULT_DO_TIMEOUT
+    resultTimeout = DEFAULT_RESULT_TIMEOUT
+
     '''
     Methods for the probe which starts the test
 
     '''
 
     def __init__(self, options):
-        _Test.__init__(self)
-        self.ID = '%030x' % random.randrange(256 ** 15)
-        self.parseOptions(options)
+        _Test.__init__(self, '%030x' % random.randrange(256 ** 15), options)
         self.targets = []
     
     def getProbeNumber(self):
@@ -83,13 +87,6 @@ class TesterTest(_Test):
 
     def getTargets(self):
         return self.targets
-
-    def parseOptions(self, options):
-        '''
-        Parse the options for the current test
-        should populate at least the targets list
-        '''
-        self.options = options
 
     def doPrepare(self):
         '''
@@ -127,11 +124,9 @@ class TesteeTest(_Test):
     Methods for the probe(s) which receive the test
 
     '''
-
+    overTimeout = DEFAULT_OVER_TIMEOUT
     def __init__(self, options, testId):
-        self.ID = testId
-        _Test.__init__(self)
-        self.parseOptions(options)
+        _Test.__init__(self, testId, options)
 
     def replyPrepare(self):
         '''
@@ -141,7 +136,7 @@ class TesteeTest(_Test):
 
     def replyTest(self):
         '''
-        Actions that must be taken when the probe recieved the test
+        Actions that must be taken when the probe received the test
         '''
         pass
    

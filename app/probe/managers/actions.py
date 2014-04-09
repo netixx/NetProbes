@@ -58,37 +58,37 @@ class ActionMan(Thread):
         self.logger.info("Stopping ActionMan !")
         self.stop = True
     
-    @staticmethod
-    def manageAdd(action):
+    @classmethod
+    def manageAdd(cls, action):
         '''Add a probe to the DHT'''
         assert isinstance(action, a.Add)
-        ActionMan.logger.debug("Managing Add task")
+        cls.logger.debug("Managing Add task")
         #add the probe to the local DHT
         ProbeStorage.addProbe(ProbeStorage.newProbe(action.getIdSonde(), action.getIpSonde()))
         if action.doHello:
             # tell the new probe about all other probe
             Client.send(Hello(action.getIdSonde(), list(ProbeStorage.getAllOtherProbes()), sourceId = Identification.PROBE_ID))
 
-    @staticmethod
-    def manageUpdateProbes(action):
+    @classmethod
+    def manageUpdateProbes(cls, action):
         assert isinstance(action, a.UpdateProbes)
         for probe in action.getProbeList():
             # don't re-add ourself to the local DHT
             if probe.getId() != Identification.PROBE_ID:
                 ProbeStorage.addProbe(ProbeStorage.newProbe(probe.getId(), probe.getIp()))
 
-    @staticmethod
-    def manageRemove(action):
+    @classmethod
+    def manageRemove(cls, action):
         assert isinstance(action, a.Remove)
-        ActionMan.logger.debug("Managing Remove task")
+        cls.logger.debug("Managing Remove task")
         try:
             # remove probe from DHT
             ProbeStorage.delProbeById(action.getIdSonde());
         except NoSuchProbe:
-            ActionMan.logger.warning("Probe not found in hashtable")
+            cls.logger.warning("Probe not found in hashtable")
     
-    @staticmethod
-    def manageDo(action):
+    @classmethod
+    def manageDo(cls, action):
         '''
         Initiate a new test
         A new thread is created for this test by the TestManager so
@@ -96,20 +96,20 @@ class ActionMan(Thread):
 
         '''
         assert isinstance(action, a.Do)
-        ActionMan.logger.debug("Managing Do task")
-        ActionMan.logger.info("Starting test %s", action.getTestName())
+        cls.logger.debug("Managing Do task")
+        cls.logger.info("Starting test %s", action.getTestName())
         try:
             testId = TestManager.startTest(action.getTestName(), action.getTestOptions())
             # TODO: manage results here
         except TestArgumentError as e:
             CommanderServer.addError(e.getUsage())
-            ActionMan.logger.warning("Test called with wrong arguments or syntax : %s", action.getOptions())
+            cls.logger.warning("Test called with wrong arguments or syntax : %s", action.getOptions())
         except TestError as e:
             CommanderServer.addError(e.getReason())
             raise e
         
-    @staticmethod
-    def managePrepare(action):
+    @classmethod
+    def managePrepare(cls, action):
         '''
         Respond to a new test
         A new thread is created by the TestResponder,
@@ -117,28 +117,27 @@ class ActionMan(Thread):
 
         '''
         assert(isinstance(action, a.Prepare))
-        ActionMan.logger.info("Prepare for test (%s)" , action.getTestId())
+        cls.logger.info("Prepare for test (%s-%s)" , action.getTestName(), action.getTestId())
         try:
             TestResponder.startTest(action.getTestId(), action.getTestName(), action.getSourceId(), action.getTestOptions())
-        except:
-            # TODO: catch test error
-            pass
+        except TestError:
+            cls.logger.error("Error while preparing for test %s-%s", action.getTestName(), action.getTestId(), exc_info = 1)
 
-    @staticmethod
-    def manageQuit(action):
+    @classmethod
+    def manageQuit(cls, action):
         assert isinstance(action, a.Quit)
-        ActionMan.logger.debug("Managing Quit task")
-        ActionMan.logger.info("Exiting the overlay")
+        cls.logger.debug("Managing Quit task")
+        cls.logger.info("Exiting the overlay")
         Client.broadcast( Bye("", Identification.PROBE_ID), toMyself = False )
         ''' Other commands to close all connections, etc '''
         Client.allMessagesSent()
         ProbeStorage.clearAllProbes()
-        ActionMan.logger.info("All probes cleared, all connections closed.")
+        cls.logger.info("All probes cleared, all connections closed.")
         # TODO: check duplicate action in server
         ProbeStorage.addSelfProbe()
-        ActionMan.logger.info("Re-added the localhost probe, ready to proceed again")
+        cls.logger.info("Re-added the localhost probe, ready to proceed again")
 
-    @staticmethod
-    def getStatus():
+    @classmethod
+    def getStatus(cls):
         # TODO: implement
         return "ok"

@@ -10,6 +10,7 @@ import argparse
 from consts import Identification
 from exceptions import TestArgumentError
 
+name = "Broadcast"
 
 class Broadcast(object):
     
@@ -23,19 +24,24 @@ class Broadcast(object):
         self.socket = None
         self.port = self.DEFAULT_PORT
         self.timeout = self.DEFAULT_TIMEOUT
+        self.options = None
+        self.name = name
+
+    def getName(self):
+        return name
 
     ''' Methods for the probe which starts the test'''
     '''
         Parse the options for the current test
         should populate at least the targets list
     '''
-    def parseOptions(self, options):
+    def parseOptions(self):
         parser = argparse.ArgumentParser(description="Parses the broadcast test options")
         parser.add_argument('--port', type=int, metavar='port', default=self.port)
         parser.add_argument('--timeout', metavar='timeout', default=self.timeout, type=float)
 
         try:
-            opts = parser.parse_args(options)
+            opts = parser.parse_args(self.opts)
             self.targets = TestServices.getIdAllOtherProbes()
             self.options = opts
         except (argparse.ArgumentError, SystemExit):
@@ -44,8 +50,9 @@ class Broadcast(object):
 class TesterBroadcast(TesterTest, Broadcast):
 
     def __init__(self, options):
-        TesterTest.__init__(self, options)
         Broadcast.__init__(self)
+        TesterTest.__init__(self, options)
+        self.parseOptions()
 
     '''
         Prepare yourself for the test
@@ -96,8 +103,9 @@ class TesterBroadcast(TesterTest, Broadcast):
 class TesteeBroadcast(TesteeTest, Broadcast):
 
     def __init__(self, options, testId):
-        TesteeTest.__init__(self, options, testId)
         Broadcast.__init__(self)
+        TesteeTest.__init__(self, options, testId)
+        self.parseOptions()
         self.msgReceived = False
 
     '''

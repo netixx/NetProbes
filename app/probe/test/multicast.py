@@ -9,6 +9,8 @@ from consts import Identification
 from exceptions import TestArgumentError
 from tests import Report, TesterTest, TesteeTest
 
+name = "Multicast"
+
 class Multicast(object):
     
     ENCODING = "latin1"
@@ -18,19 +20,24 @@ class Multicast(object):
     DEFAULT_BCAST_ADDRESS = "224.1.1.1"
     messageSend = "Multicast Test"
     
-    def __init__(self, options):
+    def __init__(self):
         self.socket = None
         self.port = self.DEFAULT_PORT
         self.timeout = self.DEFAULT_TIMEOUT
         self.ttl = self.DEFAULT_TTL
         self.broadcast_address = self.DEFAULT_BCAST_ADDRESS
-        
+        self.options = None
+        self.name = name
+
+    def getName(self):
+        return name
+
     ''' Methods for the probe which starts the test'''
     '''
         Parse the options for the current test
         should populate at least the targets list
     '''
-    def parseOptions(self, options):
+    def parseOptions(self):
         parser = argparse.ArgumentParser(description="Parses the multicast test target")
         parser.add_argument('targets', metavar = 'targets', nargs = "+")
         parser.add_argument('--port', type=int, metavar='port', default=self.port)
@@ -39,7 +46,7 @@ class Multicast(object):
         parser.add_argument('-ma', '--m-address', metavar='multicast-address', default=self.broadcast_address)
 
         try:
-            opts = parser.parse_args(options)
+            opts = parser.parse_args(self.opts)
             self.targets = opts.targets
             self.options = opts
         except (argparse.ArgumentError, SystemExit):
@@ -48,9 +55,11 @@ class Multicast(object):
 
 class TesterMulticast(TesterTest, Multicast):
     
-    def __init__(self, options, testId):
-        Multicast.__init__(self, options)
+    def __init__(self, options):
+        Multicast.__init__(self)
         TesterTest.__init__(self, options)
+        self.parseOptions()
+
     '''
         Prepare yourself for the test
     '''
@@ -62,7 +71,7 @@ class TesterMulticast(TesterTest, Multicast):
         Does the actual test
     '''
     def doTest(self):
-        self.logger.info("Multicast : Starting test / Sending message")
+        self.logger.info("Starting test / Sending message")
         self.socket.sendto(self.messageSend.encode(self.ENCODING), (self.options.m_address, self.options.port))
         
 
@@ -98,6 +107,7 @@ class TesteeMulticast(TesteeTest, Multicast):
     def __init__(self, options, testId):
         Multicast.__init__(self)
         TesteeTest.__init__(self, options, testId)
+        self.parseOptions()
         self.msgReceived = False
 
     '''
@@ -107,31 +117,31 @@ class TesteeMulticast(TesteeTest, Multicast):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind(('', self.options.port))
         
-        ''' On ajoute la sonde au groupe multicast  '''
-        self.logger.info("Multicast : On ajoute la sonde au groupe multicast")
+        ''' Add probe to multicast group (IGMP)  '''
+        self.logger.debug("Trying to add probe to multicast group")
         group = socket.inet_aton(self.options.m_address)
         mreq = struct.pack('4sL', group, socket.INADDR_ANY)
         self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-        self.logger.info("Multicast : Sonde ajoutée au groupe multicast")
+        self.logger.info("Added Probe to multicast group")
         
 
     '''
         Actions that must be taken when the probe received the test
     '''
     def replyTest(self):
-        self.logger.info("Multicast : Waiting for message")
+        self.logger.info("Waiting for message")
         try:
             self.socket.settimeout(self.options.timeout)
             msg, address = self.socket.recvfrom(len(self.messageSend))
             msg = msg.decode(self.ENCODING)
-            self.logger.info("Multicast : Message received")
+            self.logger.info("Message received")
             self.msgReceived = msg == self.messageSend
         except socket.timeout:
             self.msgReceived = False
-            self.logger.info("Multicast : ReplyTest -> socket timeout")
+            self.logger.warning("ReplyTest -> socket timeout")
         except:
             self.msgReceived = False
-            self.logger.info("Multicast : ReplyTest -> unknown error")
+            self.logger.warning("ReplyTest -> unknown error", exc_info = 1)
 
 
     '''

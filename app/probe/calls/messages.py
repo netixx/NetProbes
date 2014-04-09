@@ -8,9 +8,9 @@ when received at the end host
 
 '''
 __all__ = ['Message', 'Add', 'Hello', 'Bye',
-           'BroadCast', 'TestMessage', 'Prepare', 'TesterMessage',
-           'Over', 'Abort', 'TesteeAnswer', 'Ready',
-           'Result']
+           'BroadCast', 'TestMessage', 'Prepare',
+           'TesterMessage', 'Over', 'Abort',
+           'TesteeAnswer', 'Ready', 'Result']
 
 class Message(object):
     '''
@@ -133,6 +133,8 @@ class Prepare(TestMessage):
 '''----- Messages send by the probe starting the test after its been started-----'''
 
 class TesterMessage(TestMessage):
+#     def __init__(self, targetId, testId):
+#         super().__init__(targetId, testId)
     pass
 
 class Over(TesterMessage):
@@ -153,6 +155,8 @@ class Abort(TesterMessage):
 
 class TesteeAnswer(TestMessage):
     ''' An answer from the probe being tested'''
+#     def __init__(self, targetId, testId):
+#         super().__init__(targetId, testId)
     pass
 
 class Ready(TesteeAnswer):
