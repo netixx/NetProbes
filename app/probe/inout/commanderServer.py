@@ -42,11 +42,11 @@ class CommanderServer(Thread):
         self.listener.start()
 
     @classmethod
-    def addResult(cls, result):
+    def addResult(cls, testName, result):
         cls.resultsQueue.put(result)
 
     @classmethod
-    def addError(cls, error):
+    def addError(cls, testName, error):
         cls.resultsQueue.put("E: " + error)
 
     @classmethod

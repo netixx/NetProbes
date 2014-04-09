@@ -82,6 +82,12 @@ if __name__ == '__main__':
                     dest = 'commander',
                     action = 'store_true',
                     help = "Start the commander server with this probe.")
+    
+    parser.add_argument('--watchers',
+                        dest = 'watchers',
+                        action = 'append',
+                        default = [],
+                        help = 'daemon to start with the probe for background monitoring purposes')
 
     args = parser.parse_args()
 
@@ -92,6 +98,9 @@ if __name__ == '__main__':
 
     if args.commander:
         Params.COMMANDER = True
+
+    if len(args.watchers) > 0:
+        Params.WATCHERS = True
 
     addLogs()
 
@@ -107,6 +116,11 @@ if __name__ == '__main__':
         if Params.COMMANDER:
             commander = CommanderServer()
             commander.start();
+
+        if Params.WATCHERS:
+            import watchers
+            for watcher in args.watchers:
+                watchers.registerWatcher(watcher)
     
         # ProbeStorage.addProbe( Probe("id", "10.0.0.1" ) )
         c = Client()

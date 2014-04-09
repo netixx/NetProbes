@@ -28,6 +28,7 @@ class Params(object):
     '''
     DEBUG = False
     COMMANDER = False
+    WATCHERS = False
     MAX_OUTGOING_TESTS = 1
     MAX_INCOMMING_TESTS = 1
 
