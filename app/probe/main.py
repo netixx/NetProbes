@@ -118,9 +118,10 @@ if __name__ == '__main__':
             commander.start();
 
         if Params.WATCHERS:
-            import watchers
+            from managers.watchers import WatcherManager
             for watcher in args.watchers:
-                watchers.registerWatcher(watcher)
+                parts = watcher.partition('=')
+                WatcherManager.registerWatcher(parts[0], parts[2])
     
         # ProbeStorage.addProbe( Probe("id", "10.0.0.1" ) )
         c = Client()
