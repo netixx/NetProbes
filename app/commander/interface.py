@@ -3,18 +3,13 @@ Created on 16 juin 2013
 
 @author: francois
 '''
-from threading import Thread
-import time
-import shlex
+from threading import Thread, Event
+from http.client import HTTPConnection, CannotSendRequest, HTTPException
+
+import time, shlex, pickle, urllib, argparse
+
 from common.commanderMessages import Add, Do, Delete
-import pickle
 from consts import Consts
-import urllib
-from http.client import HTTPConnection
-from common.probedisp import Probe
-import argparse
-from threading import Event
-from http.client import CannotSendRequest
 from exceptions import ProbeConnectionFailed, NoSuchCommand
 
 class Interface(object):
@@ -27,25 +22,18 @@ class Interface(object):
         self.isRunning = True
         self.doFetchProbes = Event()
         self.doFetchResults = Event()
-#         self.setName("Graphical interface")
         try :
             self.connection = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
             self.connection.connect()
-            try:
-                self.connectionProbes = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
-                self.connectionProbes.connect()
-                try :
-                    self.connectionResults = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
-                    self.connectionResults.connect()
-                except:
-                    self.addResult("Results cannot be fetched")
-                    raise
-            except:
-                raise
-        except:
-            raise ProbeConnectionFailed("Commands cannot be executed")
+            self.connectionProbes = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
+            self.connectionProbes.connect()
+            self.connectionResults = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
+            self.connectionResults.connect()
+        except HTTPException as e:
+            raise ProbeConnectionFailed("Error while attempting to perform an HTTP request to the probe %s" % self.targetIp)
+        except ConnectionRefusedError:
+            raise ProbeConnectionFailed("Error while connecting to probe : connection refused")
 
-       
     def doCommand(self, command):
         self.updateStatus("Executing command : " + command)
         time.sleep(0.3)

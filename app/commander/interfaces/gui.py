@@ -15,6 +15,7 @@ class Gui(Interface):
     TREE_COLUMNS = ("Probe id", "Probe ip", "Status")
     RESULT_DIPLAY_HEIGHT = 10
     def __init__(self, ip):
+        Interface.__init__(self, ip)
         self.commandHistory = []
         self.mainWin = Tk()
         self.command = StringVar(self.mainWin)
@@ -32,12 +33,6 @@ class Gui(Interface):
         self.thResults = Thread(target = self.updateResults, name = "Results Updater", daemon = True)
         self.thResultsTrigger = Thread(target = self.resultFetcherScheduler, name = "Results Scheduler", daemon = True)
         
-        try:
-            Interface.__init__(self, ip)
-        except ProbeConnectionFailed as e:
-            self.updateStatus("Connection impossible : " + e.getConsequence())
-
-
     def start(self):
         self.mainWin.geometry('800x600')
         txtText = Label(self.mainWin, textvariable=self.text)

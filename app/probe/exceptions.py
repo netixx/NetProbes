@@ -63,5 +63,6 @@ class TestError(ActionError):
     def getReason(self):
         return self.message
 
+
 class TestAborted(TestError):
     pass
