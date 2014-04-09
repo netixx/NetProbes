@@ -95,7 +95,7 @@ class Gui(Interface):
         
     def addResult(self, result):
         self.result.configure(state=NORMAL)
-        self.result.insert(END, result + "\n")
+        self.result.insert('1.0', result + "\n")
         self.result.configure(state=DISABLED)
 
     def setResult(self, result):
