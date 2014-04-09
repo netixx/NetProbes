@@ -57,11 +57,11 @@ class TestArgumentError(Exception):
 class TestError(ActionError):
 
     def __init__(self, reason):
-        self.reason = reason
+        self.action = "Test"
+        self.message = reason
 
     def getReason(self):
-        return self.reason
-
+        return self.message
 
 class TestAborted(TestError):
     pass
