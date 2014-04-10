@@ -102,6 +102,13 @@ if __name__ == '__main__':
     if len(args.watchers) > 0:
         Params.WATCHERS = True
 
+    from inout.codec import serialize
+    from inout.protocol import http
+
+    Params.PROTOCOL = http
+    Params.COMMANDER_PROTOCOL = http
+    Params.CODEC = serialize
+
     addLogs()
 
     try :

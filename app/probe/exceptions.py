@@ -7,7 +7,6 @@ __all__ = ['NoSuchProbe', 'ProbeConnection', 'ToManyTestsInProgress',
            'TestInProgress', 'ActionError', 'TestArgumentError',
            'TestError', 'TestAborted']
 
-
 class NoSuchProbe(Exception):
     '''
         The probe asked for is unknown to this probe
@@ -15,7 +14,7 @@ class NoSuchProbe(Exception):
     pass
 
 
-class ProbeConnection(Exception):
+class ProbeConnectionException(Exception):
     pass
 
 

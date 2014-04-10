@@ -151,10 +151,10 @@ class _TestManager(Thread):
         TestManager.cleanTest(self.test.getId())
         from inout.commanderServer import CommanderServer
         if self.testError is not None:
-            CommanderServer.addError(self.testError.getReason())
+            CommanderServer.addError(self.test.getName(), self.testError.getReason())
             testLogger.error("An error occurred during test %s : %s", self.getName(), self.testError.getReason())
         else :
-            CommanderServer.addResult(self.test.getResult())
+            CommanderServer.addResult(self.test.getName(), self.test.getResult())
 
 
 

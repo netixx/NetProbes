@@ -19,9 +19,19 @@ import common.consts as cconsts
 import calls.actions as a
 import calls.messages as m
 from managers.probes import ProbeStorage
-from consts import Consts, Identification, Urls
+from consts import Consts, Identification
 from .client import Client
 from .server import Server
+
+class Parameters(object):
+    COMMANDER_PORT_NUMBER = 6000
+    PORT_NUMBER = 5000
+    POST_MESSAGE_KEYWORD = "@message"
+    POST_MESSAGE_ENCODING = "latin-1"
+    REPLY_MESSAGE_ENCODING = 'latin-1'
+    HTTP_POST_REQUEST = "POST"
+    HTTP_GET_REQUEST = "GET"
+    URL_SRV_ID_QUERY = "/id"
 
 class CommanderServer(Thread):
     """Results are pushed to the results queue.
@@ -43,11 +53,11 @@ class CommanderServer(Thread):
 
     @classmethod
     def addResult(cls, testName, result):
-        cls.resultsQueue.put(result)
+        cls.resultsQueue.put("%s %s" % (testName, result))
 
     @classmethod
     def addError(cls, testName, error):
-        cls.resultsQueue.put("E: " + error)
+        cls.resultsQueue.put("E: %s : %s" % (testName, error))
 
     @classmethod
     def getResult(cls):
@@ -56,7 +66,7 @@ class CommanderServer(Thread):
     class Listener(ThreadingMixIn, HTTPServer, Thread):
 
         def __init__(self):
-            HTTPServer.__init__(self, ("", Consts.COMMANDER_PORT_NUMBER), __class__.RequestHandler)
+            HTTPServer.__init__(self, ("", Parameters.COMMANDER_PORT_NUMBER), __class__.RequestHandler)
             Thread.__init__(self)
             self.setName("CommanderServer")
 
@@ -82,11 +92,11 @@ class CommanderServer(Thread):
                 # read content
                 args = self.rfile.read(int(contentLength))
                 # convert from bytes to string
-                args = str(args, Consts.POST_MESSAGE_ENCODING)
+                args = str(args, Parameters.POST_MESSAGE_ENCODING)
                 # parse our string to a dictionary
-                args = urllib.parse.parse_qs(args, keep_blank_values=True, strict_parsing=True, encoding=Consts.POST_MESSAGE_ENCODING)
+                args = urllib.parse.parse_qs(args, keep_blank_values = True, strict_parsing = True, encoding = Parameters.POST_MESSAGE_ENCODING)
                 # get our object as string and transform it to bytes
-                message = bytes(args.get(Consts.POST_MESSAGE_KEYWORD)[0], Consts.POST_MESSAGE_ENCODING)
+                message = bytes(args.get(Parameters.POST_MESSAGE_KEYWORD)[0], Parameters.POST_MESSAGE_ENCODING)
                 # transform our bytes into an object
                 message = pickle.loads(message)
                 self.send_response(200)
@@ -117,10 +127,10 @@ class CommanderServer(Thread):
                 elif (getPath == cconsts.CmdSrvUrls.CMDSRV_RESULT_QUERY):
                     CommanderServer.logger.debug("Asked for results of tests")
                     # blocant!
-                    message = CommanderServer.getResult().encode(Consts.POST_MESSAGE_ENCODING)
+                    message = CommanderServer.getResult().encode(Parameters.POST_MESSAGE_ENCODING)
                     CommanderServer.logger.debug("Giving the results")
                 else :
-                    message = "Commander server running, state your command ...".encode(Consts.POST_MESSAGE_ENCODING)
+                    message = "Commander server running, state your command ...".encode(Parameters.POST_MESSAGE_ENCODING)
                 # answer with your id
                 self.send_response(200)
                 self.send_header("Content-type", "text/plain")
@@ -155,10 +165,10 @@ class CommanderServer(Thread):
 
 
             def getRemoteId(self, targetIp):
-                connection = http.client.HTTPConnection(targetIp, Consts.PORT_NUMBER);
+                connection = http.client.HTTPConnection(targetIp, Parameters.PORT_NUMBER);
                 connection.connect()
-                connection.request("GET", Urls.SRV_ID_QUERY, "", {})
-                probeId = connection.getresponse().read().decode()
+                connection.request("GET", Parameters.URL_SRV_ID_QUERY, "", {})
+                probeId = connection.getresponse().read().decode(Parameters.REPLY_MESSAGE_ENCODING)
                 CommanderServer.logger.info("Id of probe with ip " + str(targetIp) + " is " + str(probeId))
                 connection.close()
                 return probeId

@@ -3,23 +3,16 @@ Module gathering the constants of the probe
 
 @author: francois
 '''
-__all__ = ['Consts', 'Urls', 'Params', 'Identification']
+
+__all__ = ['Consts', 'Params', 'Identification']
+
+import inout.codecs as codecs
+import inout.protocols as protocols
+
 
 class Consts(object):
-    PORT_NUMBER = 5000
-    POST_MESSAGE_KEYWORD = "@message"
-    POST_MESSAGE_ENCODING = "latin-1"
-    COMMANDER_PORT_NUMBER = 6000
     PROPAGATION_RATE = 5
     LOCAL_IP_ADDR = "localhost"
-    HTTP_POST_REQUEST = "POST"
-    HTTP_GET_REQUEST = "GET"
-
-
-class Urls(object):
-    SRV_TESTS_QUERY = "/tests"
-    SRV_ID_QUERY = "/id"
-    SRV_STATUS_QUERY = "/status"
 
 
 class Params(object):
@@ -31,6 +24,9 @@ class Params(object):
     WATCHERS = False
     MAX_OUTGOING_TESTS = 1
     MAX_INCOMMING_TESTS = 1
+    CODEC = codecs
+    PROTOCOL = protocols
+    COMMANDER_PROTOCOL = protocols
 
 
 class Identification(object):

@@ -102,10 +102,10 @@ class ActionMan(Thread):
             testId = TestManager.startTest(action.getTestName(), action.getTestOptions())
             # TODO: manage results here
         except TestArgumentError as e:
-            CommanderServer.addError(e.getUsage())
+            CommanderServer.addError(action.getTestName(), e.getUsage())
             cls.logger.warning("Test called with wrong arguments or syntax : %s", action.getOptions())
         except TestError as e:
-            CommanderServer.addError(e.getReason())
+            CommanderServer.addError(action.getTestName(), e.getReason())
             raise e
         
     @classmethod

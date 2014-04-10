@@ -7,17 +7,15 @@ __all__ = ['Server']
 
 from .client import Client
 from calls.actions import Action
-from calls.messages import Message, TesterMessage, TesteeAnswer, BroadCast, Hello, \
-    TestMessage
+from calls.messages import Message, TesterMessage, TesteeAnswer, BroadCast, \
+    TestMessage, Hello
 import calls.messagetoaction as MTA
-from consts import Consts, Identification, Urls
+from consts import Params, Identification
 from managers.probes import ProbeStorage
 from managers.tests import TestManager, TestResponder
 from queue import PriorityQueue
-from socketserver import ThreadingMixIn
 from threading import Thread, Event
-from http.server import HTTPServer, SimpleHTTPRequestHandler
-import datetime, logging, pickle, urllib
+import logging
 
 class Server(Thread):
     '''
@@ -35,7 +33,8 @@ class Server(Thread):
     logger = logging.getLogger()
     
     def __init__(self):
-        self.listener = __class__.Listener(self)
+        self.helper = self.Helper(self)
+        self.listener = Params.PROTOCOL.Listener(self.helper)
         #init the thread
         Thread.__init__(self)
         self.setName("Server")
@@ -103,97 +102,26 @@ class Server(Thread):
             TestResponder.handleMessage(message)
         else:
             Server.addTask(MTA.toAction(message))
-
-
-
-    class Listener(ThreadingMixIn,HTTPServer, Thread):
-        '''
-        Threaded listener that processes a request on the server
-
-        '''
+    
+    class Helper(object):
         def __init__(self, server):
-            HTTPServer.__init__(self,("", Consts.PORT_NUMBER), __class__.RequestHandler)
             self.server = server
-            Thread.__init__(self)
-            
-        def run(self):
-            self.serve_forever();
 
-        def close(self):
-            self.server_close();
-            
-        def addTask(self,action):
-            Server.addTask(action)
+        def treatMessage(self, message):
+            self.server.treatMessage(message)
         
+        def getId(self):
+            return Identification.PROBE_ID
+    
+        def getStatus(self):
+            from managers.actions import ActionMan
+            return ActionMan.getStatus()
+    
+        def handleResponse(self, response, message):
+            if (isinstance(message, Hello)):
+                message.setRemoteIp(response.client_address[0])
+            return "ok"
 
-        class RequestHandler(SimpleHTTPRequestHandler):
-            '''
-            Handler that does the actual work
+        def getLogger(self):
+            return self.server.logger
 
-            '''
-            def __init__(self, request, client_address, server_socket):
-                SimpleHTTPRequestHandler.__init__(self, request, client_address, server_socket)
-            
-            def log_message(self, format, *args):
-                Server.logger.debug("Process message : %s -- [%s] %s" % (self.address_string(),
-                                                                                    self.log_date_time_string(),
-                                                                                    format % args))
-
-            def do_POST(self):
-                Server.logger.debug("Handling POST request from another probe")
-                contentLength = self.headers.get("content-length")
-                #read content
-                args = self.rfile.read(int(contentLength))
-                #convert from bytes to string
-                args = str(args,Consts.POST_MESSAGE_ENCODING)
-                # parse our string to a dictionary
-                args = urllib.parse.parse_qs(args, keep_blank_values = True, strict_parsing=True, encoding=Consts.POST_MESSAGE_ENCODING)
-                # get our object as string and transform it to bytes
-                message = bytes(args.get(Consts.POST_MESSAGE_KEYWORD)[0], Consts.POST_MESSAGE_ENCODING)
-                # transform our bytes into an object
-                message = pickle.loads(message)
-
-                if (isinstance(message, Hello)):
-                    message.setRemoteIp(self.client_address[0])
-
-                self.send_response(200)
-                self.send_header("Content-type", "text/plain")
-                self.send_header("Content-Length", len("ok"))
-                self.send_header("Last-Modified", str(datetime.datetime.now()))
-                self.end_headers()
-                self.wfile.write("ok".encode())
-
-                # give the message to our server so that it is treated
-                self.server.server.treatMessage(message)
-            
-            def do_GET(self):
-                query = urllib.parse.urlparse(self.path).path
-                if query == Urls.SRV_ID_QUERY:
-                    self.giveId()
-                elif query == Urls.SRV_STATUS_QUERY:
-                    self.giveStatus()
-                else:
-                    self.giveId()
-
-            def giveId(self):
-                Server.logger.debug("Server : handling get request, giving my ID : %s", Identification.PROBE_ID)
-                myId = str(Identification.PROBE_ID).encode(Consts.POST_MESSAGE_ENCODING)
-                #answer with your id
-                self.send_response(200)
-                self.send_header("Content-type", "text/plain")
-                self.send_header("Content-Length", len(myId))
-                self.send_header("Last-Modified", str(datetime.datetime.now()))
-                self.end_headers()
-                self.wfile.write(myId)
-
-            def giveStatus(self):
-                from managers.actions import ActionMan
-#                 Server.logger.debug("Server : handling get request, giving my ID : " + str(Identification.PROBE_ID))
-                status = str(ActionMan.getStatus()).encode(Consts.POST_MESSAGE_ENCODING)
-                # answer with your id
-                self.send_response(200)
-                self.send_header("Content-type", "text/plain")
-                self.send_header("Content-Length", len(status))
-                self.send_header("Last-Modified", str(datetime.datetime.now()))
-                self.end_headers()
-                self.wfile.write(status)
