@@ -53,7 +53,7 @@ class CommanderServer(Thread):
 
     @classmethod
     def addResult(cls, testName, result):
-        cls.resultsQueue.put("%s %s" % (testName, result))
+        cls.resultsQueue.put("%s : %s" % (testName, result))
 
     @classmethod
     def addError(cls, testName, error):
