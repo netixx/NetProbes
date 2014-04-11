@@ -40,10 +40,7 @@ class Interface(object):
         try:
             cmd = Command(Parser(command), self)
             cmd.start()
-            cmd.join()
-            time.sleep(0.3)
-            self.triggerFetchProbes()
-            self.updateStatus("Command done...")
+#             cmd.join()
         except (ValueError, NoSuchCommand):
             pass
 #       self.updateStatus("Command is false or unkown")
@@ -105,6 +102,7 @@ class Interface(object):
 class Parser(object):
 
     def __init__(self, command):
+        self.rcommand = command
         self.message = None
         self.errors = None
         args = argparse.ArgumentParser(description="Parses the user command")
@@ -138,6 +136,9 @@ class Parser(object):
             self.errors = args.format_usage()
 #         if (len(self.aCommand) < 2):
 #             raise ValueError("The argument supplied must at least have 2 words")
+
+    def getCommand(self):
+        return self.rcommand
 
     def getParams(self):
         return self.command
@@ -194,5 +195,8 @@ class Command(Thread):
                     # retry later
                     tryAgain = True
                     time.sleep(2)
+            time.sleep(0.3)
+            self.interface.triggerFetchProbes()
+            self.interface.updateStatus("Command '%s' sent" % self.parser.getCommand())
         else:
             raise NoSuchCommand()
