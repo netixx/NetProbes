@@ -15,14 +15,24 @@ class ProbeStorage(object):
 
     '''
     knownProbes = {}
-    knownProbesLock = RLock()
+    __knownProbesLock = RLock()
         
     def __init__(self):
         pass
+    
+    @classmethod
+    def isKnownId(cls, probeId):
+        with cls.__knownProbesLock:
+            return id in cls.knownProbes.keys()
+
+    @classmethod
+    def isKnownIp(cls, ip):
+        with cls.__knownProbesLock:
+            return ip in [p.getIp() for p in cls.knownProbes.values()]
 
     @classmethod
     def delProbeById(c, probeid):
-        with c.knownProbesLock:
+        with c.__knownProbesLock:
             c.knownProbes[probeid].disconnect()
             c.knownProbes.pop(probeid)
     
@@ -30,7 +40,7 @@ class ProbeStorage(object):
     @classmethod
     def addProbe(cls, probe):
         assert isinstance(probe, Probe)
-        with cls.knownProbesLock:
+        with cls.__knownProbesLock:
             cls.knownProbes[probe.getId()] = probe
 
     @classmethod
@@ -47,15 +57,15 @@ class ProbeStorage(object):
 
     @classmethod
     def getProbeById(cls, probeId):
-        with cls.knownProbesLock:
+        with cls.__knownProbesLock:
             try :
                 return cls.knownProbes[probeId]
-            except KeyError:
-                raise NoSuchProbe
+            except KeyError as e:
+                raise NoSuchProbe(e)
 
     @classmethod
     def closeAllConnections(cls):
-        with cls.knownProbesLock:
+        with cls.__knownProbesLock:
             for probeId in cls.knownProbes.viewkeys():
                 cls.disconnectFromProbe(probeId)
 
@@ -66,7 +76,7 @@ class ProbeStorage(object):
 
     @classmethod
     def numberOfConnections(cls):
-        with cls.knownProbesLock:
+        with cls.__knownProbesLock:
             return len(cls.getConnectedProbes())
     
     @classmethod
@@ -75,22 +85,22 @@ class ProbeStorage(object):
     
     @classmethod
     def getAllProbes(cls):
-        with cls.knownProbesLock:
+        with cls.__knownProbesLock:
             return cls.knownProbes.values()
 
     @classmethod
     def getAllOtherProbes(cls):
-        with cls.knownProbesLock:
+        with cls.__knownProbesLock:
             return [ probe for probe in cls.knownProbes.values() if probe.getId() != Identification.PROBE_ID]
 
     @classmethod
     def getIdAllOtherProbes(cls):
-        with cls.knownProbesLock:
+        with cls.__knownProbesLock:
             return [ probeId for probeId in cls.knownProbes.keys() if probeId != Identification.PROBE_ID]
 
     @classmethod
     def getKeys(cls):
-        with cls.knownProbesLock:
+        with cls.__knownProbesLock:
             return cls.knownProbes.keys()
         
     @staticmethod

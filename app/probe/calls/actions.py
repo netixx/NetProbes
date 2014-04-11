@@ -42,6 +42,15 @@ class Add(Action):
         return self.idSonde
 
 
+class AddPrefix(Action):
+    
+    def __init__(self, addPrefix):
+        self.addPrefix = addPrefix
+    
+    def getPrefix(self):
+        return self.addPrefix
+
+
 class UpdateProbes(Action):
     '''Add the given list of probes to the hashtable (probestorage)'''
     def __init__(self, probeList):

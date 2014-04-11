@@ -13,9 +13,9 @@ import calls.messagetoaction as MTA
 from consts import Params, Identification
 from managers.probes import ProbeStorage
 from managers.tests import TestManager, TestResponder
-from queue import PriorityQueue
 from threading import Thread, Event
 import logging
+from managers.actions import ActionMan
 
 class Server(Thread):
     '''
@@ -28,8 +28,6 @@ class Server(Thread):
     
     '''
 
-    #the list of actions to be done
-    actionQueue = PriorityQueue()
     logger = logging.getLogger()
     
     def __init__(self):
@@ -46,30 +44,9 @@ class Server(Thread):
         self.listener.start()
         self.isUp.set()
 
-    @classmethod
-    def addTask(cls, action):
-        cls.logger.debug("Queued new Action %s", action.__class__.__name__)
-        assert isinstance(action, Action)
-        cls.actionQueue.put((action.priority, action))
-    
-    @classmethod
-    def getTask(cls):
-        cls.logger.debug("Polled new action from queue")
-        result = cls.actionQueue.get(True)[1]
-        return result
-    
-    @classmethod
-    def taskDone(cls):
-        cls.actionQueue.task_done()
-        
-    @classmethod
-    def allTaskDone(cls):
-        cls.actionQueue.join()
-    
     def quit(self):
         self.logger.info("Closing Server")
         self.listener.close()
-        self.actionQueue.join()
 
     @classmethod
     def treatMessage(cls, message):
@@ -84,10 +61,10 @@ class Server(Thread):
             cls.treatTestMessage(message)
         elif isinstance(message, BroadCast):
             cls.logger.debug("Handling Broadcast")
-            Server.addTask(MTA.toAction(message.getMessage()))
+            ActionMan.addTask(MTA.toAction(message.getMessage()))
             Client.broadcast(message)
         else:
-            Server.addTask(MTA.toAction(message))
+            ActionMan.addTask(MTA.toAction(message))
 
     @classmethod
     def treatTestMessage(cls, message):
@@ -101,7 +78,7 @@ class Server(Thread):
             cls.logger.debug("Handling TesterMessage")
             TestResponder.handleMessage(message)
         else:
-            Server.addTask(MTA.toAction(message))
+            ActionMan.addTask(MTA.toAction(message))
     
     class Helper(object):
         def __init__(self, server):

@@ -7,7 +7,7 @@ Adds action directly to the server action queue
 '''
 __all__ = ['CommanderServer']
 
-import copy, logging, http.client, pickle, datetime, urllib.parse
+import copy, logging, pickle, datetime, urllib.parse
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from queue import Queue
 from socketserver import ThreadingMixIn
@@ -19,9 +19,10 @@ import common.consts as cconsts
 import calls.actions as a
 import calls.messages as m
 from managers.probes import ProbeStorage
-from consts import Consts, Identification
+from consts import Identification, Params
 from .client import Client
 from .server import Server
+from managers.actions import ActionMan
 
 class Parameters(object):
     COMMANDER_PORT_NUMBER = 6000
@@ -142,7 +143,7 @@ class CommanderServer(Thread):
                 CommanderServer.logger.debug("Handling constructed message")
                 if(isinstance(message, Add)):
                     CommanderServer.logger.info("Trying to add probe with ip " + str(message.targetIp))
-                    probeId = self.getRemoteId(message.targetIp)
+                    probeId = Params.PROTOCOL.getRemoteId(message.targetIp)
 
                     addMessage = m.Add("", probeId, message.targetIp)
                     selfAddMessage = copy.deepcopy(addMessage)
@@ -159,14 +160,4 @@ class CommanderServer(Thread):
 
                 if(isinstance(message, Do)):
                     CommanderServer.logger.info("Trying to do a test : %s", message.test)
-                    Server.addTask(a.Do(message.test, message.testOptions, resultCallback = CommanderServer.addResult, errorCallback = CommanderServer.addError))
-
-
-            def getRemoteId(self, targetIp):
-                connection = http.client.HTTPConnection(targetIp, Parameters.PORT_NUMBER);
-                connection.connect()
-                connection.request("GET", Parameters.URL_SRV_ID_QUERY, "", {})
-                probeId = connection.getresponse().read().decode(Parameters.REPLY_MESSAGE_ENCODING)
-                CommanderServer.logger.info("Id of probe with ip " + str(targetIp) + " is " + str(probeId))
-                connection.close()
-                return probeId
+                    ActionMan.addTask(a.Do(message.test, message.testOptions, resultCallback = CommanderServer.addResult, errorCallback = CommanderServer.addError))

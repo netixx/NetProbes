@@ -14,18 +14,21 @@ import logging
 from calls.messages import Hello, Bye
 from consts import Identification
 from inout.client import Client
-from inout.commanderServer import CommanderServer
-from inout.server import Server
 from managers.probes import ProbeStorage
 from exceptions import TestError, TestArgumentError, TestInProgress, ActionError, \
-    NoSuchProbe
+    NoSuchProbe, ProbeConnectionException, ToManyTestsInProgress
 import calls.actions as a
 from .tests import TestResponder, TestManager
+from consts import Params
+from queue import PriorityQueue
+
+
+from ipaddress import ip_network
 
 class ActionMan(Thread):
 
     '''Links Action classes to (static) methods'''
-    manager = { "Add" : "manageAdd",
+    mapping = { "Add" : "manageAdd",
                 "Remove" : "manageRemove",
                 "Transfer" : "manageTransfer",
                 "Do" : "manageDo",
@@ -33,8 +36,10 @@ class ActionMan(Thread):
                 "Prepare" : "managePrepare",
                 "UpdateProbes" : "manageUpdateProbes"
               }
-    
+
     logger = logging.getLogger()
+    # the list of actions to be done
+    actionQueue = PriorityQueue()
 
     def __init__(self):
         #init the thread
@@ -42,32 +47,72 @@ class ActionMan(Thread):
         self.setName("ActionManager")
         self.stop = False
     
+    @classmethod
+    def addTask(cls, action):
+        cls.logger.debug("Queued new Action %s", action.__class__.__name__)
+        assert isinstance(action, a.Action)
+        cls.actionQueue.put((action.priority, action))
+
+    @classmethod
+    def getTask(cls):
+        cls.logger.debug("Polled new action from queue")
+        result = cls.actionQueue.get(True)[1]
+        return result
+
+    @classmethod
+    def taskDone(cls):
+        cls.actionQueue.task_done()
+
+    @classmethod
+    def allTaskDone(cls):
+        cls.actionQueue.join()
+
     def run(self):
         while not self.stop:
-            task = Server.getTask()
+            task = self.getTask()
             try:
-                getattr(self.__class__, self.manager.get(task.__class__.__name__))(task)
+                getattr(self.__class__, self.mapping.get(task.__class__.__name__))(task)
             except ActionError:
                 # TODO: convert to warning ??
                 self.logger.error("Action execution failed", exc_info = 1)
             except:
                 self.logger.error("Unexpected error occurred while treating action", exc_info = 1)
-            Server.taskDone()
+            finally:
+                self.taskDone()
 
     def quit(self):
         self.logger.info("Stopping ActionMan !")
         self.stop = True
+        self.actionQueue.join()
     
     @classmethod
     def manageAdd(cls, action):
         '''Add a probe to the DHT'''
         assert isinstance(action, a.Add)
         cls.logger.debug("Managing Add task")
+        cls.logger.info("Added probe %s, id %s to known probes", action.getIpSonde(), action.getIdSonde())
         #add the probe to the local DHT
         ProbeStorage.addProbe(ProbeStorage.newProbe(action.getIdSonde(), action.getIpSonde()))
         if action.doHello:
             # tell the new probe about all other probe
             Client.send(Hello(action.getIdSonde(), list(ProbeStorage.getAllOtherProbes()), sourceId = Identification.PROBE_ID))
+
+    @classmethod
+    def manageAddPrefix(cls, action):
+        assert isinstance(action , a.AddPrefix)
+        try:
+            net = ip_network(action.getPrefix(), strict = False)
+            for host in net.hosts():
+                try:
+                    h = str(host)
+                    if not ProbeStorage.isKnownIp(h):
+                        Thread(target = cls.addTask, args = [a.Add(h, Params.PROTOCOL.getRemoteId(h))]).start()
+                except ProbeConnectionException as e:
+                    cls.logger.info("Adding probe failed %s : %s", h, e)
+                except Exception as e:
+                    cls.logger.warning("Error while adding probe %s : %s", h, e)
+        except ValueError:
+            cls.logger.warning("Wrong prefix given %s", action.getPrefix())
 
     @classmethod
     def manageUpdateProbes(cls, action):
@@ -97,12 +142,15 @@ class ActionMan(Thread):
         '''
         assert isinstance(action, a.Do)
         cls.logger.debug("Managing Do task")
-        cls.logger.info("Starting test %s", action.getTestName())
+        cls.logger.info("Request for test %s", action.getTestName())
         try:
             testId = TestManager.startTest(action.getTestName(), action.getTestOptions(), action.getResultCallback(), action.getErrorCallback())
             action.setTestId(testId)
+        except ToManyTestsInProgress as e:
+            cls.logger.info("Test %s not started : %s", action.getTestName(), e)
+            action.getErrorCallback()(action.getTestName(), e)
         except TestError as e:
-            CommanderServer.addError(action.getTestName(), e.getReason())
+            action.getErrorCallback()(action.getTestName(), e.getReason())
             raise e
         
     @classmethod

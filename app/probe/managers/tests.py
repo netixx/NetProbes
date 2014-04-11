@@ -182,7 +182,7 @@ class TestManager(object):
     variable.
 
     '''
-
+    __testManLock = RLock()
     testManagers = {}
 
     @classmethod
@@ -195,28 +195,29 @@ class TestManager(object):
 
         '''
         try:
-            if len(cls.testManagers) > p.MAX_OUTGOING_TESTS:
-                raise ToManyTestsInProgress("To much tests are currently running : %s on %s allowed" % (len(cls.testManagers), p.MAX_OUTGOING_TESTS))
-            try :
-                test = cls.getTesterTestClass(testName)(testOptions)
-            except TestArgumentError as e:
-                errorCallback(testName, e.getUsage())
-                testLogger.warning("Test called with wrong arguments or syntax : %s", testOptions)
-                return
-            tm = _TestManager(test, formatResult, resultCallback, errorCallback)
-            testLogger.info("Creating test %s with id : %s", test.getName(), test.getId())
-            tm.start()
-            cls.testManagers[test.getId()] = tm
-            return tm.test.getId()
+            with cls.__testManLock:
+                if len(cls.testManagers) >= p.MAX_OUTGOING_TESTS:
+                    raise ToManyTestsInProgress("To much tests are currently running : %s on %s allowed" % (len(cls.testManagers), p.MAX_OUTGOING_TESTS))
+                try :
+                    test = cls.getTesterTestClass(testName)(testOptions)
+                except TestArgumentError as e:
+                    errorCallback(testName, e.getUsage())
+                    testLogger.warning("Test called with wrong arguments or syntax : %s", testOptions)
+                    return
+                tm = _TestManager(test, formatResult, resultCallback, errorCallback)
+                testLogger.info("Creating test %s with id : %s", test.getName(), test.getId())
+                cls.testManagers[test.getId()] = tm
+                tm.start()
+                return tm.test.getId()
+        except ToManyTestsInProgress:
+            raise
         except TestError as e:
             testLogger.error("Failed to run test : \n" + e.getReason(), exc_info = 1)
             raise
         except ImportError as e:
             raise TestError("Could not load test class for test : %s", testName)
         except:
-            import traceback
-            traceback.print_exc()
-#             raise TestError("Unexpected error occurred while loading test %s", e)
+            raise TestError("Unexpected error occurred while loading test %s", e)
 
     @classmethod
     def handleMessage(cls, message):
@@ -241,8 +242,10 @@ class TestManager(object):
 
     @classmethod
     def cleanTest(cls, testId):
-        cls.testManagers.pop(testId)
-
+        try:
+            cls.testManagers.pop(testId)
+        except KeyError:
+            pass
 
 class _TestResponder(Thread):
     NAME_TPL = "TestResponder_%s-%s"

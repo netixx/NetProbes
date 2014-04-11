@@ -48,6 +48,7 @@ class Client(Thread):
             finally:
                 Client.messageStack.task_done()
 
+
     @classmethod
     def quit(cls):
         cls.logger.info("Stopping the Client")
@@ -64,6 +65,7 @@ class Client(Thread):
         cls.logger.debug("Adding a message %s to the client stack", message.__class__.__name__)
         assert isinstance(message, Message)
         cls.messageStack.put(message)
+        cls.logger.debug("Message %s added to the stack", message.__class__.__name__)
     
     @classmethod
     def broadcast(cls, message, toMyself = False):
@@ -81,18 +83,26 @@ class Client(Thread):
         else:
             prop = ProbeStorage.getIdAllOtherProbes()
             if toMyself:
-                prop.append(Identification.PROBE_ID)
+                # make sure we are the first on our list
+                prop.insert(0, Identification.PROBE_ID)
+
+        if len(prop) == 1:
+            message.targetId = prop[0]
+            cls.send(message)
+        elif len(prop) > 1:
+            if len(prop) < Consts.PROPAGATION_RATE:
+                cls.send(BroadCast(prop[0], message, prop[1:]))
             
-        if len(prop) > 0:
-            splitSize = min(Consts.PROPAGATION_RATE, len(prop))
-            j = 0
-            step = (int) (len(prop) / splitSize)
-            while j < len(prop):
-                propIds = prop[j:(j + step)]
-                j += step
-                cls.send(BroadCast(message, propIds))
+            pRate = Consts.PROPAGATION_RATE
+            # take targets for first hop out of the list
+            sendTo = prop[0:pRate]
+            i = 1
+            while (i + 1) * pRate < len(prop):
+                propIds = prop[i * pRate:(i + 1) * pRate]
+                cls.send(BroadCast(sendTo[i], message, propIds))
+                i = i + 1
             # be sure to propagate to all probes
-            cls.send(BroadCast(message, prop[j:]))
+            cls.send(BroadCast(sendTo[i], message, prop[i * pRate:]))
 
     @classmethod
     def allMessagesSent(cls):
@@ -103,8 +113,8 @@ class Client(Thread):
     def sendMessage(self, message):
         self.logger.debug("Sending the message : %s to %s with ip %s",
                   message.__class__.__name__ ,
-                  message.targetId,
-                  ProbeStorage.getProbeById(message.targetId).getIp())
+                  message.getTarget(),
+                  ProbeStorage.getProbeById(message.getTarget()).getIp())
         self.sender.send(message)
 
 #     def sendStatusMessage(self, statusMessage):

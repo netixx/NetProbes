@@ -17,6 +17,7 @@ Created on 7 juin 2013
 
 import os
 import sys
+from calls import actions
 
 directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(directory)
@@ -57,12 +58,13 @@ def addLogs():
 
     logs.addStdoutAndStdErr(logLevel, logger, formatter)
 
-    logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, "probe.log"), 30, logger, formatter)
+    # TODO: readd file logs when tests are done
+#     logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, "probe.log"), 30, logger, formatter)
 
     testLogger = logging.getLogger(TESTS_LOGGER_NAME);
     testFormatter = Formatter(TEST_LOG_FORMAT)
 
-    logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, "tests.log"), 30, testLogger, testFormatter)
+#     logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, "tests.log"), 30, testLogger, testFormatter)
     testLogger.propagate = True
 
 if __name__ == '__main__':
@@ -88,6 +90,13 @@ if __name__ == '__main__':
                         action = 'append',
                         default = [],
                         help = 'daemon to start with the probe for background monitoring purposes')
+
+    parser.add_argument('--add-prefix',
+                        dest = 'add_prefix',
+                        action = 'append',
+                        default = [],
+                        help = 'Prefix to scan to add probes automatically')
+
 
     args = parser.parse_args()
 
@@ -135,6 +144,12 @@ if __name__ == '__main__':
         c.start()
         c.isUp.wait()
         logging.getLogger().info("Startup Done")
+
+        for prefix in args.add_prefix:
+            logging.getLogger().info("Adding probes in prefix %s", prefix)
+            ActionMan.manageAddPrefix(actions.AddPrefix(prefix))
+            logging.getLogger().info("Probe(s) in prefix %s added", prefix)
+
     except :
         logging.getLogger().critical("Critical error in probe", exc_info = 1)
 #     c.send(Add("id", "probeid", "probeip"))

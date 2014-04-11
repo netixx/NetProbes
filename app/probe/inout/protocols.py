@@ -14,6 +14,9 @@ def connect(connection):
 def disconnect(connection):
     pass
 
+def getRemoteId(probeIp):
+    pass
+
 class Sender(object):
 
     def send(self, message):

@@ -7,7 +7,7 @@ Created on 9 avr. 2014
 import urllib, logging, datetime
 from consts import Params, Identification
 from calls.messages import TestMessage
-from exceptions import NoSuchProbe
+from exceptions import NoSuchProbe, ProbeConnectionException
 from managers.probes import ProbeStorage, ProbeConnections
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from http.client import HTTPConnection
@@ -22,7 +22,18 @@ def connect(connection):
     
 def disconnect(connection):
     connection.close()
-    
+
+def getRemoteId(targetIp):
+    try:
+        connection = HTTPConnection(targetIp, Parameters.PORT_NUMBER);
+        connection.connect()
+        connection.request("GET", Parameters.URL_SRV_ID_QUERY, "", {})
+        probeId = connection.getresponse().read().decode(Parameters.REPLY_MESSAGE_ENCODING)
+    #     logger.logger.info("Id of probe with ip " + str(targetIp) + " is " + str(probeId))
+        connection.close()
+        return probeId
+    except Exception as e:
+        raise ProbeConnectionException(e)
 
 class Parameters(object):
     PORT_NUMBER = 5000
