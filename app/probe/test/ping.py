@@ -12,7 +12,7 @@ import re, argparse
 
 name = "Ping"
 
-class PingError(TestError):
+class PingFail(TestError):
     pass
 
 class PingParseError(TestError):
@@ -41,6 +41,8 @@ class Ping(object):
         parser.add_argument('targets',
                             metavar = 'TARGETS',
                             nargs = "+")
+        # option for ping reciprocity
+        # regular ping options
         parser.add_argument('-c',
                             type = int,
                             metavar = 'NPINGS',
@@ -141,7 +143,7 @@ class Ping(object):
         r = r'[uU]nreachable'
         m = re.search(r, pingOutput)
         if m is not None:
-            raise PingError('Destination unreachable')
+            raise PingFail('Destination unreachable')
         r = r'(\d+) packets transmitted, (\d+) (?:packets)? received'
         m = re.search(r, pingOutput)
         if m is None:
@@ -165,7 +167,7 @@ class Ping(object):
         r = r'[uU]nreachable'
         m = re.search(r, pingOutput)
         if m is not None:
-            raise PingError('Destination unreachable')
+            raise PingFail('Destination unreachable')
         r = r'(\d+) packets transmitted, (\d+) (?:packets)? received'
         m = re.search(r, pingOutput)
         if m is None:
@@ -182,7 +184,7 @@ class Ping(object):
 
 class TesterPing(TesterTest, Ping):
     
-    rformat = "Ping statistics %s"
+    rformat = "Ping statistics for %s : %s\n"
     eformat = "Ping failed %s"
     
     def __init__(self, options):
@@ -191,6 +193,8 @@ class TesterPing(TesterTest, Ping):
         TesterTest.__init__(self, options)
         self.parseOptions()
         self.format = None
+        self.errors = {}
+        self.allSuccess = False
 
     '''
         Prepare yourself for the test
@@ -203,21 +207,26 @@ class TesterPing(TesterTest, Ping):
     '''
     def doTest(self):
         self.logger.info("Starting test")
-        try:
-            probeIp = TestServices.getProbeIpById(self.targets[0])
-            r = self.makePing(probeIp)
-            self.stats = []
-            if self.isSweep:
-                self.stats.append(SweepStats(*r))
-            else:
-                self.stats.append(PingStats(*r))
-            self.success = True
-        except PingError as e:
-            self.errors = e
-            self.success = True
-        except (PingParseError, Exception) as e:
-            self.success = False
-            raise TestError(e)
+
+        self.stats = {}
+        self.psuccess = {}
+        self.perrors = {}
+        for target in self.targets:
+            try:
+                probeIp = TestServices.getProbeIpById(target)
+                r = self.makePing(probeIp)
+                if self.isSweep:
+                    self.stats[target] = SweepStats(*r)
+                else:
+                    self.stats[target] = PingStats(*r)
+                self.psuccess[target] = True
+            except PingFail as e:
+                # TODO: self.stats[target] = e ?
+                self.perrors[target] = e
+                self.psuccess[target] = True
+            except (PingParseError, Exception) as e:
+                self.psuccess[target] = False
+                self.perrors[target] = TestError(e)
 
     '''
         Prepare yourself for finish
@@ -230,16 +239,21 @@ class TesterPing(TesterTest, Ping):
         Should populate self.result
     '''
     def doResult(self, reports):
-        if self.success:
-            if self.errors is not None:
-                self.result = self.eformats % self.errors
-                self.rawResult = self.errors
-            else:   
-                self.result = self.rformat % self.stats[0].printAll()
-                self.rawResult = self.stats
-        else:
-            raise TestError(self.errors)
-
+        self.result = ""
+        self.errors = ""
+        for target in self.targets:
+            if not self.psuccess[target]:
+                self.errors += str(self.perrors[target])
+            else:
+                if target in self.perrors and self.perrors[target] is not None:
+                    self.result += self.eformats % (target, self.perrors[target])
+                else:
+                    self.result += self.rformat % (target, self.stats[target].printAll())
+#         self.rawResult = self.errors
+        self.rawResult = self.stats
+#         else:
+#             raise TestError(self.errors)
+    
 class TesteePing(TesteeTest, Ping):
 
     def __init__(self, options, testId):
