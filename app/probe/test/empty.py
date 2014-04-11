@@ -6,10 +6,8 @@ Useful to test the probe test mechanism
 '''
 __all__ = ['TesterEmpty', 'TesteeEmpty']
 
-from tests import Report
+from interfaces.nettests import Report, TesteeTest, TesterTest
 from consts import Identification
-from probe.tests import TesteeTest, TesterTest
-
 
 name = "Empty"
 

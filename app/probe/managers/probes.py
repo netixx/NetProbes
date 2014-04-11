@@ -5,7 +5,7 @@ Storage of the probes and probe object
 '''
 from threading import RLock
 from consts import Consts, Identification
-from exceptions import NoSuchProbe
+from interfaces.excs import NoSuchProbe
 
 class ProbeStorage(object):
     '''
@@ -137,7 +137,7 @@ class Probe(object):
         self.id, self.ip = state
 
 from consts import Params
-from exceptions import ProbeConnectionException
+from interfaces.excs import ProbeConnectionException
 
 class ProbeConnections(object):
 

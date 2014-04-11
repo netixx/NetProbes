@@ -10,7 +10,7 @@ Internally the TestResponder creates a _TestResponder thread for each tests.
 __all__ = ['TestManager', 'TestResponder']
 
 import importlib, logging
-from tests import LOGGER_NAME
+from interfaces.nettests import LOGGER_NAME
 testLogger = logging.getLogger(LOGGER_NAME)
 
 def testFactory(test, mode = ""):
@@ -27,7 +27,7 @@ from inout.client import Client
 from calls.messages import Prepare, Over, Abort, Ready, Result, TesterMessage, \
     TesteeAnswer
 from consts import Identification
-from exceptions import TestError, TestAborted
+from interfaces.excs import TestError, TestAborted
 import time
 from managers.probes import ProbeStorage
 
@@ -167,8 +167,8 @@ class _TestManager(Thread):
 
 
 from consts import Params as p
-from exceptions import ToManyTestsInProgress, TestArgumentError
-from tests import TESTER_MODE
+from interfaces.excs import ToManyTestsInProgress, TestArgumentError
+from interfaces.nettests import TESTER_MODE
 
 class TestManager(object):
     '''
@@ -295,7 +295,7 @@ class _TestResponder(Thread):
         TestResponder.cleanTest(self.test.getId())
 
 
-from tests import TESTEE_MODE
+from interfaces.nettests import TESTEE_MODE
 
 class TestResponder(object):
     '''
@@ -319,7 +319,7 @@ class TestResponder(object):
             cls.testResponders[testId] = tr
             testLogger.info("TestResponder : responding new test %s with id : %s from source : %s", testName, testId, sourceId)
             tr.start()
-        except ImportError as e:
+        except ImportError:
             raise TestError("Error while loading responder test %s" % testName)
 
 

@@ -11,17 +11,16 @@ __all__ = ['ActionMan']
 
 from threading import Thread
 import logging
+from queue import PriorityQueue
 from calls.messages import Hello, Bye
 from consts import Identification
 from inout.client import Client
 from managers.probes import ProbeStorage
-from exceptions import TestError, TestArgumentError, TestInProgress, ActionError, \
-    NoSuchProbe, ProbeConnectionException, ToManyTestsInProgress
 import calls.actions as a
 from .tests import TestResponder, TestManager
 from consts import Params
-from queue import PriorityQueue
-
+from interfaces.excs import TestError, ActionError, \
+    NoSuchProbe, ProbeConnectionException, ToManyTestsInProgress
 
 from ipaddress import ip_network
 

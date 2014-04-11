@@ -7,7 +7,7 @@ Created on 9 avr. 2014
 import urllib, datetime
 from consts import Params, Identification
 from calls.messages import TestMessage
-from exceptions import NoSuchProbe, ProbeConnectionException
+from interfaces.excs import NoSuchProbe, ProbeConnectionException
 from managers.probes import ProbeStorage, ProbeConnections
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from http.client import HTTPConnection

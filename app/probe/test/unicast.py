@@ -7,8 +7,8 @@ __all__ = ['TesterUnicast', 'TesteeUnicast']
 
 import socket, argparse
 from consts import Identification
-from exceptions import TestArgumentError
-from tests import Report, TestServices, TesterTest, TesteeTest
+from interfaces.excs import TestArgumentError
+from interfaces.nettests import Report, TestServices, TesterTest, TesteeTest
 
 name = "Unicast"
 

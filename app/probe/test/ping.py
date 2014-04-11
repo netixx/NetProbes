@@ -6,8 +6,8 @@ Protocols tcp and udp are supported
 __all__ = ['TesterPing', 'TesteePing']
 
 from consts import Identification
-from exceptions import TestArgumentError, TestError
-from tests import Report, TestServices, TesterTest, TesteeTest
+from interfaces.excs import TestArgumentError, TestError
+from interfaces.nettests import Report, TestServices, TesterTest, TesteeTest
 import re, argparse
 
 name = "Ping"

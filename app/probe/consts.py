@@ -6,8 +6,8 @@ Module gathering the constants of the probe
 
 __all__ = ['Consts', 'Params', 'Identification']
 
-import inout.codecs as codecs
-import inout.protocols as protocols
+import interfaces.inout.codecs as codecs
+import interfaces.inout.protocols as protocols
 
 
 class Consts(object):

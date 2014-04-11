@@ -4,11 +4,11 @@ Implementation of a broadcast test
 '''
 __all__ = ['TesterBroadcast', 'TesteeBroadcast']
 
-from tests import TestServices, Report, TesterTest, TesteeTest
+from interfaces.nettests import TestServices, Report, TesterTest, TesteeTest
 import socket
 import argparse
 from consts import Identification
-from exceptions import TestArgumentError
+from interfaces.excs import TestArgumentError
 
 name = "Broadcast"
 

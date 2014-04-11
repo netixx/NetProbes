@@ -6,8 +6,8 @@ __all__ = ['TesterMulticast', 'TesteeMulticast']
 
 import socket, argparse, struct
 from consts import Identification
-from exceptions import TestArgumentError
-from tests import Report, TesterTest, TesteeTest
+from interfaces.excs import TestArgumentError
+from interfaces.nettests import Report, TesterTest, TesteeTest
 
 name = "Multicast"
 
