@@ -118,6 +118,12 @@ if __name__ == '__main__':
     Params.COMMANDER_PROTOCOL = http
     Params.CODEC = serialize
 
+    from common.codecs import serialize as cserialize
+    from common.protocols import http as chttp
+    from common.consts import Params as cParams
+    cParams.PROTOCOL = chttp
+    cParams.CODEC = cserialize
+
     addLogs()
 
     try :

@@ -2,12 +2,10 @@
 
 @author: francois
 '''
-
-class CmdSrvUrls(object):
-    CMDSRV_RESULT_QUERY = "/results"
-    CMDSRV_PROBES_QUERY = "/probes"
+import common.intfs.codec as codec
+import common.intfs.protocol as protocol
 
 class Params(object):
-    PROTOCOL = None
-    CODEC = None
+    PROTOCOL = protocol
+    CODEC = codec
     

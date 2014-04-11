@@ -40,6 +40,13 @@ if __name__ == '__main__':
                         default = "127.0.0.1")
 
     args = parser.parse_args()
+
+    from common.consts import Params as cParams
+    from common.protocols import http
+    from common.codecs import serialize
+    cParams.CODEC = serialize
+    cParams.PROTOCOL = http
+
     try :
         commander = interfaceFactory(args.interface_type, args.ip_probe)
         commander.start()

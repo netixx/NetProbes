@@ -4,13 +4,12 @@ Created on 16 juin 2013
 @author: francois
 '''
 from threading import Thread, Event
-from http.client import HTTPConnection, CannotSendRequest, HTTPException
 
-import time, shlex, pickle, urllib, argparse
+import time, shlex, argparse
 
 from common.commanderMessages import Add, Do, Delete
-from consts import Consts
 from exceptions import ProbeConnectionFailed, NoSuchCommand
+from common.consts import Params as cParams
 
 class Interface(object):
     targetIp = "127.0.0.1"
@@ -23,13 +22,13 @@ class Interface(object):
         self.doFetchProbes = Event()
         self.doFetchResults = Event()
         try :
-            self.connection = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
-            self.connection.connect()
-            self.connectionProbes = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
-            self.connectionProbes.connect()
-            self.connectionResults = HTTPConnection(self.targetIp, Consts.COMMANDER_PORT_NUMBER)
-            self.connectionResults.connect()
-        except HTTPException as e:
+            self.connection = cParams.PROTOCOL.createConnection(self.targetIp)
+            cParams.PROTOCOL.connect(self.connection)
+            self.connectionProbes = cParams.PROTOCOL.createConnection(self.targetIp)
+            cParams.PROTOCOL.connect(self.connectionProbes)
+            self.connectionResults = cParams.PROTOCOL.createConnection(self.targetIp)
+            cParams.PROTOCOL.connect(self.connectionResults)
+        except ProbeConnectionFailed as e:
             raise ProbeConnectionFailed("Error while attempting to perform an HTTP request to the probe %s" % self.targetIp)
         except ConnectionRefusedError:
             raise ProbeConnectionFailed("Error while connecting to probe : connection refused")
@@ -69,18 +68,12 @@ class Interface(object):
 
     def fetchProbes(self):
         self.doFetchProbes.clear()
-        self.connectionProbes.request("GET", "/probes", "", {})
-        response = self.connectionProbes.getresponse()
-        pi = response.read(int(response.getheader('content-length')))
-        return pickle.loads(pi)
+        return cParams.PROTOCOL.Sender().requestProbes(self.connectionProbes)
 #         return [Probe("id", "10.0.0.2"), Probe("id 2", "10.0.0.2")]
 
     def fetchResults(self):
         self.doFetchResults.clear()
-        self.connectionResults.request("GET", "/results", "", {})
-        response = self.connectionResults.getresponse()
-        return response.read(int(response.getheader('content-length'))).decode()
-
+        return cParams.PROTOCOL.Sender().requestResults(self.connectionResults)
 
     def updateStatus(self, status):
         pass
@@ -90,9 +83,9 @@ class Interface(object):
 
     def quit(self):
         try:
-            self.connection.close()
-            self.connectionProbes.close()
-            self.connectionResults.close()
+            cParams.PROTOCOL.disconnect(self.connection)
+            cParams.PROTOCOL.disconnect(self.connectionProbes)
+            cParams.PROTOCOL.disconnect(self.connectionResults)
         except:
             pass
 
@@ -177,24 +170,7 @@ class Command(Thread):
     def run(self):
         message = self.parser.getMessage()
         if (message != None):
-            tryAgain = True
-            while(tryAgain):
-                # serialize our message
-                serializedMessage = pickle.dumps(message, 3)
-                # put it in a dictionnary
-                params = {Consts.POST_MESSAGE_KEYWORD : serializedMessage}
-                # transform dictionnary into string
-                params = urllib.parse.urlencode(params, doseq=True, encoding=Consts.POST_MESSAGE_ENCODING)
-                # set the header as header for POST
-                headers = {"Content-type": "application/x-www-form-urlencoded;charset=" + Consts.POST_MESSAGE_ENCODING, "Accept": "text/plain"}
-                try :
-                    self.interface.connection.request("POST", "", params, headers)
-                    self.interface.connection.getresponse()
-                    tryAgain = False
-                except CannotSendRequest:
-                    # retry later
-                    tryAgain = True
-                    time.sleep(2)
+            cParams.PROTOCOL.Sender().send(self.interface.connection, message)
             time.sleep(0.3)
             self.interface.triggerFetchProbes()
             self.interface.updateStatus("Command '%s' sent" % self.parser.getCommand())
