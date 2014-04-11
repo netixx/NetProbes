@@ -69,17 +69,33 @@ class Do(Action):
     '''Do action : does a test'''
 
     priority = 2
-    def __init__(self, testClass, testOptions):
+    def __init__(self, testClass, testOptions, resultCallback, errorCallback):
         super().__init__()
         self.testClass = testClass
         self.testOptions = testOptions
+        self.resultCallback = resultCallback
+        self.errorCallback = errorCallback
         self.priority = 4
+        self.testId = None
 
     def getTestName(self):
         return self.testClass
 
     def getTestOptions(self):
         return self.testOptions
+
+    def getResultCallback(self):
+        return self.resultCallback
+
+    def getErrorCallback(self):
+        return self.errorCallback
+
+    def setTestId(self, testId):
+        self.testId = testId
+
+    def getTestId(self):
+        return self.testId
+
 
 
 class Prepare(Action):

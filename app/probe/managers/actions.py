@@ -99,8 +99,8 @@ class ActionMan(Thread):
         cls.logger.debug("Managing Do task")
         cls.logger.info("Starting test %s", action.getTestName())
         try:
-            testId = TestManager.startTest(action.getTestName(), action.getTestOptions())
-            # TODO: manage results here
+            testId = TestManager.startTest(action.getTestName(), action.getTestOptions(), action.getResultCallback(), action.getErrorCallback())
+            action.setTestId(testId)
         except TestArgumentError as e:
             CommanderServer.addError(action.getTestName(), e.getUsage())
             cls.logger.warning("Test called with wrong arguments or syntax : %s", action.getOptions())

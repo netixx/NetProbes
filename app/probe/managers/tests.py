@@ -34,7 +34,7 @@ from managers.probes import ProbeStorage
 class _TestManager(Thread):
     NAME_TPL = "TestManager_%s-%s"
 
-    def __init__(self, test):
+    def __init__(self, test, formatResult, resultCallback, errorCallback):
         super().__init__()
         self.setName(self.NAME_TPL % (test.getName(), test.getId()))
         '''
@@ -48,6 +48,9 @@ class _TestManager(Thread):
         self.areReportsCollected = Event()
         self.test = test
         self.testError = None
+        self.resultCallback = resultCallback
+        self.errorCallback = errorCallback
+        self.formatResult = formatResult
 
 
     def run(self):
@@ -117,9 +120,9 @@ class _TestManager(Thread):
         testLogger.info("Test cancelled")
 
     def result(self):
-        self.test.doResult(self.reports)
         for target in self.test.getTargets():
             ProbeStorage.disconnectFromProbe(target)
+        self.test.doResult(self.reports)
         testLogger.info("Results processing over, test is done")
 
 
@@ -148,15 +151,19 @@ class _TestManager(Thread):
                 self.areReportsCollected.set()
 
     def finish(self):
+        # TODO: give id instead of name when raw result is asked
         TestManager.cleanTest(self.test.getId())
-        from inout.commanderServer import CommanderServer
         if self.testError is not None:
-            CommanderServer.addError(self.test.getName(), self.testError.getReason())
+            if self.formatResult:
+                self.errorCallback(self.test.getName(), self.testError.getReason())
+            else:
+                self.errorCallback(self.test.getName(), self.testError)
             testLogger.error("An error occurred during test %s : %s", self.getName(), self.testError.getReason())
         else :
-            CommanderServer.addResult(self.test.getName(), self.test.getResult())
-
-
+            if self.formatResult:
+                self.resultCallback(self.test.getName(), self.test.getResult())
+            else:
+                self.resultCallback(self.test.getName(), self.test.getRawResult())
 
 
 from consts import Params as p
@@ -179,7 +186,7 @@ class TestManager(object):
     testManagers = {}
 
     @classmethod
-    def startTest(cls, testName, testOptions):
+    def startTest(cls, testName, testOptions, resultCallback, errorCallback, formatResult = True):
         '''
         Method to call in order to start a test.
         It places a new instance of the TestManager into the static field for access purposes
@@ -191,7 +198,7 @@ class TestManager(object):
             if len(cls.testManagers) > p.MAX_OUTGOING_TESTS:
                 raise ToManyTestsInProgress("To much tests are currently running : %s on %s allowed" % (len(cls.testManagers), p.MAX_OUTGOING_TESTS))
             test = cls.getTesterTestClass(testName)(testOptions)
-            tm = _TestManager(test)
+            tm = _TestManager(test, formatResult, resultCallback, errorCallback)
             testLogger.info("Creating test %s with id : %s", test.getName(), test.getId())
             tm.start()
             cls.testManagers[test.getId()] = tm
@@ -201,6 +208,8 @@ class TestManager(object):
             raise
         except ImportError as e:
             raise TestError("Could not load test class for test : %s", testName)
+        except Exception as e:
+            raise TestError("Unexpected error occurred while loading test %s", e)
 
     @classmethod
     def handleMessage(cls, message):

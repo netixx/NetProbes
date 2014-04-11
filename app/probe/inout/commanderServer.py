@@ -99,12 +99,7 @@ class CommanderServer(Thread):
                 message = bytes(args.get(Parameters.POST_MESSAGE_KEYWORD)[0], Parameters.POST_MESSAGE_ENCODING)
                 # transform our bytes into an object
                 message = pickle.loads(message)
-                self.send_response(200)
-                self.send_header("Content-type", "text/plain")
-                self.send_header("Content-Length", len("ok"))
-                self.send_header("Last-Modified", str(datetime.datetime.now()))
-                self.end_headers()
-                self.wfile.write("ok".encode())
+                self._reply("ok".encode(Parameters.POST_MESSAGE_ENCODING))
                 self.handleMessage(message)
 
             def do_GET(self):
@@ -132,6 +127,9 @@ class CommanderServer(Thread):
                 else :
                     message = "Commander server running, state your command ...".encode(Parameters.POST_MESSAGE_ENCODING)
                 # answer with your id
+                self._reply(message)
+
+            def _reply(self, message):
                 self.send_response(200)
                 self.send_header("Content-type", "text/plain")
                 self.send_header("Content-Length", len(message))
@@ -139,7 +137,7 @@ class CommanderServer(Thread):
                 self.end_headers()
                 self.wfile.write(message)
 
-            
+
             def handleMessage(self, message):
                 CommanderServer.logger.debug("Handling constructed message")
                 if(isinstance(message, Add)):
@@ -161,7 +159,7 @@ class CommanderServer(Thread):
 
                 if(isinstance(message, Do)):
                     CommanderServer.logger.info("Trying to do a test : %s", message.test)
-                    Server.addTask(a.Do(message.test, message.testOptions))
+                    Server.addTask(a.Do(message.test, message.testOptions, resultCallback = CommanderServer.addResult, errorCallback = CommanderServer.addError))
 
 
             def getRemoteId(self, targetIp):

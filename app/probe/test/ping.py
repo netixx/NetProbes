@@ -66,13 +66,17 @@ class Ping(object):
         return sent, received, rttmin, rttavg, rttmax, rttdev
 
 
-class TesterPing(Ping, TesterTest):
-
+class TesterPing(TesterTest, Ping):
+    
+    rformat = "Ping statistics %s"
+    eformat = "Ping failed %s"
+    
     def __init__(self, options):
         self.process = None
         Ping.__init__(self)
         TesterTest.__init__(self, options)
         self.parseOptions()
+        self.format = None
 
     '''
         Prepare yourself for the test
@@ -88,15 +92,15 @@ class TesterPing(Ping, TesterTest):
         try:
             probeIp = TestServices.getProbeIpById(self.targets[0])
             r = self.makePing(probeIp)
-            self.stats = PingStats(*r)
+            self.stats = []
+            self.stats.append(PingStats(*r))
             self.success = True
         except PingError as e:
             self.errors = e
             self.success = True
         except (PingParseError, Exception) as e:
             self.success = False
-            self.errors = e
-            raise e
+            raise TestError(e)
 
     '''
         Prepare yourself for finish
@@ -111,12 +115,13 @@ class TesterPing(Ping, TesterTest):
     def doResult(self, reports):
         if self.success:
             if self.errors is not None:
-                self.result = "Ping failed : %s" % self.errors.getReason()
-            else:
-                self.result = "Ping statistics : %s" % self.stats.printAll()
+                self.result = self.eformats % self.errors
+                self.rawResult = self.errors
+            else:   
+                self.result = self.rformat % self.stats[0].printAll()
+                self.rawResult = self.stats
         else:
-            self.result = self.errors
-
+            raise TestError(self.errors)
 
 class TesteePing(TesteeTest, Ping):
 

@@ -80,8 +80,9 @@ class TesterTest(_Test):
     '''
 
     def __init__(self, options):
-        _Test.__init__(self, '%030x' % random.randrange(256 ** 15), options)
+        _Test.__init__(self, '%020x' % random.randrange(256 ** 15), options)
         self.targets = []
+        self.rawResult = None
     
     def getProbeNumber(self):
         return len(self.targets)
@@ -116,9 +117,12 @@ class TesterTest(_Test):
     def doResult(self, reports):
         '''
         Generate the result of the test given the set of reports from the tested probes
-        Should populate self.result
+        Should populate self.result and self.rawResult
         '''
         pass
+
+    def getRawResult(self):
+        return self.rawResult
 
 class TesteeTest(_Test):
     '''
