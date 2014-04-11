@@ -16,9 +16,7 @@ class Consts(object):
 
 
 class Params(object):
-    '''
-    Parameters for the runtime
-    '''
+    '''Parameters for the runtime'''
     DEBUG = False
     COMMANDER = False
     WATCHERS = False
@@ -30,9 +28,8 @@ class Params(object):
 
 
 class Identification(object):
-    '''
-    Identification elements of the probe
-    '''
+    '''Identification elements of the probe'''
+
     PROBE_ID = "1122334455667788"
 
     @staticmethod

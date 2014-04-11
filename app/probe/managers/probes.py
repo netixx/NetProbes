@@ -23,7 +23,7 @@ class ProbeStorage(object):
     @classmethod
     def isKnownId(cls, probeId):
         with cls.__knownProbesLock:
-            return id in cls.knownProbes.keys()
+            return probeId in cls.knownProbes.keys()
 
     @classmethod
     def isKnownIp(cls, ip):

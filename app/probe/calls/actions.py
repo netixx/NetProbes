@@ -5,7 +5,7 @@ Each Action has a priority, the lower the priority, the faster the action will b
 Action class and subclasses are not sent over the network, only messages are (cf messages.py)
 
 '''
-__all__ = ['Action', 'Add', 'UpdateProbes', 'Remove',
+__all__ = ['Action', 'Add', 'AddPrefix', 'UpdateProbes', 'Remove',
            'Do', 'Prepare', 'Quit', ]
 
 class Action(object):
@@ -43,7 +43,9 @@ class Add(Action):
 
 
 class AddPrefix(Action):
-    
+    ''' Adds probes contained in given prefix, once prefix parsing is done,
+    task is redirected to Add action'''
+
     def __init__(self, addPrefix):
         self.addPrefix = addPrefix
     
@@ -108,7 +110,7 @@ class Do(Action):
 
 
 class Prepare(Action):
-    '''Prepare action : prepare for a test'''
+    '''Prepare action : prepare for a test '''
 
     def __init__(self, testName, testId, testOptions, sourceId):
         super().__init__()

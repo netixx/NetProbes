@@ -2,34 +2,31 @@
 Customized exceptions for the probes
 
 @author: francois
+
 '''
+
 __all__ = ['NoSuchProbe', 'ProbeConnection', 'ToManyTestsInProgress',
            'TestInProgress', 'ActionError', 'TestArgumentError',
            'TestError', 'TestAborted']
 
 
 class NoSuchProbe(Exception):
-    '''
-        The probe asked for is unknown to this probe
-    '''
+    '''The probe asked for is unknown to this probe'''
     pass
 
 
 class ProbeConnectionException(Exception):
+    '''Problem while connecting to the probe'''
     pass
 
 
 class ToManyTestsInProgress(Exception):
-    '''
-        Maximum number of allowed test has been reached
-    '''
+    '''Maximum number of allowed test has been reached'''
     pass
 
 
 class TestInProgress(Exception):
-    '''
-        You requested to do a test but another test is in progress
-    '''
+    '''You requested to do a test but another test is in progress'''
     pass
 
 

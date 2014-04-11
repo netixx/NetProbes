@@ -4,6 +4,7 @@ Adds action directly to the server action queue
 @see: commander.main
 
 @author: francois
+
 '''
 __all__ = ['CommanderServer']
 

@@ -4,7 +4,7 @@ Created on 9 avr. 2014
 @author: francois
 '''
 
-import urllib, logging, datetime
+import urllib, datetime
 from consts import Params, Identification
 from calls.messages import TestMessage
 from exceptions import NoSuchProbe, ProbeConnectionException

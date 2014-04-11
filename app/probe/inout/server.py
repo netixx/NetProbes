@@ -6,7 +6,6 @@ Server that listens to probe messages
 __all__ = ['Server']
 
 from .client import Client
-from calls.actions import Action
 from calls.messages import Message, TesterMessage, TesteeAnswer, BroadCast, \
     TestMessage, Hello
 import calls.messagetoaction as MTA
@@ -22,7 +21,7 @@ class Server(Thread):
     Server thread listens on the given port to a POST request containing
     a serialization of a Message object
     It then transforms this Message into a corresponding Action
-    that is added to the Queue of actions that the server must execute
+    that is added to the Queue of actions that the ActionManager must execute
 
     It also listens to get request an replies its id to whoever asks it!
     
@@ -91,7 +90,6 @@ class Server(Thread):
             return Identification.PROBE_ID
     
         def getStatus(self):
-            from managers.actions import ActionMan
             return ActionMan.getStatus()
     
         def handleResponse(self, response, message):
