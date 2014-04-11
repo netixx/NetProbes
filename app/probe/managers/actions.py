@@ -101,9 +101,6 @@ class ActionMan(Thread):
         try:
             testId = TestManager.startTest(action.getTestName(), action.getTestOptions(), action.getResultCallback(), action.getErrorCallback())
             action.setTestId(testId)
-        except TestArgumentError as e:
-            CommanderServer.addError(action.getTestName(), e.getUsage())
-            cls.logger.warning("Test called with wrong arguments or syntax : %s", action.getOptions())
         except TestError as e:
             CommanderServer.addError(action.getTestName(), e.getReason())
             raise e

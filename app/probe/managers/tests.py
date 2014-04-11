@@ -158,7 +158,7 @@ class _TestManager(Thread):
                 self.errorCallback(self.test.getName(), self.testError.getReason())
             else:
                 self.errorCallback(self.test.getName(), self.testError)
-            testLogger.error("An error occurred during test %s : %s", self.getName(), self.testError.getReason())
+            testLogger.error("An error occurred during test %s", self.testError.getReason())
         else :
             if self.formatResult:
                 self.resultCallback(self.test.getName(), self.test.getResult())
@@ -167,7 +167,7 @@ class _TestManager(Thread):
 
 
 from consts import Params as p
-from probe.exceptions import ToManyTestsInProgress
+from exceptions import ToManyTestsInProgress, TestArgumentError
 from tests import TESTER_MODE
 
 class TestManager(object):
@@ -197,7 +197,12 @@ class TestManager(object):
         try:
             if len(cls.testManagers) > p.MAX_OUTGOING_TESTS:
                 raise ToManyTestsInProgress("To much tests are currently running : %s on %s allowed" % (len(cls.testManagers), p.MAX_OUTGOING_TESTS))
-            test = cls.getTesterTestClass(testName)(testOptions)
+            try :
+                test = cls.getTesterTestClass(testName)(testOptions)
+            except TestArgumentError as e:
+                errorCallback(testName, e.getUsage())
+                testLogger.warning("Test called with wrong arguments or syntax : %s", testOptions)
+                return
             tm = _TestManager(test, formatResult, resultCallback, errorCallback)
             testLogger.info("Creating test %s with id : %s", test.getName(), test.getId())
             tm.start()
@@ -208,8 +213,10 @@ class TestManager(object):
             raise
         except ImportError as e:
             raise TestError("Could not load test class for test : %s", testName)
-        except Exception as e:
-            raise TestError("Unexpected error occurred while loading test %s", e)
+        except:
+            import traceback
+            traceback.print_exc()
+#             raise TestError("Unexpected error occurred while loading test %s", e)
 
     @classmethod
     def handleMessage(cls, message):
