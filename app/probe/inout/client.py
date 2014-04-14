@@ -12,7 +12,7 @@ __all__ = ['Client']
 
 from queue import Queue
 from threading import Thread, Event
-import logging
+import logging, copy
 
 from calls.messages import Message, BroadCast
 from consts import Consts, Identification, Params
@@ -89,6 +89,7 @@ class Client(Thread):
         # propagation phase
         if isinstance(message, BroadCast):
             prop = message.getNextTargets()
+            message = message.getMessage()
         else:
             prop = ProbeStorage.getIdAllOtherProbes()
             if toMyself:
@@ -96,22 +97,26 @@ class Client(Thread):
                 prop.insert(0, Identification.PROBE_ID)
 
         if len(prop) == 1:
-            message.targetId = prop[0]
-            cls.send(message)
+            mes = copy.deepcopy(message)
+            mes.targetId = prop[0]
+            cls.send(mes)
         elif len(prop) > 1:
             if len(prop) < Consts.PROPAGATION_RATE:
-                cls.send(BroadCast(prop[0], message, prop[1:]))
-            
-            pRate = Consts.PROPAGATION_RATE
-            # take targets for first hop out of the list
-            sendTo = prop[0:pRate]
-            i = 1
-            while (i + 1) * pRate < len(prop):
-                propIds = prop[i * pRate:(i + 1) * pRate]
-                cls.send(BroadCast(sendTo[i], message, propIds))
-                i = i + 1
-            # be sure to propagate to all probes
-            cls.send(BroadCast(sendTo[i], message, prop[i * pRate:]))
+                for p in prop:
+                    mes = copy.deepcopy(message)
+                    mes.targetId = p
+                    cls.send(mes)
+            else:
+                pRate = Consts.PROPAGATION_RATE
+                # take targets for first hop out of the list
+                sendTo = prop[0:pRate]
+                i = 1
+                while (i + 1) * pRate < len(prop):
+                    propIds = prop[i * pRate:(i + 1) * pRate]
+                    cls.send(BroadCast(sendTo[i], message, propIds))
+                    i = i + 1
+                # be sure to propagate to all probes
+                cls.send(BroadCast(sendTo[i], message, prop[i * pRate:]))
 
     @classmethod
     def allMessagesSent(cls):

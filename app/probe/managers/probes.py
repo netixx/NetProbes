@@ -33,8 +33,11 @@ class ProbeStorage(object):
     @classmethod
     def delProbeById(c, probeid):
         with c.__knownProbesLock:
-            c.knownProbes[probeid].disconnect()
-            c.knownProbes.pop(probeid)
+            try:
+                Params.PROTOCOL.disconnect(c.knownProbes[probeid].connection)
+                c.knownProbes.pop(probeid)
+            except KeyError:
+                raise NoSuchProbe()
     
 
     @classmethod
@@ -87,6 +90,10 @@ class ProbeStorage(object):
     def getAllProbes(cls):
         with cls.__knownProbesLock:
             return cls.knownProbes.values()
+    @classmethod
+    def getIdAllProbes(cls):
+        with cls.__knownProbesLock:
+            return [p.getId() for p in cls.knownProbes.values()]
 
     @classmethod
     def getAllOtherProbes(cls):

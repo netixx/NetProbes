@@ -16,6 +16,7 @@ from managers.tests import TestManager, TestResponder
 from threading import Thread, Event
 import logging
 from managers.actions import ActionMan
+from interfaces.excs import ActionError
 
 class Server(Thread):
     '''
@@ -58,15 +59,18 @@ class Server(Thread):
         cls.logger.debug("Treating message %s", message.__class__.__name__)
         assert isinstance(message, Message)
         # forwarding mechanism
-        if message.targetId != Identification.PROBE_ID:
-            cls.logger.info("Forwarding message %s to id %s", message.__class__.__name__, message.targetId)
-            Client.send(message)
-            return
+#         if message.targetId != Identification.PROBE_ID:
+#             cls.logger.info("Forwarding message %s to id %s", message.__class__.__name__, message.targetId)
+#             Client.send(message)
+#             return
         if isinstance(message, TestMessage):
             cls.treatTestMessage(message)
         elif isinstance(message, BroadCast):
             cls.logger.debug("Handling Broadcast")
-            ActionMan.addTask(MTA.toAction(message.getMessage()))
+            try:
+                ActionMan.addTask(MTA.toAction(message.getMessage()))
+            except ActionError:
+                pass
             Client.broadcast(message)
         elif isinstance(message, AddToOverlay):
             cls.logger.info("Add probe to overlay")

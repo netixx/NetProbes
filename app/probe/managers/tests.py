@@ -157,13 +157,13 @@ class _TestManager(Thread):
             if self.formatResult:
                 self.errorCallback(self.test.getName(), self.testError.getReason())
             else:
-                self.errorCallback(self.test.getName(), self.testError)
+                self.errorCallback(self.test.getId(), self.testError)
             testLogger.error("An error occurred during test %s", self.testError.getReason())
         else :
             if self.formatResult:
                 self.resultCallback(self.test.getName(), self.test.getResult())
             else:
-                self.resultCallback(self.test.getName(), self.test.getRawResult())
+                self.resultCallback(self.test.getId(), self.test.getRawResult())
 
 
 from consts import Params as p

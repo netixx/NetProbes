@@ -18,6 +18,7 @@ Created on 7 juin 2013
 import os
 import sys
 from calls import actions
+from interfaces.watcher import WatcherError
 
 directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(directory)
@@ -36,6 +37,7 @@ from managers.actions import ActionMan
 from inout.client import Client
 from inout.server import Server
 from inout.commanderServer import CommanderServer
+from managers.watchers import WatcherManager
 from consts import Params, Identification
 import argparse
 import tools.logs as logs
@@ -89,7 +91,7 @@ if __name__ == '__main__':
                         dest = 'watchers',
                         action = 'append',
                         default = [],
-                        help = 'daemon to start with the probe for background monitoring purposes')
+                        help = 'Daemon to start with the probe for background monitoring purposes')
 
     parser.add_argument('--add-prefix',
                         dest = 'add_prefix',
@@ -127,6 +129,10 @@ if __name__ == '__main__':
     addLogs()
 
     try :
+        server = None
+        a = None
+        c = None
+        commander = None
         logging.getLogger().info("Starting probe with id : %s, pid : %s", Identification.PROBE_ID, os.getpid())
         server = Server()
         server.start()
@@ -140,10 +146,12 @@ if __name__ == '__main__':
             commander.start();
 
         if Params.WATCHERS:
-            from managers.watchers import WatcherManager
             for watcher in args.watchers:
                 parts = watcher.partition('=')
-                WatcherManager.registerWatcher(parts[0], parts[2])
+                try:
+                    WatcherManager.registerWatcher(parts[0], parts[2])
+                except WatcherError as e:
+                    logging.getLogger().warning("Starting watcher failed : %s", e, exc_info = 1)
     
         # ProbeStorage.addProbe( Probe("id", "10.0.0.1" ) )
         c = Client()
@@ -156,6 +164,8 @@ if __name__ == '__main__':
             ActionMan.manageAddPrefix(actions.AddPrefix(prefix))
             logging.getLogger().info("Probe(s) in prefix %s added", prefix)
 
+        if Params.WATCHERS:
+            WatcherManager.startWatchers()
         server.join()
         c.join()
         a.join()
@@ -165,15 +175,17 @@ if __name__ == '__main__':
     except :
         logging.getLogger().critical("Critical error in probe", exc_info = 1)
     finally:
-        if Params.COMMANDER:
+        if Params.COMMANDER and commander is not None:
             commander.quit()
         from calls.actions import Quit
+        if Params.WATCHERS:
+            WatcherManager.stopWatchers()
         ActionMan.addTask(Quit())
-        server.quit()
-        c.quit()
-        a.quit()
+        if server is not None:
+            server.quit()
+        if c is not None:
+            c.quit()
+        if a is not None:
+            a.quit()
         logging.getLogger().info("Shutdown complete")
-#     c.send(Add("id", "probeid", "probeip"))
-#     c.quit()
-#     c.join()
-#     print("done")
+

@@ -92,12 +92,12 @@ class ActionMan(Thread):
         '''Add a probe to the DHT'''
         assert isinstance(action, a.Add)
         cls.logger.debug("Managing Add task")
-        cls.logger.info("Added probe %s, id %s to known probes", action.getIpSonde(), action.getIdSonde())
         #add the probe to the local DHT
         ProbeStorage.addProbe(ProbeStorage.newProbe(action.getIdSonde(), action.getIpSonde()))
         if action.doHello:
             # tell the new probe about all other probe
             Client.send(Hello(action.getIdSonde(), list(ProbeStorage.getAllOtherProbes()), sourceId = Identification.PROBE_ID))
+        cls.logger.info("Added probe %s, id %s to known probes", action.getIpSonde(), action.getIdSonde())
 
     @classmethod
     def manageAddPrefix(cls, action):
@@ -129,6 +129,7 @@ class ActionMan(Thread):
         assert isinstance(action, a.Remove)
         cls.logger.debug("Managing Remove task")
         try:
+            cls.logger.info("Removing %s from known probes", action.getIdSonde())
             # remove probe from DHT
             ProbeStorage.delProbeById(action.getIdSonde());
         except NoSuchProbe:
