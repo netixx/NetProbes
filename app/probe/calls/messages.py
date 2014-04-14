@@ -29,6 +29,16 @@ class Message(object):
 
 
 '''----- Network discovery messages -----'''
+class AddToOverlay(Message):
+    '''Add probe with given IP to overlay'''
+
+    def __init__(self, targetId, probeIp):
+        super().__init__(targetId)
+        self.probeIp = probeIp
+
+    def getProbeIp(self):
+        return self.probeIp
+
 
 class Add(Message):
     '''
@@ -91,6 +101,34 @@ class BroadCast(Message):
 
     def getMessage(self):
         return self.payload
+
+class Do(Message):
+    '''Ask probe to do a test'''
+
+    def __init__(self, targetId, testClass, testOptions):
+        super().__init__(targetId)
+        self.testClass = testClass
+        self.testOptions = testOptions
+        self.resultCallback = None
+        self.errorCallback = None
+
+    def getTestName(self):
+        return self.testClass
+
+    def getTestOptions(self):
+        return self.testOptions
+
+    def setResultCallback(self, resultCallback):
+        self.resultCallback = resultCallback
+
+    def setErrorCallback(self, errorCallback):
+        self.errorCallback = errorCallback
+
+    def getResultCallback(self):
+        return self.resultCallback
+
+    def getErrorCallback(self):
+        return self.errorCallback
 
 
 '''----- Messages to manage tests -----'''

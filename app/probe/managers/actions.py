@@ -12,7 +12,7 @@ __all__ = ['ActionMan']
 from threading import Thread
 import logging
 from queue import PriorityQueue
-from calls.messages import Hello, Bye
+from calls.messages import Hello, Bye, AddToOverlay
 from consts import Identification
 from inout.client import Client
 from managers.probes import ProbeStorage
@@ -83,7 +83,7 @@ class ActionMan(Thread):
         self.logger.info("Stopping ActionMan !")
         self.stop = True
         self.actionQueue.join()
-    
+
     @classmethod
     def manageAdd(cls, action):
         '''Add a probe to the DHT'''
@@ -105,7 +105,7 @@ class ActionMan(Thread):
                 try:
                     h = str(host)
                     if not ProbeStorage.isKnownIp(h):
-                        Thread(target = cls.addTask, args = [a.Add(h, Params.PROTOCOL.getRemoteId(h))]).start()
+                        Client.send(AddToOverlay(Identification.PROBE_ID, h))
                 except ProbeConnectionException as e:
                     cls.logger.info("Adding probe failed %s : %s", h, e)
                 except Exception as e:

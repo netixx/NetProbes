@@ -8,17 +8,20 @@ __all__ = ['toAction']
 
 from . import messages as m
 from consts import Identification
-from .actions import Add, Quit, Remove, Prepare, UpdateProbes
+from .actions import Add, Quit, Remove, Prepare, UpdateProbes, Do
 import logging
 from managers.probes import Probe
 
 treatedAction = 0
 
 '''Matches message class to its corresponding method'''
-messages = {"Add" : "_toAdd",
+messages = {
+            "Add" : "_toAdd",
             "Bye" : "_toBye",
             "Hello" : "_toHello",
-            "Prepare" : "_toPrepare"}
+            "Prepare" : "_toPrepare",
+            "Do" : '_toDo'
+            }
 
 logger = logging.getLogger()
 
@@ -56,4 +59,9 @@ def _toPrepare(message):
     logger.debug("Making Prepare action from Prepare message")
     assert isinstance(message, m.Prepare)
     return Prepare(message.getTestName(), message.getTestId(), message.getTestOptions(), message.getSourceId())
+
+def _toDo(message):
+    logger.debug("Making Do action from Do message")
+    assert isinstance(message, m.Do)
+    return Do(message.getTestClass(), message.getTestOptions(), message.getResultCallback(), message.getErrorCallback())
 

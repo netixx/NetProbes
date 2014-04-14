@@ -9,8 +9,9 @@ class CommanderMessage(object):
         self.targetId = targetId;
 
 '''Adds a probe in the directory of available probes'''
-class Add(object):
-    def __init__(self, targetIp):
+class Add(CommanderMessage):
+    def __init__(self, targetId, targetIp):
+        super().__init__(targetId)
         self.targetIp = targetIp
 
 

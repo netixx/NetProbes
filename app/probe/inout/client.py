@@ -17,6 +17,7 @@ import logging
 from calls.messages import Message, BroadCast
 from consts import Consts, Identification, Params
 from managers.probes import ProbeStorage
+from interfaces.excs import NoSuchProbe
 
 class Client(Thread):
     '''
@@ -111,10 +112,13 @@ class Client(Thread):
     '''Inner functions'''
         
     def sendMessage(self, message):
-        self.logger.debug("Sending the message : %s to %s with ip %s",
-                  message.__class__.__name__ ,
-                  message.getTarget(),
-                  ProbeStorage.getProbeById(message.getTarget()).getIp())
+        try :
+            self.logger.debug("Sending the message : %s to %s with ip %s",
+                      message.__class__.__name__ ,
+                      message.getTarget(),
+                      ProbeStorage.getProbeById(message.getTarget()).getIp())
+        except NoSuchProbe:
+            self.logger.debug("Probe unknown")
         self.sender.send(message)
 
 #     def sendStatusMessage(self, statusMessage):

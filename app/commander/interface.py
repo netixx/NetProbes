@@ -13,11 +13,13 @@ from common.consts import Params as cParams
 
 class Interface(object):
     targetIp = "127.0.0.1"
+    targetId = None
     PROBE_REFRESH_TIME = 10
     RESULTS_REFRESH_TIME = 10
 
     def __init__(self, ip):
         self.targetIp = ip
+        self.targetId = self.getTargetId(ip)
         self.isRunning = True
         self.doFetchProbes = Event()
         self.doFetchResults = Event()
@@ -37,12 +39,16 @@ class Interface(object):
         self.updateStatus("Executing command : " + command)
         time.sleep(0.3)
         try:
-            cmd = Command(Parser(command), self)
+            cmd = Command(Parser(command, self), self)
             cmd.start()
 #             cmd.join()
         except (ValueError, NoSuchCommand):
             pass
 #       self.updateStatus("Command is false or unkown")
+    
+    @staticmethod
+    def getTargetId(ip):
+        return cParams.PROTOCOL.getRemoteId(ip)
 
     def updateProbes(self):
         pass
@@ -94,12 +100,17 @@ class Interface(object):
 '''
 class Parser(object):
 
-    def __init__(self, command):
+    def __init__(self, command, interface):
         self.rcommand = command
         self.message = None
         self.errors = None
         args = argparse.ArgumentParser(description="Parses the user command")
-        args.add_argument('-t', '--target-probe', metavar='target-ip', help="Ip of the target", default=Interface.targetIp)
+        args.add_argument('-t', '--target-probe',
+                          dest = 'target_probe',
+                          metavar = 'target-ip',
+                          help = "Ip of the target to control",
+                          default = interface.targetId)
+
         subp = args.add_subparsers(dest='subparser_name')
 
         # parser for the add command
@@ -117,8 +128,10 @@ class Parser(object):
 
         # parse for the remove command
         subp3 = subp.add_parser('remove')
-        subp3.add_argument('id', metavar='id',
-                    help='The id of the probe you wish to remove')
+        subp3.add_argument('id', 
+                           metavar='id',
+                           default = interface.targetId,
+                           help='The id of the probe you wish to remove')
         subp3.set_defaults(func=self.setRemove)
         
 
@@ -140,10 +153,14 @@ class Parser(object):
         return self.errors
 
     def setAdd(self):
-        self.message = Add(self.command.ip)
+        print(repr(self.command))
+        self.message = Add(self.command.target_probe,
+                           self.command.ip)
 
     def setDo(self):
-        self.message = Do(self.command.target_probe, self.command.test, self.command.options)
+        self.message = Do(self.command.target_probe,
+                          self.command.test,
+                          self.command.options)
 
     def setRemove(self):
         self.message = Delete(self.command.id)

@@ -13,6 +13,7 @@ from common.intfs.exceptions import ProbeConnectionFailed
 from common.consts import Params
 
 class Parameters(object):
+    PORT_NUMBER = 5000
     POST_MESSAGE_KEYWORD = "@message"
     POST_MESSAGE_ENCODING = "latin-1"
     COMMANDER_PORT_NUMBER = 6000
@@ -20,7 +21,9 @@ class Parameters(object):
     HTTP_GET_REQUEST = "GET"
     URL_RESULT_QUERY = "/results"
     URL_PROBES_QUERY = "/probes"
+    URL_SRV_ID_QUERY = "/id"
     MAX_SEND_TRY = 4
+    REPLY_MESSAGE_ENCODING = 'latin-1'
 
 logger = logging.getLogger()
 
@@ -35,6 +38,19 @@ def connect(connection):
 
 def disconnect(connection):
     connection.close()
+
+def getRemoteId(ip):
+    try:
+        connection = HTTPConnection(ip, Parameters.PORT_NUMBER);
+        connection.connect()
+        connection.request("GET", Parameters.URL_SRV_ID_QUERY, "", {})
+        probeId = connection.getresponse().read().decode(Parameters.REPLY_MESSAGE_ENCODING)
+    #     logger.logger.info("Id of probe with ip " + str(targetIp) + " is " + str(probeId))
+        connection.close()
+        return probeId
+    except Exception as e:
+        raise ProbeConnectionFailed(e)
+
 
 class Sender(object):
     def send(self, connection, message):

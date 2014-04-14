@@ -25,6 +25,7 @@ class Action(object):
     def __str__(self):
         return "%s action no %d" % (self.__class__.__name__, self.actionNumber)
 
+
 class Add(Action):
     '''Add action : adds a probe to the overlay of probes'''
 

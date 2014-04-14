@@ -8,19 +8,17 @@ Adds action directly to the server action queue
 '''
 __all__ = ['CommanderServer']
 
-import copy, logging
+import logging
 from queue import Queue
 from threading import Thread
 
 from common.commanderMessages import Add, Delete, Do
 import common.probedisp as pd
-import calls.actions as a
 import calls.messages as m
 from managers.probes import ProbeStorage
 from consts import Identification, Params
 from .client import Client
 from .server import Server
-from managers.actions import ActionMan
 import common.consts as cconsts
 
 class Parameters(object):
@@ -71,29 +69,20 @@ class CommanderServer(Thread):
         def treatMessage(self, message):
             self.getLogger().debug("Handling constructed message")
             if(isinstance(message, Add)):
-                self.getLogger().info("Trying to add probe with ip " + str(message.targetIp))
-                probeId = Params.PROTOCOL.getRemoteId(message.targetIp)
-
-                addMessage = m.Add("", probeId, message.targetIp)
-                selfAddMessage = copy.deepcopy(addMessage)
-                selfAddMessage.doHello = True
-                # Do broadcast before adding the probe so that it doesn't receive unnecessary message
-                # addMessage = m.Add(Identification.PROBE_ID, probeId, message.targetIp, hello=True)
-                Client.broadcast(addMessage)
-
-                Server.treatMessage(selfAddMessage)
-            if(isinstance(message, Delete)):
+                msg = m.AddToOverlay(message.targetId, message.targetIp)
+                Server.treatMessage(msg)
+            elif(isinstance(message, Delete)):
                 self.getLogger().info("Trying to delete probe with ID %s", message.targetId)
                 byeMessage = m.Bye(message.targetId, message.targetId)
                 Client.send(byeMessage)
 
-            if(isinstance(message, Do)):
+            elif(isinstance(message, Do)):
                 self.getLogger().info("Trying to do a test : %s", message.test)
-                ActionMan.addTask(a.Do(message.test,
-                                       message.testOptions,
-                                       resultCallback = CommanderServer.addResult,
-                                       errorCallback = CommanderServer.addError))
-
+                msg = m.Do(message.targetId, message.test, message.testOptions)
+                if msg.targetId == Identification.PROBE_ID:
+                    msg.resultCallback = CommanderServer.addResult
+                    msg.errorCallback = CommanderServer.addError
+                Server.treatMessage(msg)
 
         def handleProbeQuery(self):
             probes = ProbeStorage.getAllProbes()

@@ -14,6 +14,9 @@ def connect(connection):
 def disconnect(connection):
     pass
 
+def getRemoteId(ip):
+    pass
+
 class Listener(Thread):
 
     def __init__(self, helper):
