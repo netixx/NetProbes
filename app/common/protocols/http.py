@@ -109,7 +109,7 @@ class Listener(ThreadingMixIn, HTTPServer, Thread):
             SimpleHTTPRequestHandler.__init__(self, request, client_address, server_socket)
 
         def log_message(self, format, *args):
-            self.server.helper.getLogger().debug("Process message : %s -- [%s] %s" % (self.address_string(),
+            self.server.helper.getLogger().ddebug("Process message : %s -- [%s] %s" % (self.address_string(),
                                                                                 self.log_date_time_string(),
                                                                                 format % args))
 
@@ -135,7 +135,7 @@ class Listener(ThreadingMixIn, HTTPServer, Thread):
 
 
         def do_GET(self):
-            self.server.helper.getLogger().debug("Handling get Request")
+            self.server.helper.getLogger().ddebug("Handling get Request")
             getPath = urllib.parse.urlparse(self.path).path
 
             if (getPath == Parameters.URL_PROBES_QUERY):

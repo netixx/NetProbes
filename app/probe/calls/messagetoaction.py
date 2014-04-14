@@ -40,15 +40,15 @@ def _toAdd(addMessage):
 def _toBye(byeMessage):
     assert isinstance(byeMessage,m.Bye)
     if byeMessage.getLeavingID() == Identification.PROBE_ID:
-        logger.debug("Making Quit action from Bye message")
+        logger.ddebug("Making Quit action from Bye message")
         return Quit()
     else:
-        logger.debug("Making Remove action from Bye message")
+        logger.ddebug("Making Remove action from Bye message")
         return Remove( byeMessage.getLeavingID() )
 
 
 def _toHello(message):
-    logger.debug("Making Hello action from Hello message")
+    logger.ddebug("Making Hello action from Hello message")
     assert isinstance(message, m.Hello)
     probes = message.getProbeList()
     probes.append(Probe(message.sourceId, message.remoteIp))
@@ -56,12 +56,12 @@ def _toHello(message):
 
 
 def _toPrepare(message):
-    logger.debug("Making Prepare action from Prepare message")
+    logger.ddebug("Making Prepare action from Prepare message")
     assert isinstance(message, m.Prepare)
     return Prepare(message.getTestName(), message.getTestId(), message.getTestOptions(), message.getSourceId())
 
 def _toDo(message):
-    logger.debug("Making Do action from Do message")
+    logger.ddebug("Making Do action from Do message")
     assert isinstance(message, m.Do)
     return Do(message.getTestName(), message.getTestOptions(), message.getResultCallback(), message.getErrorCallback())
 

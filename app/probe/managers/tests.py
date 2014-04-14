@@ -114,7 +114,7 @@ class _TestManager(Thread):
         for target in self.test.getTargets():
             # this test is aborted!
             Client.send(Abort(target, self.test.getId()))
-        testLogger.debug("Abort message broadcast")
+        testLogger.ddebug("Abort message broadcast")
         self.test.doOver()
         self.isReadyForTest.set()
         testLogger.info("Test cancelled")
@@ -133,7 +133,7 @@ class _TestManager(Thread):
     def addReady(self, message):
         # TODO: parse message to get finer details
         with self.readyLock:
-            testLogger.debug("Received new Ready from target probe")
+            testLogger.ddebug("Received new Ready from target probe")
             self.readies += 1
             if (self.readies == self.test.getProbeNumber()):
                 testLogger.info("All Readies received, proceeding with test")
@@ -145,7 +145,7 @@ class _TestManager(Thread):
     def addReport(self, probeId, report):
         with self.reportsLock:
             self.reports[probeId] = report
-            testLogger.debug("Received new report from target probe")
+            testLogger.ddebug("Received new report from target probe")
             if(len(self.reports) == self.test.getProbeNumber()):
                 testLogger.info("All reports received, proceeding with result")
                 self.areReportsCollected.set()
@@ -332,7 +332,7 @@ class TestResponder(object):
         testLogger.debug("Handling request for test : " + message.__class__.__name__)
         assert isinstance(message, TesterMessage)
         tr = cls.testResponders[message.getTestId()]
-        testLogger.debug("Got message for manager %s", tr.getName())
+        testLogger.ddebug("Got message for manager %s", tr.getName())
         if(isinstance(message, Over)):
             testLogger.debug("Over message received for manager %s", tr.getName())
             tr.replyOver()

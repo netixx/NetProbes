@@ -66,7 +66,7 @@ class Server(Thread):
         if isinstance(message, TestMessage):
             cls.treatTestMessage(message)
         elif isinstance(message, BroadCast):
-            cls.logger.debug("Handling Broadcast")
+            cls.logger.ddebug("Handling Broadcast")
             try:
                 ActionMan.addTask(MTA.toAction(message.getMessage()))
             except ActionError:
@@ -88,14 +88,14 @@ class Server(Thread):
 
     @classmethod
     def treatTestMessage(cls, message):
-        cls.logger.debug("Handling Tester or Testee message")
+        cls.logger.ddebug("Handling Tester or Testee message")
         assert isinstance(message, TestMessage)
         # if probe is in test mode, give the message right to the TestManager!
         if (isinstance(message, TesteeAnswer)):
-            cls.logger.debug("Handling TesteeAnswer")
+            cls.logger.ddebug("Handling TesteeAnswer")
             TestManager.handleMessage(message)
         elif (isinstance(message, TesterMessage)):
-            cls.logger.debug("Handling TesterMessage")
+            cls.logger.ddebug("Handling TesterMessage")
             TestResponder.handleMessage(message)
         else:
             ActionMan.addTask(MTA.toAction(message))

@@ -8,7 +8,7 @@ __all__ = ['Consts', 'Params', 'Identification']
 
 import interfaces.inout.codecs as codecs
 import interfaces.inout.protocols as protocols
-
+from logging import Logger
 
 class Consts(object):
     PROPAGATION_RATE = 5

@@ -91,7 +91,7 @@ class Sender(object):
 
     def __sendRequest(self, connection, requestType, requestUrl = "", params = "", header = {}):
         connection.request(requestType, requestUrl, params, header)
-        self.logger.debug("Request %s @ %s has been sent", requestType, requestUrl)
+        self.logger.ddebug("Request %s @ %s has been sent", requestType, requestUrl)
         return connection.getresponse()
 
 
@@ -122,12 +122,12 @@ class Listener(ThreadingMixIn, HTTPServer, Thread):
             SimpleHTTPRequestHandler.__init__(self, request, client_address, server_socket)
     
         def log_message(self, format, *args):
-            self.server.helper.getLogger().debug("Process message : %s -- [%s] %s" % (self.address_string(),
+            self.server.helper.getLogger().ddebug("Process message : %s -- [%s] %s" % (self.address_string(),
                                                                                 self.log_date_time_string(),
                                                                                 format % args))
     
         def do_POST(self):
-            self.server.helper.getLogger().debug("Handling POST request from another probe")
+            self.server.helper.getLogger().ddebug("Handling POST request from another probe")
             contentLength = self.headers.get("content-length")
             # read content
             args = self.rfile.read(int(contentLength))
@@ -157,7 +157,7 @@ class Listener(ThreadingMixIn, HTTPServer, Thread):
                 self.giveId()
     
         def giveId(self):
-            self.server.helper.getLogger().debug("Server : handling get request, giving my ID : %s", Identification.PROBE_ID)
+            self.server.helper.getLogger().ddebug("Server : handling get request, giving my ID : %s", Identification.PROBE_ID)
             self._reply(self.server.helper.getId())
     
         def giveStatus(self):

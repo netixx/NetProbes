@@ -70,7 +70,7 @@ class CommanderServer(Thread):
             self.server = server
 
         def treatMessage(self, message):
-            self.getLogger().debug("Handling constructed message")
+            self.getLogger().ddebug("Handling constructed message")
             if(isinstance(message, Add)):
                 msg = m.AddToOverlay(message.targetId, message.targetIp)
                 Server.treatMessage(msg)

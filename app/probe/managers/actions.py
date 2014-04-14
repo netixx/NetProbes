@@ -53,7 +53,7 @@ class ActionMan(Thread):
 
     @classmethod
     def getTask(cls):
-        cls.logger.debug("Polled new action from queue")
+        cls.logger.ddebug("Polled new action from queue")
         result = cls.actionQueue.get(True)[1]
         return result
 

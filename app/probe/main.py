@@ -51,6 +51,13 @@ def addLogs():
     if not os.path.exists(LOGS_DIR):
         os.mkdir(LOGS_DIR)
 
+    DDEBUG = 9
+    logging.addLevelName(DDEBUG, "DDEBUG")
+    def ddebug(logger, msg, *args, **kwargs):
+        logger.log(DDEBUG, msg, *args, **kwargs)
+
+    logging.Logger.ddebug = ddebug
+
     logger = logging.getLogger()
     logLevel = logging.INFO
     if Params.DEBUG:

@@ -71,7 +71,7 @@ class Client(Thread):
         message : message to send (contains the targetId)
         
         '''
-        cls.logger.debug("Adding a message %s to the client stack", message.__class__.__name__)
+        cls.logger.ddebug("Adding a message %s to the client stack", message.__class__.__name__)
         assert isinstance(message, Message)
         cls.messageStack.put(message)
         cls.logger.debug("Message %s added to the stack", message.__class__.__name__)
