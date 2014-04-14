@@ -9,5 +9,5 @@ py=$(which python3)
 
 #TODO: read id from cmdline
 #TODO: read commander from command line
-$py $pymain --commander --debug "$@" 
+$py $pymain "$@" 
 
