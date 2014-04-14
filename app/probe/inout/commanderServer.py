@@ -50,6 +50,9 @@ class CommanderServer(Thread):
         self.logger.info("Starting the Commander Server")
         self.listener.start()
 
+    def quit(self):
+        self.listener.close()
+
     @classmethod
     def addResult(cls, testName, result):
         cls.resultsQueue.put("%s : %s" % (testName, result))

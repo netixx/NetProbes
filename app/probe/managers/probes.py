@@ -66,7 +66,7 @@ class ProbeStorage(object):
     @classmethod
     def closeAllConnections(cls):
         with cls.__knownProbesLock:
-            for probeId in cls.knownProbes.viewkeys():
+            for probeId in cls.knownProbes.keys():
                 cls.disconnectFromProbe(probeId)
 
     @classmethod

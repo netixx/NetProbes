@@ -18,7 +18,6 @@ from inout.client import Client
 from managers.probes import ProbeStorage
 import calls.actions as a
 from .tests import TestResponder, TestManager
-from consts import Params
 from interfaces.excs import TestError, ActionError, \
     NoSuchProbe, ProbeConnectionException, ToManyTestsInProgress
 
@@ -63,13 +62,17 @@ class ActionMan(Thread):
         cls.actionQueue.task_done()
 
     @classmethod
-    def allTaskDone(cls):
+    def _terminate(cls):
+        cls.actionQueue.put((100, None))
         cls.actionQueue.join()
 
     def run(self):
         while not self.stop:
             task = self.getTask()
             try:
+                if task is None:
+                    self.stop = True
+                    return
                 getattr(self.__class__, self.mapping.get(task.__class__.__name__))(task)
             except ActionError:
                 # TODO: convert to warning ??
@@ -82,7 +85,7 @@ class ActionMan(Thread):
     def quit(self):
         self.logger.info("Stopping ActionMan !")
         self.stop = True
-        self.actionQueue.join()
+        self._terminate()
 
     @classmethod
     def manageAdd(cls, action):

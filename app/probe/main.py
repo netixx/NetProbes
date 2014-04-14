@@ -127,7 +127,7 @@ if __name__ == '__main__':
     addLogs()
 
     try :
-        logging.getLogger().info("Starting probe with id : %s", Identification.PROBE_ID)
+        logging.getLogger().info("Starting probe with id : %s, pid : %s", Identification.PROBE_ID, os.getpid())
         server = Server()
         server.start()
         server.isUp.wait()
@@ -156,8 +156,23 @@ if __name__ == '__main__':
             ActionMan.manageAddPrefix(actions.AddPrefix(prefix))
             logging.getLogger().info("Probe(s) in prefix %s added", prefix)
 
+        server.join()
+        c.join()
+        a.join()
+
+    except KeyboardInterrupt:
+        logging.getLogger().info("Caught keyboard interrupt")
     except :
         logging.getLogger().critical("Critical error in probe", exc_info = 1)
+    finally:
+        if Params.COMMANDER:
+            commander.quit()
+        from calls.actions import Quit
+        ActionMan.addTask(Quit())
+        server.quit()
+        c.quit()
+        a.quit()
+        logging.getLogger().info("Shutdown complete")
 #     c.send(Add("id", "probeid", "probeip"))
 #     c.quit()
 #     c.join()

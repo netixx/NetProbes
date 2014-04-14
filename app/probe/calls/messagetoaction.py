@@ -63,5 +63,5 @@ def _toPrepare(message):
 def _toDo(message):
     logger.debug("Making Do action from Do message")
     assert isinstance(message, m.Do)
-    return Do(message.getTestClass(), message.getTestOptions(), message.getResultCallback(), message.getErrorCallback())
+    return Do(message.getTestName(), message.getTestOptions(), message.getResultCallback(), message.getErrorCallback())
 

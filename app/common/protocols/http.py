@@ -94,13 +94,14 @@ class Listener(ThreadingMixIn, HTTPServer, Thread):
     def __init__(self, helper):
         HTTPServer.__init__(self, ("", Parameters.COMMANDER_PORT_NUMBER), __class__.RequestHandler)
         Thread.__init__(self)
+        self.setName('Common listener')
         self.helper = helper
 
     def run(self):
-        self.serve_forever();
+        self.serve_forever()
 
     def close(self):
-        self.server_close();
+        self.shutdown()
 
     class RequestHandler(SimpleHTTPRequestHandler):
 

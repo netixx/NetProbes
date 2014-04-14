@@ -39,21 +39,29 @@ class Client(Thread):
     def run(self):
         self.isUp.set()
         self.logger.info("Starting the Client")
-        while not Client.stop or not Client.messageStack.empty():
+        while not self.stop or not self.messageStack.empty():
             message = Client.messageStack.get()
+            if message is None:
+                self.stop = True
+                return
             try:
 #                 if isinstance(message, StatusMessage):
 #                     self.sendStatusMessage(message)
 #                 else:
                 self.sendMessage(message)
             finally:
-                Client.messageStack.task_done()
+                self.messageStack.task_done()
 
+
+    @classmethod
+    def _terminate(cls):
+        cls.stop = True
+        cls.messageStack.put(None)
 
     @classmethod
     def quit(cls):
         cls.logger.info("Stopping the Client")
-        cls.stop = True
+        cls._terminate()
         ProbeStorage.closeAllConnections()
     
     @classmethod

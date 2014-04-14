@@ -108,10 +108,10 @@ class Listener(ThreadingMixIn, HTTPServer, Thread):
         self.setName("HTTP Listener")
 
     def run(self):
-        self.serve_forever();
+        self.serve_forever()
     
     def close(self):
-        self.server_close();
+        self.shutdown()
     
     class RequestHandler(SimpleHTTPRequestHandler):
         '''
