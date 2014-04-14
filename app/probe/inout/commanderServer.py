@@ -89,7 +89,10 @@ class CommanderServer(Thread):
 
             if(isinstance(message, Do)):
                 self.getLogger().info("Trying to do a test : %s", message.test)
-                ActionMan.addTask(a.Do(message.test, message.testOptions, resultCallback = CommanderServer.addResult, errorCallback = CommanderServer.addError))
+                ActionMan.addTask(a.Do(message.test,
+                                       message.testOptions,
+                                       resultCallback = CommanderServer.addResult,
+                                       errorCallback = CommanderServer.addError))
 
 
         def handleProbeQuery(self):
@@ -102,7 +105,9 @@ class CommanderServer(Thread):
                 status.append(pd.ProbeStatus.ADDED)
                 if probe.connected :
                     status.append(pd.ProbeStatus.CONNECTED)
-                dprobes.append(pd.Probe(probe.getId(), probe.getIp(), pd.statusFactory(status)))
+                dprobes.append(pd.Probe(probe.getId(),
+                                        probe.getIp(),
+                                        pd.statusFactory(status)))
 
             return Params.CODEC.encode(dprobes)
 

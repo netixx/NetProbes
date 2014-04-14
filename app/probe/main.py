@@ -127,7 +127,7 @@ if __name__ == '__main__':
     addLogs()
 
     try :
-        logging.getLogger().info("Starting probe")
+        logging.getLogger().info("Starting probe with id : %s", Identification.PROBE_ID)
         server = Server()
         server.start()
         server.isUp.wait()

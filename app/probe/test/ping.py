@@ -144,20 +144,23 @@ class Ping(object):
         m = re.search(r, pingOutput)
         if m is not None:
             raise PingFail('Destination unreachable')
-        r = r'(\d+) packets transmitted, (\d+) (?:packets)? received'
+        r = r'(\d+) (?:packets? )?transmitted, (\d+) (?:packets? )?received'
         m = re.search(r, pingOutput)
         if m is None:
-            raise PingParseError("Can not parse output %s" % pingOutput)
+            raise PingParseError("Can not parse sent/received output %s" % pingOutput)
         sent, received = int(m.group(1)), int(m.group(2))
-        r = r'(?:rtt)|(?:round-trip) min/avg/max/m|(?:std)dev = '
+        r = r'(?:(?:rtt)|(?:round-trip)) min/avg/max/(?:m|(?:std))dev = '
         r += r'(\d+\.\d+)/(\d+\.\d+)/(\d+\.\d+)/(\d+\.\d+) ms'
         m = re.search(r, pingOutput)
         if m is None:
-            raise PingParseError('Could not parse ping output: %s' % pingOutput)
-        rttmin = float(m.group(1))
-        rttavg = float(m.group(2))
-        rttmax = float(m.group(3))
-        rttdev = float(m.group(4))
+            raise PingParseError('Could not parse ping summary output: %s' % pingOutput)
+        try:
+            rttmin = float(m.group(1))
+            rttavg = float(m.group(2))
+            rttmax = float(m.group(3))
+            rttdev = float(m.group(4))
+        except:
+            raise PingParseError('Could not parse ping numbers : %s/%s/%s/%s' % (m.group(1), m.group(2), m.group(3), m.group(4)))
         return sent, received, rttmin, rttavg, rttmax, rttdev
 
     def _parseSweepPing(self, pingOutput):
@@ -243,7 +246,7 @@ class TesterPing(TesterTest, Ping):
         self.errors = ""
         for target in self.targets:
             if not self.psuccess[target]:
-                self.errors += str(self.perrors[target])
+                self.result += str(self.perrors[target])
             else:
                 if target in self.perrors and self.perrors[target] is not None:
                     self.result += self.eformats % (target, self.perrors[target])

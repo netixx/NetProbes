@@ -32,12 +32,16 @@ class TestInProgress(Exception):
 
 class ActionError(Exception):
     """Generic error during the processing of an action"""
+    tpl = "Error occurred while performing action %s : %s"
+    
     def __init__(self, message, action):
         self.action = action
         self.message = message
 
     def __str__(self):
-        return "Error occurred while performing action %s : %s" % (self.action, self.message)
+        if type(self.action) == ActionError:
+            return self.action.__str__()
+        return self.tpl % (self.action, self.message)
 
 
 class TestArgumentError(Exception):
