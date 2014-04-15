@@ -10,8 +10,8 @@ Internally the TestResponder creates a _TestResponder thread for each tests.
 __all__ = ['TestManager', 'TestResponder']
 
 import importlib, logging
-from interfaces.nettests import LOGGER_NAME
-testLogger = logging.getLogger(LOGGER_NAME)
+from interfaces.nettests import TEST_LOGGER
+testLogger = logging.getLogger(TEST_LOGGER)
 
 def testFactory(test, mode = ""):
     '''
@@ -51,6 +51,10 @@ class _TestManager(Thread):
         self.resultCallback = resultCallback
         self.errorCallback = errorCallback
         self.formatResult = formatResult
+        self.prepared = False
+        self.tested = False
+        self.overed = False
+        self.resulted = False
 
 
     def run(self):
@@ -60,9 +64,13 @@ class _TestManager(Thread):
         testLogger.info("Starting test %s-%s", self.test.getName(), self.test.getId())
         try:
             self.prepare()
+            self.prepared = True
             self.performTest()
+            self.tested = True
             self.over()
+            self.overed = True
             self.result()
+            self.resulted = True
         except TestError as e:
             self.testError = e
         finally:
@@ -70,7 +78,6 @@ class _TestManager(Thread):
 
 
     def prepare(self):
-        # TODO: echanger doPrepare et messages ????
         # prepare everyone
         self.test.doPrepare()
         for target in self.test.getTargets():
@@ -95,7 +102,6 @@ class _TestManager(Thread):
 
 
     def over(self):
-        # @todo : cf supra
         self.test.doOver()
         for target in self.test.getTargets():
             # this test is over!
@@ -110,12 +116,16 @@ class _TestManager(Thread):
         testLogger.info("Over done, processing results")
 
     def abort(self):
+        if not self.overed:
+            self.test.doOver()
         self.testError = TestAborted("A probe send an abort signal")
         for target in self.test.getTargets():
             # this test is aborted!
             Client.send(Abort(target, self.test.getId()))
+        # releasing all flags
+        self.isReadyForTest.set()
+        self.areReportsCollected.set()
         testLogger.ddebug("Abort message broadcast")
-        self.test.doOver()
         self.isReadyForTest.set()
         testLogger.info("Test cancelled")
 
@@ -131,15 +141,15 @@ class _TestManager(Thread):
 
     '''Tools methods'''
     def addReady(self, message):
-        # TODO: parse message to get finer details
-        with self.readyLock:
-            testLogger.ddebug("Received new Ready from target probe")
-            self.readies += 1
-            if (self.readies == self.test.getProbeNumber()):
-                testLogger.info("All Readies received, proceeding with test")
-                time.sleep(0.2)
-                self.isReadyForTest.set()
-                self.readies = 0
+        if message.getTestId() == self.test.getId():
+            with self.readyLock:
+                testLogger.ddebug("Received new Ready from target probe")
+                self.readies += 1
+                if (self.readies == self.test.getProbeNumber()):
+                    testLogger.info("All Readies received, proceeding with test")
+                    time.sleep(0.2)
+                    self.isReadyForTest.set()
+                    self.readies = 0
 
 
     def addReport(self, probeId, report):
@@ -151,7 +161,6 @@ class _TestManager(Thread):
                 self.areReportsCollected.set()
 
     def finish(self):
-        # TODO: give id instead of name when raw result is asked
         TestManager.cleanTest(self.test.getId())
         if self.testError is not None:
             if self.formatResult:
@@ -180,7 +189,6 @@ class TestManager(object):
     start a test. It is possible to control the maximum number
     of concurrent tests by setting the Params.MAX_OUTGOING_TESTS
     variable.
-
     '''
     __testManLock = RLock()
     testManagers = {}
@@ -220,6 +228,13 @@ class TestManager(object):
             raise TestError("Unexpected error occurred while loading test %s", e)
 
     @classmethod
+    def stopTests(cls):
+        for tm in cls.testManagers.values():
+            tm.abort()
+        for tm in list(cls.testManagers.values()):
+            tm.join()
+
+    @classmethod
     def handleMessage(cls, message):
         try:
             assert isinstance(message, TesteeAnswer)
@@ -230,6 +245,7 @@ class TestManager(object):
             elif isinstance(message, Ready):
                 testMan.addReady(message)
             elif isinstance(message, Abort):
+                # TODO: change to allow test to continue with remaining probes
                 testMan.abort()
             else:
                 pass
@@ -262,19 +278,26 @@ class _TestResponder(Thread):
         self.testDone = Event()
         self.report = None
         self.testFinished = Event()
+        self.prepared = False
+        self.tested = False
+        self.overed = False
+        self.abort = False
 
     def run(self):
         try :
             self.replyPrepare()
-            self.replyTest()
-            self.testFinished.wait(self.test.overTimeout)
+            self.prepared = True
+            if not self.abort:
+                self.replyTest()
+                self.tested = True
+                self.testFinished.wait(self.test.overTimeout)
         finally :
             testLogger.info("Test is over")
             self.finish()
 
     def replyPrepare(self):
         self.test.replyPrepare()
-        Client.send(Ready(self.sourceId, self.test.getId()))
+        Client.send(Ready(self.sourceId, self.test.getId(), Identification.PROBE_ID))
 
     def replyTest(self):
         self.test.replyTest()
@@ -285,9 +308,18 @@ class _TestResponder(Thread):
         self.testDone.wait(self.test.overTimeout)
         self.report = self.test.replyOver()
         self.testFinished.set()
+        self.overed = True
 
-#     def replyAbort(self):
-#         self.testDone.set()
+    def replyAbort(self):
+        testLogger.info("Asked to terminate test %s", self.test.getId())
+        if not self.overed:
+            self.testDone.set()
+            self.test.replyOver()
+            self.report = None
+            self.testFinished.set()
+        elif self.prepared and not self.tested:
+            self.abort = True
+
 
     def finish(self):
         if self.report is not None:
@@ -322,6 +354,14 @@ class TestResponder(object):
         except ImportError:
             raise TestError("Error while loading responder test %s" % testName)
 
+    @classmethod
+    def stopTests(cls):
+        for resp in cls.testResponders.values():
+            resp.replyAbort()
+        for resp in list(cls.testResponders.values()):
+            resp.join()
+            print("join")
+
 
     @staticmethod
     def getTesteeTestClass(testName):
@@ -331,18 +371,18 @@ class TestResponder(object):
     def handleMessage(cls, message):
         testLogger.debug("Handling request for test : " + message.__class__.__name__)
         assert isinstance(message, TesterMessage)
-        tr = cls.testResponders[message.getTestId()]
-        testLogger.ddebug("Got message for manager %s", tr.getName())
-        if(isinstance(message, Over)):
-            testLogger.debug("Over message received for manager %s", tr.getName())
-            tr.replyOver()
-        # TODO: support abort
-#         elif(isinstance(message, Abort)):
-#             testLogger.debug("TestResponder : Abort message received")
-#             tr.finish()
-#         else:
-#             pass
-        # TODO: implementer
+        try:
+            tr = cls.testResponders[message.getTestId()]
+            testLogger.ddebug("Got message for manager %s", tr.getName())
+            if(isinstance(message, Over)):
+                testLogger.debug("Over message received for manager %s", tr.getName())
+                tr.replyOver()
+
+            elif(isinstance(message, Abort)):
+                testLogger.debug("TestResponder : Abort message received")
+                tr.replyAbort()
+        except KeyError:
+            testLogger.error("Manager for test %s not found", message.getTestId())
 
     @classmethod
     def cleanTest(cls, testId):
