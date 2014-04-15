@@ -153,7 +153,6 @@ class Parser(object):
         return self.errors
 
     def setAdd(self):
-        print(repr(self.command))
         self.message = Add(self.command.target_probe,
                            self.command.ip)
 
