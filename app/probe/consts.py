@@ -8,11 +8,11 @@ __all__ = ['Consts', 'Params', 'Identification']
 
 import interfaces.inout.codecs as codecs
 import interfaces.inout.protocols as protocols
-from logging import Logger
 
 class Consts(object):
     PROPAGATION_RATE = 5
     LOCAL_IP_ADDR = "localhost"
+    DEFAULT_LOG_FORMAT = "%(levelname)s\t%(asctime)s %(threadName)s (%(module)s)\t: %(message)s"
 
 
 class Params(object):
@@ -21,7 +21,7 @@ class Params(object):
     COMMANDER = False
     WATCHERS = False
     MAX_OUTGOING_TESTS = 1
-    MAX_INCOMMING_TESTS = 1
+    MAX_INCOMMING_TESTS = 5
     CODEC = codecs
     PROTOCOL = protocols
     COMMANDER_PROTOCOL = protocols
