@@ -104,7 +104,9 @@ class ActionMan(Thread):
         assert isinstance(action , a.AddPrefix)
         try:
             net = ip_network(action.getPrefix(), strict = False)
-            for host in net.hosts():
+            hosts = net.hosts() if net.num_addresses > 1 else [net.network_address]
+            for host in hosts:
+                print(host)
                 try:
                     h = str(host)
                     if not ProbeStorage.isKnownIp(h):
