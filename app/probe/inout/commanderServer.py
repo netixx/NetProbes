@@ -16,7 +16,7 @@ from common.commanderMessages import Add, Delete, Do
 import common.probedisp as pd
 import calls.messages as m
 from managers.probes import ProbeStorage
-from consts import Identification, Params
+from consts import Identification
 from .client import Client
 from .server import Server
 import common.consts as cconsts
@@ -101,7 +101,7 @@ class CommanderServer(Thread):
                                         probe.getIp(),
                                         pd.statusFactory(status)))
 
-            return Params.CODEC.encode(dprobes)
+            return cconsts.Params.CODEC.encode(dprobes)
 
         def handleResultQuery(self):
             # blocant!
