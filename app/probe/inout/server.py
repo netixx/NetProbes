@@ -73,7 +73,7 @@ class Server(Thread):
                 pass
             Client.broadcast(message)
         elif isinstance(message, AddToOverlay):
-            cls.logger.info("Add probe to overlay")
+            cls.logger.debug("Add probe to overlay")
             probeId = Params.PROTOCOL.getRemoteId(message.getProbeIp())
 
             addMessage = Add(Identification.PROBE_ID, probeId, message.getProbeIp())

@@ -16,8 +16,9 @@ import random, logging, shlex
 from subprocess import Popen, PIPE
 from managers.probes import ProbeStorage
 
-LOGGER_NAME = "tests"
-testLogger = logging.getLogger(LOGGER_NAME)
+TEST_LOGGER = "tests"
+testLogger = logging.getLogger(TEST_LOGGER)
+
 TESTEE_MODE = "Testee"
 TESTER_MODE = "Tester"
 """Timeouts, in seconds"""
@@ -34,7 +35,6 @@ class Report(object):
     '''
     def __init__(self, probeId, isSuccess = True):
         self.isSuccess = isSuccess
-        # TODO: complete
         self.testId = None
         self.probeId = probeId
 

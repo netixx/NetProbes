@@ -8,9 +8,7 @@ Created on 7 juin 2013
 
 @author: francois
 @todo: catcher connexions impossibles
-@todo: gerer les do
 @todo: ecrire les tests
-@todo: changer l'architecture demarrage
 @todo: contraintes de securite
 
 '''
@@ -18,7 +16,7 @@ Created on 7 juin 2013
 import os
 import sys
 from calls import actions
-from interfaces.watcher import WatcherError
+from consts import Consts
 
 directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(directory)
@@ -28,11 +26,13 @@ sys.path.append(os.path.abspath(os.path.join(directory, "..", "..", "lib", 'tool
 
 DATA_DIR = os.path.join(directory, "..", "..", "data")
 LOGS_DIR = os.path.join(DATA_DIR, "logs")
+WATCHERS_LOGS_DIR = os.path.join(LOGS_DIR, "watchers")
 
-LOG_FORMAT = "%(levelname)s\t%(asctime)s %(threadName)s (%(module)s)\t: %(message)s"
-TEST_LOG_FORMAT = "%(levelname)s\t%(asctime)s %(name)s (%(module)s)\t: %(message)s"
+LOG_FORMAT = Consts.DEFAULT_LOG_FORMAT
+TEST_LOGS_FORMAT = "%(levelname)s\t%(asctime)s %(name)s (%(module)s)\t: %(message)s"
 
-from managers.tests import LOGGER_NAME as TESTS_LOGGER_NAME
+from interfaces.watcher import WatcherError
+from managers.tests import TEST_LOGGER
 from managers.actions import ActionMan
 from inout.client import Client
 from inout.server import Server
@@ -42,14 +42,22 @@ from consts import Params, Identification
 import argparse
 import tools.logs as logs
 import logging
-
+from managers.watchers import WATCHER_LOGGER
 from logging import Formatter
 
+wlogger = logging.getLogger(WATCHER_LOGGER)
+# tlogger = logging.getLogger()
 def addLogs():
     if not os.path.exists(DATA_DIR):
         os.mkdir(DATA_DIR)
     if not os.path.exists(LOGS_DIR):
         os.mkdir(LOGS_DIR)
+    if not os.path.exists(WATCHERS_LOGS_DIR):
+        os.mkdir(WATCHERS_LOGS_DIR)
+
+    wlogger.propagate = False
+    wlogger.setLevel(logging.DEBUG)
+    wlogger.addHandler(logging.FileHandler(os.path.join(WATCHERS_LOGS_DIR, 'watcher.log'), mode = 'w'))
 
     DDEBUG = 9
     logging.addLevelName(DDEBUG, "DDEBUG")
@@ -70,8 +78,8 @@ def addLogs():
     # TODO: readd file logs when tests are done
 #     logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, "probe.log"), 30, logger, formatter)
 
-    testLogger = logging.getLogger(TESTS_LOGGER_NAME);
-    testFormatter = Formatter(TEST_LOG_FORMAT)
+    testLogger = logging.getLogger(TEST_LOGGER);
+    testFormatter = Formatter(TEST_LOGS_FORMAT)
 
 #     logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, "tests.log"), 30, testLogger, testFormatter)
     testLogger.propagate = True
@@ -120,16 +128,17 @@ if __name__ == '__main__':
     if len(args.watchers) > 0:
         Params.WATCHERS = True
 
-    from inout.codec import serialize
+    from inout.codec import deflate_serialize
     from inout.protocol import http
 
     Params.PROTOCOL = http
     Params.COMMANDER_PROTOCOL = http
-    Params.CODEC = serialize
+    Params.CODEC = deflate_serialize
 
     from common.codecs import serialize as cserialize
     from common.protocols import http as chttp
     from common.consts import Params as cParams
+
     cParams.PROTOCOL = chttp
     cParams.CODEC = cserialize
 
@@ -156,7 +165,7 @@ if __name__ == '__main__':
             for watcher in args.watchers:
                 parts = watcher.partition('=')
                 try:
-                    WatcherManager.registerWatcher(parts[0], parts[2])
+                    WatcherManager.registerWatcher(parts[0], parts[2], wlogger)
                 except WatcherError as e:
                     logging.getLogger().warning("Starting watcher failed : %s", e, exc_info = 1)
     
@@ -187,6 +196,9 @@ if __name__ == '__main__':
         from calls.actions import Quit
         if Params.WATCHERS:
             WatcherManager.stopWatchers()
+        from managers.tests import TestManager, TestResponder
+        TestManager.stopTests()
+        TestResponder.stopTests()
         ActionMan.addTask(Quit())
         if server is not None:
             server.quit()

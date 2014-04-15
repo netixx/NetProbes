@@ -200,8 +200,12 @@ class TesteeAnswer(TestMessage):
 class Ready(TesteeAnswer):
     ''' Means "I'm ready to perform your test"'''
 
-    def __init__(self, targetId, testId):
+    def __init__(self, targetId, testId, sourceId):
         super().__init__(targetId, testId)
+        self.sourceId = sourceId
+
+    def getSourceId(self):
+        return self.sourceId
 
 
 class Result(TesteeAnswer):

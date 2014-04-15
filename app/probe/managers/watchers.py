@@ -7,7 +7,8 @@ import importlib, logging
 from interfaces.watcher import WatcherError, WatcherArgumentError
 WATCHER_PACKAGE = 'watchers'
 WATCHER_PREFIX = 'Watcher'
-logger = logging.getLogger()
+WATCHER_LOGGER = 'watchers'
+logger = logging.getLogger(WATCHER_LOGGER)
 
 def _watcherFactory(watcher):
     mod = importlib.import_module(WATCHER_PACKAGE + "." + watcher)
@@ -17,7 +18,7 @@ class WatcherManager(object):
     watchers = []
 
     @classmethod
-    def registerWatcher(cls, watcher, options):
+    def registerWatcher(cls, watcher, options, logger):
         try:
             w = _watcherFactory(watcher.lower())(options, logger)
             cls.watchers.append(w)

@@ -106,7 +106,6 @@ class ActionMan(Thread):
             net = ip_network(action.getPrefix(), strict = False)
             hosts = net.hosts() if net.num_addresses > 1 else [net.network_address]
             for host in hosts:
-                print(host)
                 try:
                     h = str(host)
                     if not ProbeStorage.isKnownIp(h):
@@ -183,7 +182,6 @@ class ActionMan(Thread):
         Client.allMessagesSent()
         ProbeStorage.clearAllProbes()
         cls.logger.info("All probes cleared, all connections closed.")
-        # TODO: check duplicate action in server
         ProbeStorage.addSelfProbe()
         cls.logger.info("Re-added the localhost probe, ready to proceed again")
 
