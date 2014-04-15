@@ -20,6 +20,14 @@ class Watcher(Thread):
 
 class WatcherServices(object):
     @classmethod
+    def getAllOtherProbes(cls):
+        return ProbeStorage.getAllOtherProbes()
+
+    @classmethod
+    def getIdAllOtherProbes(cls):
+        return ProbeStorage.getIdAllOtherProbes()
+
+    @classmethod
     def getAllProbes(cls):
         return ProbeStorage.getAllProbes()
 
