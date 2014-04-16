@@ -9,6 +9,8 @@ import re, argparse
 from interfaces.standalonetest import Test
 from managers.tests import TestServices
 from interfaces.excs import TestError, TestArgumentError
+from threading import Thread
+
 name = "Sping"
 
 class PingFail(TestError):
@@ -32,6 +34,7 @@ class Sping(Test):
         self.format = None
         self.errors = {}
         self.allSuccess = False
+        self.parallelPing = False
 
     ''' Methods for the probe which starts the test'''
     '''
@@ -45,6 +48,11 @@ class Sping(Test):
         parser.add_argument('targets',
                             metavar = 'TARGETS',
                             nargs = "+")
+        parser.add_argument('--parallel',
+                            dest = 'parallel',
+                            default = False,
+                            action = 'store_true',
+                            help = 'Do ping on multiple targets in parallel')
         # option for ping reciprocity
         # regular ping options
         parser.add_argument('-c',
@@ -122,6 +130,7 @@ class Sping(Test):
             self.options += self._addOption("-g", opts.swpMinSize)
             self.options += self._addOption("-h", opts.swpIncSize)
             self.options += self._addOption("-i", opts.waitSend)
+            self.parallelPing = opts.parallel
             if opts.df:
                 self.options += " -D"
             if opts.swpIncSize or opts.swpMaxSize or opts.swpMinSize:
@@ -134,13 +143,15 @@ class Sping(Test):
             return " %s %s" % (opt, value)
         return ""
 
-    def makePing(self, ip):
-        stdout, stderr = TestServices.runCmd('ping %s %s' % (self.options, ip))
-        if self.isSweep:
-            return self._parseSweepPing(str(stdout.decode()))
-        return self._parsePing(str(stdout.decode()))
+    @classmethod
+    def makePing(cls, ip, pingOptions, isSweep):
+        stdout, stderr = TestServices.runCmd('ping %s %s' % (pingOptions, ip))
+        if isSweep:
+            return cls._parseSweepPing(str(stdout.decode()))
+        return cls._parsePing(str(stdout.decode()))
 
-    def _parsePing(self, pingOutput):
+    @classmethod
+    def _parsePing(cls, pingOutput):
         # Parse ping output and return all data.
 #         errorTuple = (1, 0, 0, 0, 0, 0)
         # Check for downed link
@@ -167,7 +178,8 @@ class Sping(Test):
             raise PingParseError('Could not parse ping numbers : %s/%s/%s/%s' % (m.group(1), m.group(2), m.group(3), m.group(4)))
         return sent, received, rttmin, rttavg, rttmax, rttdev
 
-    def _parseSweepPing(self, pingOutput):
+    @classmethod
+    def _parseSweepPing(cls, pingOutput):
         # Parse ping output and return all data.
 #         errorTuple = (1, 0, 0, 0, 0, 0)
         # Check for downed link
@@ -202,15 +214,16 @@ class Sping(Test):
         self.stats = {}
         self.psuccess = {}
         self.perrors = {}
+        self.threads= []
         for target in self.targets:
             try:
                 probeIp = TestServices.getProbeIpById(target)
-                r = self.makePing(probeIp)
-                if self.isSweep:
-                    self.stats[target] = SweepStats(*r)
+                if self.parallelPing:
+                    t = Thread(target = self.makeAPing, args = [target, probeIp], name="Ping-%s"%probeIp)
+                    self.threads.append(t)
+                    t.start()
                 else:
-                    self.stats[target] = PingStats(*r)
-                self.psuccess[target] = True
+                    self.makeAPing(target, probeIp)
             except PingFail as e:
                 # TODO: self.stats[target] = e ?
                 self.perrors[target] = e
@@ -218,7 +231,18 @@ class Sping(Test):
             except (PingParseError, Exception) as e:
                 self.psuccess[target] = False
                 self.perrors[target] = TestError(e)
+        if self.parallelPing:
+            for t in self.threads:
+                t.join()
 
+
+    def makeAPing(self, probeId, probeIp):
+        r = self.makePing(probeIp, self.options, self.isSweep)
+        if self.isSweep:
+            self.stats[probeId] = SweepStats(*r)
+        else:
+            self.stats[probeId] = PingStats(*r)
+        self.psuccess[probeId] = True
 
     '''
         Generate the result of the test given the set of reports from the tested probes
