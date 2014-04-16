@@ -79,7 +79,7 @@ class _TestManager(Thread):
     def abort(self):
         if not self.overed:
             self.test.doOver()
-        self.testError = TestAborted("A probe send an abort signal")
+        self.testError = TestAborted("Test aborted early.")
         testLogger.info("Test cancelled")
 
     def result(self):
