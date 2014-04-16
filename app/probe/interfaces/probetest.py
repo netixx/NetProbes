@@ -13,8 +13,6 @@ __all__ = ['Report', 'TesterTest', 'TesteeTest', 'TestServices',
            'TESTEE_MODE', 'TESTER_MODE']
 
 import random, logging, shlex
-from subprocess import Popen, PIPE
-from managers.probes import ProbeStorage
 
 TEST_LOGGER = "tests"
 testLogger = logging.getLogger(TEST_LOGGER)
@@ -151,26 +149,3 @@ class TesteeTest(_Test):
         generates the report and returns it!!!
         '''
         return Report()
-
-
-class TestServices(object):
-    '''
-    Provides services for tests
-    
-    '''
-    @staticmethod
-    def getProbeIpById(probeId):
-        '''Returns the Ip of a probe given it's Id'''
-        return ProbeStorage.getProbeById(probeId).getIp()
-
-    @staticmethod
-    def getIdAllOtherProbes():
-        '''Returns the Ids of all the other known probes'''
-        return ProbeStorage.getIdAllOtherProbes()
-    
-    @staticmethod
-    def runCmd(cmd, **popenParams):
-        defaultPopenParams = {'stdout' : PIPE}
-        defaultPopenParams.update(popenParams)
-        process = Popen(shlex.split(cmd), **defaultPopenParams)
-        return process.communicate()

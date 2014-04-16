@@ -32,7 +32,7 @@ LOG_FORMAT = Consts.DEFAULT_LOG_FORMAT
 TEST_LOGS_FORMAT = "%(levelname)s\t%(asctime)s %(name)s (%(module)s)\t: %(message)s"
 
 from interfaces.watcher import WatcherError
-from managers.tests import TEST_LOGGER
+from managers.probetests import TEST_LOGGER
 from managers.actions import ActionMan
 from inout.client import Client
 from inout.server import Server
@@ -57,7 +57,7 @@ def addLogs():
 
     wlogger.propagate = False
     wlogger.setLevel(logging.DEBUG)
-    wlogger.addHandler(logging.FileHandler(os.path.join(WATCHERS_LOGS_DIR, 'watcher.log'), mode = 'w'))
+    wlogger.addHandler(logging.FileHandler(os.path.join(WATCHERS_LOGS_DIR, Identification.PROBE_ID+'watcher.log'), mode = 'w'))
 
     DDEBUG = 9
     logging.addLevelName(DDEBUG, "DDEBUG")
@@ -196,7 +196,7 @@ if __name__ == '__main__':
         from calls.actions import Quit
         if Params.WATCHERS:
             WatcherManager.stopWatchers()
-        from managers.tests import TestManager, TestResponder
+        from managers.probetests import TestManager, TestResponder
         TestManager.stopTests()
         TestResponder.stopTests()
         ActionMan.addTask(Quit())

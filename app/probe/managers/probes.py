@@ -34,7 +34,7 @@ class ProbeStorage(object):
     def delProbeById(c, probeid):
         with c.__knownProbesLock:
             try:
-                Params.PROTOCOL.disconnect(c.knownProbes[probeid].connection)
+                ProbeConnections.disconnectProbe(c.knownProbes[probeid])
                 c.knownProbes.pop(probeid)
             except KeyError:
                 raise NoSuchProbe()
@@ -163,8 +163,10 @@ class ProbeConnections(object):
 
     @classmethod
     def disconnectProbe(cls, probe):
+
         try :
-            Params.PROTOCOL.disconnect(probe.connection)
-            probe.connected = False
+            if probe.connected:
+                Params.PROTOCOL.disconnect(probe.connection)
+                probe.connected = False
         except:
             probe.connected = False

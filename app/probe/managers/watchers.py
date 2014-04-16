@@ -10,6 +10,10 @@ WATCHER_PREFIX = 'Watcher'
 WATCHER_LOGGER = 'watchers'
 logger = logging.getLogger(WATCHER_LOGGER)
 
+from managers.probetests import TestManager as ProbeTestManager
+from managers.standalonetests import TestManager as StandaloneTestManager
+from managers.probes import ProbeStorage
+
 def _watcherFactory(watcher):
     mod = importlib.import_module(WATCHER_PACKAGE + "." + watcher)
     return getattr(mod, WATCHER_PREFIX + watcher.capitalize())
@@ -41,6 +45,36 @@ class WatcherManager(object):
             logger.info("Stopping watcher %s", w.__class__.__name__)
             w.quit()
 
+class WatcherServices(object):
+    @classmethod
+    def getAllOtherProbes(cls):
+        return ProbeStorage.getAllOtherProbes()
 
+    @classmethod
+    def getIdAllOtherProbes(cls):
+        return ProbeStorage.getIdAllOtherProbes()
 
+    @classmethod
+    def getAllProbes(cls):
+        return ProbeStorage.getAllProbes()
+
+    @classmethod
+    def getIdAllProbes(cls):
+        return ProbeStorage.getIdAllProbes()
+
+    @classmethod
+    def doTest(cls, testName, testOptions, resultCallback, errorCallback, formatResult = False):
+        return ProbeTestManager.startTest(testName, testOptions, resultCallback, errorCallback, formatResult = formatResult)
+
+    @classmethod
+    def doStandaloneTest(cls, testName, testOptions, resultCallback, errorCallback, formatResult = False):
+        return StandaloneTestManager.startTest(testName, testOptions, resultCallback, errorCallback, formatResult = formatResult)
+
+    @classmethod
+    def abortProbeTest(cls, testId):
+        ProbeTestManager.stopTest(testId)
+
+    @classmethod
+    def abortStandaloneTest(cls, testId):
+        StandaloneTestManager.stopTest(testId)
 

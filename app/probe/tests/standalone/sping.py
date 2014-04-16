@@ -3,14 +3,13 @@ Implementation of a unicast test
 Protocols tcp and udp are supported
 
 '''
-__all__ = ['TesterPing', 'TesteePing']
+__all__ = ['Ping']
 
-from consts import Identification
-from interfaces.excs import TestArgumentError, TestError
-from interfaces.nettests import Report, TestServices, TesterTest, TesteeTest
 import re, argparse
-
-name = "Ping"
+from interfaces.standalonetest import Test
+from managers.tests import TestServices
+from interfaces.excs import TestError, TestArgumentError
+name = "Sping"
 
 class PingFail(TestError):
     pass
@@ -19,15 +18,20 @@ class PingParseError(TestError):
     pass
 
 
-class Ping(object):
+class Sping(Test):
     CMD = 'ping -c 1 '
     npings = 1
 
-    def __init__(self):
+    def __init__(self, options):
+        super().__init__(options)
         self.options = None
-        self.name = name
         self.stats = None
         self.isSweep = False
+        self.process = None
+        self.parseOptions()
+        self.format = None
+        self.errors = {}
+        self.allSuccess = False
 
     ''' Methods for the probe which starts the test'''
     '''
@@ -185,25 +189,9 @@ class Ping(object):
         return sent, received, sweep
 
 
-class TesterPing(TesterTest, Ping):
-    
     rformat = "Ping statistics for %s : %s\n"
     eformat = "Ping failed %s"
     
-    def __init__(self, options):
-        self.process = None
-        Ping.__init__(self)
-        TesterTest.__init__(self, options)
-        self.parseOptions()
-        self.format = None
-        self.errors = {}
-        self.allSuccess = False
-
-    '''
-        Prepare yourself for the test
-    '''
-    def doPrepare(self):
-        pass
 
     '''
         Does the actual test
@@ -231,17 +219,12 @@ class TesterPing(TesterTest, Ping):
                 self.psuccess[target] = False
                 self.perrors[target] = TestError(e)
 
-    '''
-        Prepare yourself for finish
-    '''
-    def doOver(self):
-        pass
 
     '''
         Generate the result of the test given the set of reports from the tested probes
         Should populate self.result
     '''
-    def doResult(self, reports):
+    def doResult(self):
         self.result = ""
         self.errors = ""
         for target in self.targets:
@@ -256,36 +239,6 @@ class TesterPing(TesterTest, Ping):
         self.rawResult = self.stats
 #         else:
 #             raise TestError(self.errors)
-    
-class TesteePing(TesteeTest, Ping):
-
-    def __init__(self, options, testId):
-        Ping.__init__(self)
-        TesteeTest.__init__(self, options, testId)
-        self.parseOptions()
-        self.msgReceived = False
-        self.msgSent = False
-        self.success = False
-
-    '''
-        Actions that the probe must perform in order to be ready
-    '''
-    def replyPrepare(self):
-        pass
-
-    '''
-        Actions that must be taken when the probe received the test
-    '''
-    def replyTest(self):
-        pass
-            
-    
-    '''
-        Actions that the probe must perform when the test is over
-        generates the report and returns it!!!
-    '''
-    def replyOver(self):
-        return Report(Identification.PROBE_ID)
 
 class PingStats(object):
     def __init__(self, sent, received, rttmin, rttavg, rttmax, rttdev):

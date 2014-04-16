@@ -5,7 +5,7 @@ Created on 9 avr. 2014
 '''
 from threading import Thread
 from managers.probes import ProbeStorage
-from managers.tests import TestManager
+from managers.probetests import TestManager
 
 class Watcher(Thread):
 
@@ -17,27 +17,6 @@ class Watcher(Thread):
 
     def quit(self):
         pass
-
-class WatcherServices(object):
-    @classmethod
-    def getAllOtherProbes(cls):
-        return ProbeStorage.getAllOtherProbes()
-
-    @classmethod
-    def getIdAllOtherProbes(cls):
-        return ProbeStorage.getIdAllOtherProbes()
-
-    @classmethod
-    def getAllProbes(cls):
-        return ProbeStorage.getAllProbes()
-
-    @classmethod
-    def getIdAllProbes(cls):
-        return ProbeStorage.getIdAllProbes()
-
-    @classmethod
-    def doTest(cls, testName, testOptions, resultCallback, errorCallback, formatResult = False):
-        return TestManager.startTest(testName, testOptions, resultCallback, errorCallback, formatResult = formatResult)
 
 class WatcherError(Exception):
     pass

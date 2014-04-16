@@ -17,7 +17,7 @@ from consts import Identification
 from inout.client import Client
 from managers.probes import ProbeStorage
 import calls.actions as a
-from .tests import TestResponder, TestManager
+from .probetests import TestResponder, TestManager
 from interfaces.excs import TestError, ActionError, \
     NoSuchProbe, ProbeConnectionException, ToManyTestsInProgress
 

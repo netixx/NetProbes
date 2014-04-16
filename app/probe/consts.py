@@ -20,8 +20,9 @@ class Params(object):
     DEBUG = False
     COMMANDER = False
     WATCHERS = False
-    MAX_OUTGOING_TESTS = 1
-    MAX_INCOMMING_TESTS = 5
+    MAX_OUTGOING_PROBETESTS = 5
+    MAX_INCOMMING_PROBETESTS = 10
+    MAX_STANDALONETESTS = 10
     CODEC = codecs
     PROTOCOL = protocols
     COMMANDER_PROTOCOL = protocols

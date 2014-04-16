@@ -12,7 +12,7 @@ from calls.messages import Message, TesterMessage, TesteeAnswer, BroadCast, \
 import calls.messagetoaction as MTA
 from consts import Params, Identification
 from managers.probes import ProbeStorage
-from managers.tests import TestManager, TestResponder
+from managers.probetests import TestManager, TestResponder
 from threading import Thread, Event
 import logging
 from managers.actions import ActionMan
