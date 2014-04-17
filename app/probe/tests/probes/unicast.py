@@ -5,11 +5,14 @@ Protocols tcp and udp are supported
 '''
 __all__ = ['TesterUnicast', 'TesteeUnicast']
 
-import socket, argparse
+import socket
+import argparse
+
 from consts import Identification
 from interfaces.excs import TestArgumentError
 from interfaces.probetest import Report, TesterTest, TesteeTest
 from managers.tests import TestServices
+
 
 name = "Unicast"
 

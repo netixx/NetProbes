@@ -4,11 +4,13 @@ Created on 16 juin 2013
 @author: francois
 '''
 from threading import Thread, Event
+import time
+import shlex
+import argparse
 
-import time, shlex, argparse
+from exceptions import ProbeConnectionFailed, NoSuchCommand
 
 from common.commanderMessages import Add, Do, Delete
-from exceptions import ProbeConnectionFailed, NoSuchCommand
 from common.consts import Params as cParams
 
 class Interface(object):

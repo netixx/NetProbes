@@ -5,11 +5,14 @@ Protocols tcp and udp are supported
 '''
 __all__ = ['TesterPing', 'TesteePing']
 
+import re
+import argparse
+
 from consts import Identification
 from interfaces.excs import TestArgumentError, TestError
 from interfaces.probetest import Report, TesterTest, TesteeTest
 from managers.tests import TestServices
-import re, argparse
+
 
 name = "Ping"
 

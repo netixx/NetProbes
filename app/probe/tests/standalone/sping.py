@@ -5,11 +5,14 @@ Protocols tcp and udp are supported
 '''
 __all__ = ['Ping']
 
-import re, argparse
+import re
+import argparse
+from threading import Thread
+
 from interfaces.standalonetest import Test
 from managers.tests import TestServices
 from interfaces.excs import TestError, TestArgumentError
-from threading import Thread
+
 
 name = "Sping"
 

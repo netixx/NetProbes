@@ -9,8 +9,11 @@ Internally the TestResponder creates a _TestResponder thread for each tests.
 '''
 __all__ = ['TestManager', 'TestResponder']
 
-import importlib, logging
+import importlib
+import logging
+
 from interfaces.probetest import TEST_LOGGER
+
 testLogger = logging.getLogger(TEST_LOGGER)
 
 def testFactory(test, mode = ""):

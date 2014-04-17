@@ -5,9 +5,8 @@ No message is sent to anyone (except the one who asks for the test)
 '''
 __all__ = ['Report', 'Test']
 
-import random, logging, shlex
-from subprocess import Popen, PIPE
-from managers.probes import ProbeStorage
+import random
+import logging
 
 TEST_LOGGER = "tests"
 testLogger = logging.getLogger(TEST_LOGGER)

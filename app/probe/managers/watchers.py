@@ -3,8 +3,11 @@ Created on 9 avr. 2014
 
 @author: francois
 '''
-import importlib, logging
+import importlib
+import logging
+
 from interfaces.watcher import WatcherError, WatcherArgumentError
+
 WATCHER_PACKAGE = 'watchers'
 WATCHER_PREFIX = 'Watcher'
 WATCHER_LOGGER = 'watchers'

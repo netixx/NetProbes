@@ -4,15 +4,19 @@ Created on 9 avr. 2014
 @author: francois
 '''
 
-import urllib, datetime
-from consts import Params, Identification
-from calls.messages import TestMessage
-from interfaces.excs import NoSuchProbe, ProbeConnectionException
-from managers.probes import ProbeStorage, ProbeConnections
+import datetime
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from http.client import HTTPConnection
 from socketserver import ThreadingMixIn
 from threading import Thread
+
+import urllib
+
+from consts import Params, Identification
+from calls.messages import TestMessage
+from interfaces.excs import NoSuchProbe, ProbeConnectionException
+from managers.probes import ProbeStorage, ProbeConnections
+
 
 def createConnection(probe):
     return HTTPConnection(probe.getIp(), Parameters.PORT_NUMBER)

@@ -3,7 +3,6 @@ Created on 7 juin 2013
 
 @author: francois
 '''
-from threading import Thread
 from interface import Interface
 
 class Cli(Interface):

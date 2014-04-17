@@ -6,11 +6,13 @@ Mapping is done by the messages dict
 '''
 __all__ = ['toAction']
 
+import logging
+
 from . import messages as m
 from consts import Identification
 from .actions import Add, Quit, Remove, Prepare, UpdateProbes, Do
-import logging
 from managers.probes import Probe
+
 
 treatedAction = 0
 

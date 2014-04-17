@@ -12,12 +12,14 @@ __all__ = ['Client']
 
 from queue import Queue
 from threading import Thread, Event
-import logging, copy
+import logging
+import copy
 
 from calls.messages import Message, BroadCast
 from consts import Consts, Identification, Params
 from managers.probes import ProbeStorage
 from interfaces.excs import NoSuchProbe
+
 
 class Client(Thread):
     '''

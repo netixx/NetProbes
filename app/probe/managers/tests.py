@@ -1,6 +1,8 @@
-from managers.probes import ProbeStorage
 from subprocess import Popen, PIPE
 import shlex
+
+from managers.probes import ProbeStorage
+
 
 class TestServices(object):
     '''

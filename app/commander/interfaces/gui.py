@@ -5,10 +5,11 @@ Created on 16 juin 2013
 '''
 from threading import Thread
 from tkinter import *
-from interface import Interface
 from tkinter.ttk import Treeview
+
+from interface import Interface
 import consts
-from exceptions import ProbeConnectionFailed
+
 
 class Gui(Interface):
 

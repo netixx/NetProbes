@@ -4,12 +4,14 @@ Implementation of a broadcast test
 '''
 __all__ = ['TesterBroadcast', 'TesteeBroadcast']
 
-from interfaces.probetest import Report, TesterTest, TesteeTest
-from managers.tests import TestServices
 import socket
 import argparse
+
+from interfaces.probetest import Report, TesterTest, TesteeTest
+from managers.tests import TestServices
 from consts import Identification
 from interfaces.excs import TestArgumentError
+
 
 name = "Broadcast"
 

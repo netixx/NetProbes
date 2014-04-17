@@ -7,7 +7,9 @@ from threading import Thread
 import curses
 import time
 from curses.textpad import Textbox
+
 from interface import Interface
+
 
 class Curses(Interface):
     DISPLAY_WIDTH = 100

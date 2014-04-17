@@ -12,7 +12,8 @@ loaded
 __all__ = ['Report', 'TesterTest', 'TesteeTest', 'TestServices',
            'TESTEE_MODE', 'TESTER_MODE']
 
-import random, logging, shlex
+import random
+import logging
 
 TEST_LOGGER = "tests"
 testLogger = logging.getLogger(TEST_LOGGER)

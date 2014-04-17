@@ -15,8 +15,10 @@ Created on 7 juin 2013
 
 import os
 import sys
+
 from calls import actions
 from consts import Consts
+
 
 directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(directory)

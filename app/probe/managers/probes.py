@@ -4,8 +4,10 @@ Storage of the probes and probe object
 @author: francois
 '''
 from threading import RLock
+
 from consts import Consts, Identification
 from interfaces.excs import NoSuchProbe
+
 
 class ProbeStorage(object):
     '''

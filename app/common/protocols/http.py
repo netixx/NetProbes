@@ -4,13 +4,19 @@ Created on 9 avr. 2014
 @author: francois
 '''
 
-import urllib, logging, datetime, time
+import logging
+import datetime
+import time
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from threading import Thread
 from http.client import HTTPConnection, CannotSendRequest, HTTPException
+
+import urllib
+
 from common.intfs.exceptions import ProbeConnectionFailed
 from common.consts import Params
+
 
 class Parameters(object):
     PORT_NUMBER = 5000

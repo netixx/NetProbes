@@ -4,10 +4,14 @@ Implementation of a multicast test
 '''
 __all__ = ['TesterMulticast', 'TesteeMulticast']
 
-import socket, argparse, struct
+import socket
+import argparse
+import struct
+
 from consts import Identification
 from interfaces.excs import TestArgumentError
 from interfaces.probetest import Report, TesterTest, TesteeTest
+
 
 name = "Multicast"
 

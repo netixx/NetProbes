@@ -12,6 +12,8 @@ __all__ = ['ActionMan']
 from threading import Thread
 import logging
 from queue import PriorityQueue
+from ipaddress import ip_network
+
 from calls.messages import Hello, Bye, AddToOverlay
 from consts import Identification
 from inout.client import Client
@@ -21,7 +23,6 @@ from .probetests import TestResponder, TestManager
 from interfaces.excs import TestError, ActionError, \
     NoSuchProbe, ProbeConnectionException, ToManyTestsInProgress
 
-from ipaddress import ip_network
 
 class ActionMan(Thread):
 

@@ -4,8 +4,7 @@ Created on 9 avr. 2014
 @author: francois
 '''
 from threading import Thread
-from managers.probes import ProbeStorage
-from managers.probetests import TestManager
+
 
 class Watcher(Thread):
 

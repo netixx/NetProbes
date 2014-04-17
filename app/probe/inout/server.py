@@ -6,6 +6,9 @@ Server that listens to probe messages
 __all__ = ['Server']
 
 import copy
+from threading import Thread, Event
+import logging
+
 from .client import Client
 from calls.messages import Message, TesterMessage, TesteeAnswer, BroadCast, \
     TestMessage, Hello, Add, AddToOverlay
@@ -13,10 +16,9 @@ import calls.messagetoaction as MTA
 from consts import Params, Identification
 from managers.probes import ProbeStorage
 from managers.probetests import TestManager, TestResponder
-from threading import Thread, Event
-import logging
 from managers.actions import ActionMan
 from interfaces.excs import ActionError
+
 
 class Server(Thread):
     '''

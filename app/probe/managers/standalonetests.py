@@ -4,11 +4,13 @@
 '''
 __all__ = ['TestManager']
 
-import importlib, logging
+import importlib
+import logging
 from threading import Thread, RLock
+
 from interfaces.excs import TestError, TestAborted
-from interfaces.standalonetest import Test
 from interfaces.standalonetest import TEST_LOGGER
+
 
 testLogger = logging.getLogger(TEST_LOGGER)
 
@@ -108,7 +110,7 @@ class _TestManager(Thread):
 
 from consts import Params as p
 from interfaces.excs import ToManyTestsInProgress, TestArgumentError
-from interfaces.probetest import TESTER_MODE
+
 
 class TestManager(object):
     '''
