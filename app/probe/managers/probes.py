@@ -1,8 +1,8 @@
-'''
+"""
 Storage of the probes and probe object
 
 @author: francois
-'''
+"""
 from threading import RLock
 
 from consts import Consts, Identification
@@ -10,17 +10,16 @@ from interfaces.excs import NoSuchProbe
 
 
 class ProbeStorage(object):
-    '''
+    """
     Stores all the Probes currently known by the current probe in a dictionnary
     Addition and deletion are thread safe implemented
     Contains the local probe (the probe of the computer it's running on)
 
-    '''
+    """
     knownProbes = {}
     __knownProbesLock = RLock()
 
-    def __init__(self):
-        pass
+    """Query methods"""
 
     @classmethod
     def isKnownId(cls, probeId):
@@ -33,56 +32,12 @@ class ProbeStorage(object):
             return ip in [p.getIp() for p in cls.knownProbes.values()]
 
     @classmethod
-    def delProbeById(c, probeid):
-        with c.__knownProbesLock:
-            try:
-                ProbeConnections.disconnectProbe(c.knownProbes[probeid])
-                c.knownProbes.pop(probeid)
-            except KeyError:
-                raise NoSuchProbe()
-
-
-    @classmethod
-    def addProbe(cls, probe):
-        assert isinstance(probe, Probe)
-        with cls.__knownProbesLock:
-            cls.knownProbes[probe.getId()] = probe
-
-    @classmethod
-    def connectToProbe(cls, probeId):
-        probe = cls.getProbeById(probeId)
-        if not probe.connected:
-            ProbeConnections.connectToProbe(probe)
-
-    @classmethod
-    def disconnectFromProbe(cls, probeId):
-        probe = cls.getProbeById(probeId)
-        if probe.connected:
-            ProbeConnections.disconnectProbe(probe)
-
-    @classmethod
     def getProbeById(cls, probeId):
         with cls.__knownProbesLock:
             try:
                 return cls.knownProbes[probeId]
             except KeyError as e:
                 raise NoSuchProbe(e)
-
-    @classmethod
-    def closeAllConnections(cls):
-        with cls.__knownProbesLock:
-            for probeId in cls.knownProbes.keys():
-                cls.disconnectFromProbe(probeId)
-
-    @classmethod
-    def clearAllProbes(cls):
-        cls.closeAllConnections()
-        cls.knownProbes.clear()
-
-    @classmethod
-    def numberOfConnections(cls):
-        with cls.__knownProbesLock:
-            return len(cls.getConnectedProbes())
 
     @classmethod
     def getConnectedProbes(cls):
@@ -109,9 +64,32 @@ class ProbeStorage(object):
             return [probeId for probeId in cls.knownProbes.keys() if probeId != Identification.PROBE_ID]
 
     @classmethod
-    def getKeys(cls):
+    def getIpAllOtherProbes(cls):
         with cls.__knownProbesLock:
-            return cls.knownProbes.keys()
+            return [p.getIp() for p in cls.knownProbes.values() if p.getId() != Identification.PROBE_ID]
+
+    """Table manipulation methods"""
+
+    @classmethod
+    def addProbe(cls, probe):
+        assert isinstance(probe, Probe)
+        with cls.__knownProbesLock:
+            cls.knownProbes[probe.getId()] = probe
+
+
+    @classmethod
+    def delProbeById(cls, probeid):
+        with cls.__knownProbesLock:
+            try:
+                ProbeConnections.disconnectProbe(cls.knownProbes[probeid])
+                cls.knownProbes.pop(probeid)
+            except KeyError:
+                raise NoSuchProbe()
+
+    @classmethod
+    def clearAllProbes(cls):
+        cls.closeAllConnections()
+        cls.knownProbes.clear()
 
     @staticmethod
     def newProbe(idProbe, ip):
@@ -121,11 +99,31 @@ class ProbeStorage(object):
     def addSelfProbe(cls):
         cls.addProbe(cls.newProbe(Identification.PROBE_ID, Consts.LOCAL_IP_ADDR))
 
+    """Connection methods"""
+
+    @classmethod
+    def connectToProbe(cls, probeId):
+        probe = cls.getProbeById(probeId)
+        if not probe.connected:
+            ProbeConnections.connectToProbe(probe)
+
+    @classmethod
+    def disconnectFromProbe(cls, probeId):
+        probe = cls.getProbeById(probeId)
+        if probe.connected:
+            ProbeConnections.disconnectProbe(probe)
+
+    @classmethod
+    def closeAllConnections(cls):
+        with cls.__knownProbesLock:
+            for probeId in cls.knownProbes.keys():
+                cls.disconnectFromProbe(probeId)
+
 
 class Probe(object):
-    '''
+    """
     Represents a probe
-    '''
+    """
 
     def __init__(self, idProbe, ip):
         self.ip = ip
@@ -141,7 +139,7 @@ class Probe(object):
 
     def __getstate__(self):
         """Choose what to write when pickling"""
-        return (self.id, self.ip)
+        return self.id, self.ip
 
     def __setstate__(self, state):
         """Choose what to read when pickling"""

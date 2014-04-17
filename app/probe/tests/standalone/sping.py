@@ -224,13 +224,12 @@ class Sping(Test):
         self.threads = []
         for target in self.targets:
             try:
-                probeIp = TestServices.getProbeIpById(target)
                 if self.parallelPing:
-                    t = Thread(target = self.makeAPing, args = [target, probeIp], name = "Ping-%s" % probeIp)
+                    t = Thread(target = self.makeAPing, args = [target], name = "Ping-%s" % target)
                     self.threads.append(t)
                     t.start()
                 else:
-                    self.makeAPing(target, probeIp)
+                    self.makeAPing(target)
             except PingFail as e:
                 # TODO: self.stats[target] = e ?
                 self.perrors[target] = e
@@ -243,13 +242,13 @@ class Sping(Test):
                 t.join()
 
 
-    def makeAPing(self, probeId, probeIp):
+    def makeAPing(self, probeIp):
         r = self.makePing(probeIp, self.options, self.isSweep)
         if self.isSweep:
-            self.stats[probeId] = SweepStats(*r)
+            self.stats[probeIp] = SweepStats(*r)
         else:
-            self.stats[probeId] = PingStats(*r)
-        self.psuccess[probeId] = True
+            self.stats[probeIp] = PingStats(*r)
+        self.psuccess[probeIp] = True
 
     '''
         Generate the result of the test given the set of reports from the tested probes

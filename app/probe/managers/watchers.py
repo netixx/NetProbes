@@ -61,6 +61,10 @@ class WatcherServices(object):
         return ProbeStorage.getIdAllOtherProbes()
 
     @classmethod
+    def getIpAllOtherProbes(cls):
+        return ProbeStorage.getIpAllOtherProbes()
+
+    @classmethod
     def getAllProbes(cls):
         return ProbeStorage.getAllProbes()
 
