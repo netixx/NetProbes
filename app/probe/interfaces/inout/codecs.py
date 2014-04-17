@@ -16,6 +16,7 @@ def encode(message):
 
     pass
 
+
 def decode(message):
     '''Decode bytes received from remote probe
     Should return Message instance

@@ -32,6 +32,7 @@ class Parameters(object):
     HTTP_GET_REQUEST = "GET"
     URL_SRV_ID_QUERY = "/id"
 
+
 class CommanderServer(Thread):
     """Results are pushed to the results queue.
     When the become available, the Listener pushes the
@@ -72,15 +73,15 @@ class CommanderServer(Thread):
 
         def treatMessage(self, message):
             self.getLogger().ddebug("Handling constructed message")
-            if(isinstance(message, Add)):
+            if (isinstance(message, Add)):
                 msg = m.AddToOverlay(message.targetId, message.targetIp)
                 Server.treatMessage(msg)
-            elif(isinstance(message, Delete)):
+            elif (isinstance(message, Delete)):
                 self.getLogger().info("Trying to delete probe with ID %s", message.targetId)
                 byeMessage = m.Bye(message.targetId, message.targetId)
                 Client.send(byeMessage)
 
-            elif(isinstance(message, Do)):
+            elif (isinstance(message, Do)):
                 self.getLogger().info("Trying to do a test : %s", message.test)
                 msg = m.Do(message.targetId, message.test, message.testOptions)
                 if msg.targetId == Identification.PROBE_ID:
@@ -96,7 +97,7 @@ class CommanderServer(Thread):
                 if probe.getId() == Identification.PROBE_ID:
                     status.append(pd.ProbeStatus.LOCAL)
                 status.append(pd.ProbeStatus.ADDED)
-                if probe.connected :
+                if probe.connected:
                     status.append(pd.ProbeStatus.CONNECTED)
                 dprobes.append(pd.Probe(probe.getId(),
                                         probe.getIp(),

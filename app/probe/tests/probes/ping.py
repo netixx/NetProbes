@@ -16,8 +16,10 @@ from managers.tests import TestServices
 
 name = "Ping"
 
+
 class PingFail(TestError):
     pass
+
 
 class PingParseError(TestError):
     pass
@@ -40,6 +42,7 @@ class Ping(object):
         Parse the options for the current test
         should populate at least the targets list
     '''
+
     def parseOptions(self):
         # ping -c 3 -t 30 -m 10 -W 2 -s 50 -i 1 -D
         parser = argparse.ArgumentParser(prog = name,
@@ -84,34 +87,34 @@ class Ping(object):
         sweepGrp = parser.add_mutually_exclusive_group()
         sweepParamsGrp = sweepGrp.add_argument_group()
         sweepGrp.add_argument('-s',
-                            metavar = 'PACKET_SIZE',
-                            type = int,
-                            dest = 'packetSize',
-                            help = 'Size of payload')
+                              metavar = 'PACKET_SIZE',
+                              type = int,
+                              dest = 'packetSize',
+                              help = 'Size of payload')
 
         sweepParamsGrp.add_argument('-G',
-                            metavar = 'SWEEP_MAX_SIZE',
-                            dest = 'swpMaxSize',
-                            type = int,
-                            help = 'Maximum size of payload when sweeping'
-                            )
+                                    metavar = 'SWEEP_MAX_SIZE',
+                                    dest = 'swpMaxSize',
+                                    type = int,
+                                    help = 'Maximum size of payload when sweeping'
+        )
         sweepParamsGrp.add_argument('-g',
-                            metavar = 'SWEEP_MIN_SIZE',
-                            dest = 'swpMinSize',
-                            type = int,
-                            help = 'Size of payload to start sweeping')
+                                    metavar = 'SWEEP_MIN_SIZE',
+                                    dest = 'swpMinSize',
+                                    type = int,
+                                    help = 'Size of payload to start sweeping')
         sweepParamsGrp.add_argument('-H',
-                            metavar = 'SWEEP_INC_SIZE',
-                            type = int,
-                            dest = 'swpIncSize',
-                            help = 'Payload size increment for each sweep')
+                                    metavar = 'SWEEP_INC_SIZE',
+                                    type = int,
+                                    dest = 'swpIncSize',
+                                    help = 'Payload size increment for each sweep')
         parser.add_argument('-i',
                             metavar = "WAIT_TIME",
                             dest = 'waitSend',
                             type = float,
                             help = 'Time to wait between sending ping')
         parser.add_argument('-D',
-#                             metavar = "DON'T_FRAGMENT",
+                            #                             metavar = "DON'T_FRAGMENT",
                             dest = 'df',
                             action = 'store_true',
                             help = "Set the don't fragment bit")
@@ -152,7 +155,7 @@ class Ping(object):
     @classmethod
     def _parsePing(cls, pingOutput):
         # Parse ping output and return all data.
-#         errorTuple = (1, 0, 0, 0, 0, 0)
+        #         errorTuple = (1, 0, 0, 0, 0, 0)
         # Check for downed link
         r = r'[uU]nreachable'
         m = re.search(r, pingOutput)
@@ -174,13 +177,14 @@ class Ping(object):
             rttmax = float(m.group(3))
             rttdev = float(m.group(4))
         except:
-            raise PingParseError('Could not parse ping numbers : %s/%s/%s/%s' % (m.group(1), m.group(2), m.group(3), m.group(4)))
+            raise PingParseError(
+                'Could not parse ping numbers : %s/%s/%s/%s' % (m.group(1), m.group(2), m.group(3), m.group(4)))
         return sent, received, rttmin, rttavg, rttmax, rttdev
 
     @classmethod
     def _parseSweepPing(cls, pingOutput):
         # Parse ping output and return all data.
-#         errorTuple = (1, 0, 0, 0, 0, 0)
+        #         errorTuple = (1, 0, 0, 0, 0, 0)
         # Check for downed link
         r = r'[uU]nreachable'
         m = re.search(r, pingOutput)
@@ -201,10 +205,9 @@ class Ping(object):
 
 
 class TesterPing(TesterTest, Ping):
-    
     rformat = "Ping statistics for %s : %s\n"
     eformat = "Ping failed %s"
-    
+
     def __init__(self, options):
         self.process = None
         Ping.__init__(self)
@@ -217,24 +220,26 @@ class TesterPing(TesterTest, Ping):
     '''
         Prepare yourself for the test
     '''
+
     def doPrepare(self):
         pass
 
     '''
         Does the actual test
     '''
+
     def doTest(self):
         self.logger.info("Starting test")
 
         self.stats = {}
         self.psuccess = {}
         self.perrors = {}
-        self.threads= []
+        self.threads = []
         for target in self.targets:
             try:
                 probeIp = TestServices.getProbeIpById(target)
                 if self.parallelPing:
-                    t = Thread(target = self.makeAPing, args = [target, probeIp], name="Ping-%s"%probeIp)
+                    t = Thread(target = self.makeAPing, args = [target, probeIp], name = "Ping-%s" % probeIp)
                     self.threads.append(t)
                     t.start()
                 else:
@@ -262,6 +267,7 @@ class TesterPing(TesterTest, Ping):
     '''
         Prepare yourself for finish
     '''
+
     def doOver(self):
         pass
 
@@ -269,6 +275,7 @@ class TesterPing(TesterTest, Ping):
         Generate the result of the test given the set of reports from the tested probes
         Should populate self.result
     '''
+
     def doResult(self, reports):
         self.result = ""
         self.errors = ""
@@ -280,13 +287,14 @@ class TesterPing(TesterTest, Ping):
                     self.result += self.eformats % (target, self.perrors[target])
                 else:
                     self.result += self.rformat % (target, self.stats[target].printAll())
-#         self.rawResult = self.errors
+                    #         self.rawResult = self.errors
         self.rawResult = self.stats
+
+
 #         else:
 #             raise TestError(self.errors)
-    
-class TesteePing(TesteeTest, Ping):
 
+class TesteePing(TesteeTest, Ping):
     def __init__(self, options, testId):
         Ping.__init__(self)
         TesteeTest.__init__(self, options, testId)
@@ -298,22 +306,26 @@ class TesteePing(TesteeTest, Ping):
     '''
         Actions that the probe must perform in order to be ready
     '''
+
     def replyPrepare(self):
         pass
 
     '''
         Actions that must be taken when the probe received the test
     '''
+
     def replyTest(self):
         pass
-            
-    
+
+
     '''
         Actions that the probe must perform when the test is over
         generates the report and returns it!!!
     '''
+
     def replyOver(self):
         return Report(Identification.PROBE_ID)
+
 
 class PingStats(object):
     def __init__(self, sent, received, rttmin, rttavg, rttmax, rttdev):
@@ -326,14 +338,16 @@ class PingStats(object):
 
     def printAll(self):
         return """Packets sent : %s, packets received : %s
-        rtt min/avg/max/mdev : %s/%s/%s/%s ms""" % (self.sent, self.received, self.rttmin, self.rttavg, self.rttmax, self.rttdev)
+        rtt min/avg/max/mdev : %s/%s/%s/%s ms""" % (
+            self.sent, self.received, self.rttmin, self.rttavg, self.rttmax, self.rttdev)
+
 
 class SweepStats(object):
     def __init__(self, sent, received, packetsDetails):
         self.sent = sent
         self.received = received
         self.packets = packetsDetails
-        
+
     def printAll(self):
         return """Packets sent : %s, packets received : %s
         size received : %s""" % (self.sent, self.received, ", ".join([str(p[1]) for p in self.packets]))

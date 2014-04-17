@@ -4,8 +4,8 @@ Created on 17 juin 2013
 @author: francois
 '''
 
-class Probe(object):
 
+class Probe(object):
     def __init__(self, ID, IP, status = "None"):
         self.IP = IP
         self.ID = ID
@@ -20,6 +20,7 @@ class Probe(object):
     def getStatus(self):
         return self.status
 
+
 class ProbeStatus(object):
     LOCAL = "local"
     ADDED = "added"
@@ -27,6 +28,7 @@ class ProbeStatus(object):
     READY = "ready"
     LOST = "lost"
     TEST_IN_PROGRESS = "test in progress"
+
 
 def statusFactory(status):
     return ", ".join(status)

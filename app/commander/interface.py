@@ -13,6 +13,7 @@ from exceptions import ProbeConnectionFailed, NoSuchCommand
 from common.commanderMessages import Add, Do, Delete
 from common.consts import Params as cParams
 
+
 class Interface(object):
     targetIp = "127.0.0.1"
     targetId = None
@@ -25,7 +26,7 @@ class Interface(object):
         self.isRunning = True
         self.doFetchProbes = Event()
         self.doFetchResults = Event()
-        try :
+        try:
             self.connection = cParams.PROTOCOL.createConnection(self.targetIp)
             cParams.PROTOCOL.connect(self.connection)
             self.connectionProbes = cParams.PROTOCOL.createConnection(self.targetIp)
@@ -33,7 +34,8 @@ class Interface(object):
             self.connectionResults = cParams.PROTOCOL.createConnection(self.targetIp)
             cParams.PROTOCOL.connect(self.connectionResults)
         except ProbeConnectionFailed as e:
-            raise ProbeConnectionFailed("Error while attempting to perform an HTTP request to the probe %s" % self.targetIp)
+            raise ProbeConnectionFailed(
+                "Error while attempting to perform an HTTP request to the probe %s" % self.targetIp)
         except ConnectionRefusedError:
             raise ProbeConnectionFailed("Error while connecting to probe : connection refused")
 
@@ -43,11 +45,11 @@ class Interface(object):
         try:
             cmd = Command(Parser(command, self), self)
             cmd.start()
-#             cmd.join()
+        #             cmd.join()
         except (ValueError, NoSuchCommand):
             pass
-#       self.updateStatus("Command is false or unkown")
-    
+            #       self.updateStatus("Command is false or unkown")
+
     @staticmethod
     def getTargetId(ip):
         return cParams.PROTOCOL.getRemoteId(ip)
@@ -59,7 +61,7 @@ class Interface(object):
         pass
 
     def probeFetcherScheduler(self):
-        while(self.isRunning):
+        while (self.isRunning):
             self.triggerFetchProbes()
             time.sleep(self.PROBE_REFRESH_TIME)
 
@@ -67,7 +69,7 @@ class Interface(object):
         self.doFetchProbes.set()
 
     def resultFetcherScheduler(self):
-        while(self.isRunning):
+        while (self.isRunning):
             self.triggerFetchResult()
             time.sleep(self.RESULTS_REFRESH_TIME)
 
@@ -77,7 +79,8 @@ class Interface(object):
     def fetchProbes(self):
         self.doFetchProbes.clear()
         return cParams.PROTOCOL.Sender().requestProbes(self.connectionProbes)
-#         return [Probe("id", "10.0.0.2"), Probe("id 2", "10.0.0.2")]
+
+    #         return [Probe("id", "10.0.0.2"), Probe("id 2", "10.0.0.2")]
 
     def fetchResults(self):
         self.doFetchResults.clear()
@@ -85,7 +88,7 @@ class Interface(object):
 
     def updateStatus(self, status):
         pass
-    
+
     def addResult(self, result):
         pass
 
@@ -97,53 +100,54 @@ class Interface(object):
         except:
             pass
 
+
 '''
     Parses a command from user input into a commanderMessage
 '''
-class Parser(object):
 
+
+class Parser(object):
     def __init__(self, command, interface):
         self.rcommand = command
         self.message = None
         self.errors = None
-        args = argparse.ArgumentParser(description="Parses the user command")
+        args = argparse.ArgumentParser(description = "Parses the user command")
         args.add_argument('-t', '--target-probe',
                           dest = 'target_probe',
                           metavar = 'target-ip',
                           help = "Ip of the target to control",
                           default = interface.targetId)
 
-        subp = args.add_subparsers(dest='subparser_name')
+        subp = args.add_subparsers(dest = 'subparser_name')
 
         # parser for the add command
         subp1 = subp.add_parser('add')
-        subp1.add_argument('ip', metavar='ip',
-                    help='The ip you want to add')
-        subp1.set_defaults(func=self.setAdd)
+        subp1.add_argument('ip', metavar = 'ip',
+                           help = 'The ip you want to add')
+        subp1.set_defaults(func = self.setAdd)
 
         # parser for the do command
         subp2 = subp.add_parser('do')
-        subp2.add_argument('test', metavar='test',
-                    help='The message you want to send to the probe')
-        subp2.add_argument('options', nargs=argparse.REMAINDER)
-        subp2.set_defaults(func=self.setDo)
+        subp2.add_argument('test', metavar = 'test',
+                           help = 'The message you want to send to the probe')
+        subp2.add_argument('options', nargs = argparse.REMAINDER)
+        subp2.set_defaults(func = self.setDo)
 
         # parse for the remove command
         subp3 = subp.add_parser('remove')
-        subp3.add_argument('id', 
-                           metavar='id',
+        subp3.add_argument('id',
+                           metavar = 'id',
                            default = interface.targetId,
-                           help='The id of the probe you wish to remove')
-        subp3.set_defaults(func=self.setRemove)
-        
+                           help = 'The id of the probe you wish to remove')
+        subp3.set_defaults(func = self.setRemove)
 
         try:
             self.command = args.parse_args(shlex.split(command))
             self.command.func()
         except (argparse.ArgumentError, SystemExit):
             self.errors = args.format_usage()
-#         if (len(self.aCommand) < 2):
-#             raise ValueError("The argument supplied must at least have 2 words")
+            #         if (len(self.aCommand) < 2):
+            #             raise ValueError("The argument supplied must at least have 2 words")
 
     def getCommand(self):
         return self.rcommand
@@ -169,11 +173,13 @@ class Parser(object):
     def getMessage(self):
         return self.message
 
+
 '''
     Runs the command of the user (in a new Thread)
 '''
-class Command(Thread):
 
+
+class Command(Thread):
     def __init__(self, parser, interface):
         Thread.__init__(self)
         self.interface = interface

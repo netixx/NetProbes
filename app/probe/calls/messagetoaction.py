@@ -18,14 +18,15 @@ treatedAction = 0
 
 '''Matches message class to its corresponding method'''
 messages = {
-            "Add" : "_toAdd",
-            "Bye" : "_toBye",
-            "Hello" : "_toHello",
-            "Prepare" : "_toPrepare",
-            "Do" : '_toDo'
-            }
+    "Add": "_toAdd",
+    "Bye": "_toBye",
+    "Hello": "_toHello",
+    "Prepare": "_toPrepare",
+    "Do": '_toDo'
+}
 
 logger = logging.getLogger()
+
 
 def toAction(message):
     logger.debug("Transforming message %s into action", message.__class__.__name__)
@@ -35,18 +36,20 @@ def toAction(message):
     # calls the right method
     return globals()[messages.get(message.__class__.__name__)](message)
 
+
 def _toAdd(addMessage):
-    assert isinstance(addMessage,m.Add)
+    assert isinstance(addMessage, m.Add)
     return Add(addMessage.probeIP, addMessage.probeID, addMessage.doHello)
 
+
 def _toBye(byeMessage):
-    assert isinstance(byeMessage,m.Bye)
+    assert isinstance(byeMessage, m.Bye)
     if byeMessage.getLeavingID() == Identification.PROBE_ID:
         logger.ddebug("Making Quit action from Bye message")
         return Quit()
     else:
         logger.ddebug("Making Remove action from Bye message")
-        return Remove( byeMessage.getLeavingID() )
+        return Remove(byeMessage.getLeavingID())
 
 
 def _toHello(message):
@@ -61,6 +64,7 @@ def _toPrepare(message):
     logger.ddebug("Making Prepare action from Prepare message")
     assert isinstance(message, m.Prepare)
     return Prepare(message.getTestName(), message.getTestId(), message.getTestOptions(), message.getSourceId())
+
 
 def _toDo(message):
     logger.ddebug("Making Do action from Do message")

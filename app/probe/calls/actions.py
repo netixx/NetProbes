@@ -8,6 +8,7 @@ Action class and subclasses are not sent over the network, only messages are (cf
 __all__ = ['Action', 'Add', 'AddPrefix', 'UpdateProbes', 'Remove',
            'Do', 'Prepare', 'Quit', ]
 
+
 class Action(object):
     '''General class, defining priority of the actions'''
 
@@ -15,6 +16,7 @@ class Action(object):
         # low prioriy
         self.priority = 10
         from .messagetoaction import treatedAction
+
         self.actionNumber = treatedAction
 
     def __lt__(self, other):
@@ -29,7 +31,7 @@ class Action(object):
 class Add(Action):
     '''Add action : adds a probe to the overlay of probes'''
 
-    def __init__(self, ipSonde, idSonde, hello=False):
+    def __init__(self, ipSonde, idSonde, hello = False):
         super().__init__()
         self.ipSonde = ipSonde
         self.idSonde = idSonde
@@ -49,13 +51,14 @@ class AddPrefix(Action):
 
     def __init__(self, addPrefix):
         self.addPrefix = addPrefix
-    
+
     def getPrefix(self):
         return self.addPrefix
 
 
 class UpdateProbes(Action):
     '''Add the given list of probes to the hashtable (probestorage)'''
+
     def __init__(self, probeList):
         super().__init__()
         self.probeList = probeList
@@ -67,6 +70,7 @@ class UpdateProbes(Action):
 
 class Remove(Action):
     '''Tells the probe to remove another probe from the overlay'''
+
     def __init__(self, idSonde):
         super().__init__()
         self.idSonde = idSonde
@@ -74,13 +78,13 @@ class Remove(Action):
 
     def getIdSonde(self):
         return self.idSonde
-      
 
 
 class Do(Action):
     '''Do action : does a test'''
 
     priority = 2
+
     def __init__(self, testClass, testOptions, resultCallback, errorCallback):
         super().__init__()
         self.testClass = testClass
@@ -107,7 +111,6 @@ class Do(Action):
 
     def getTestId(self):
         return self.testId
-
 
 
 class Prepare(Action):
@@ -139,6 +142,7 @@ class Quit(Action):
     closing all connections to other probes
 
     '''
+
     def __init__(self):
         super().__init__()
         self.priority = 10

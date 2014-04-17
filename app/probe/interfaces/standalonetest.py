@@ -11,12 +11,14 @@ import logging
 TEST_LOGGER = "tests"
 testLogger = logging.getLogger(TEST_LOGGER)
 
+
 class Report(object):
     '''
     A report from a probe regarding a Test
     Send after over signal is received. Often encapsulated in a Result message
 
     '''
+
     def __init__(self, probeId, isSuccess = True):
         self.isSuccess = isSuccess
         self.testId = None
@@ -24,6 +26,7 @@ class Report(object):
 
     def getProbeId(self):
         return self.probeId
+
 
 class Test(object):
     '''

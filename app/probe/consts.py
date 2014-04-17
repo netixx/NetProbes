@@ -9,6 +9,7 @@ __all__ = ['Consts', 'Params', 'Identification']
 import interfaces.inout.codecs as codecs
 import interfaces.inout.protocols as protocols
 
+
 class Consts(object):
     PROPAGATION_RATE = 5
     LOCAL_IP_ADDR = "localhost"
@@ -36,4 +37,5 @@ class Identification(object):
     @staticmethod
     def randomId():
         import random
+
         return '%05x' % random.randrange(16 ** 5)

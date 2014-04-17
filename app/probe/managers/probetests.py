@@ -16,6 +16,7 @@ from interfaces.probetest import TEST_LOGGER
 
 testLogger = logging.getLogger(TEST_LOGGER)
 
+
 def testFactory(test, mode = ""):
     '''
     A factory to get the class from the name of the test
@@ -25,6 +26,7 @@ def testFactory(test, mode = ""):
     mod = importlib.import_module("tests.probes." + test)
     return getattr(mod, mode + test.capitalize())
 
+
 from threading import RLock, Event, Thread
 from inout.client import Client
 from calls.messages import Prepare, Over, Abort, Ready, Result, TesterMessage, \
@@ -33,6 +35,7 @@ from consts import Identification
 from interfaces.excs import TestError, TestAborted
 import time
 from managers.probes import ProbeStorage
+
 
 class _TestManager(Thread):
     NAME_TPL = "TestManager_%s-%s"
@@ -86,7 +89,8 @@ class _TestManager(Thread):
         for target in self.test.getTargets():
             ProbeStorage.connectToProbe(target)
             # prepare for the test width given id
-            Client.send(Prepare(target, self.test.getId(), self.test.getName(), self.test.getOptions(), Identification.PROBE_ID))
+            Client.send(Prepare(target, self.test.getId(), self.test.getName(), self.test.getOptions(),
+                                Identification.PROBE_ID))
 
         # wait for everyone to be ready
         self.isReadyForTest.wait(self.test.prepareTimeout)
@@ -143,6 +147,7 @@ class _TestManager(Thread):
         return self.test.getId()
 
     '''Tools methods'''
+
     def addReady(self, message):
         if message.getTestId() == self.test.getId():
             with self.readyLock:
@@ -159,7 +164,7 @@ class _TestManager(Thread):
         with self.reportsLock:
             self.reports[probeId] = report
             testLogger.ddebug("Received new report from target probe")
-            if(len(self.reports) == self.test.getProbeNumber()):
+            if (len(self.reports) == self.test.getProbeNumber()):
                 testLogger.info("All reports received, proceeding with result")
                 self.areReportsCollected.set()
 
@@ -171,7 +176,7 @@ class _TestManager(Thread):
             else:
                 self.errorCallback(self.test.getId(), self.testError)
             testLogger.error("An error occurred during test %s", self.testError.getReason())
-        else :
+        else:
             if self.formatResult:
                 self.resultCallback(self.test.getName(), self.test.getResult())
             else:
@@ -181,6 +186,7 @@ class _TestManager(Thread):
 from consts import Params as p
 from interfaces.excs import ToManyTestsInProgress, TestArgumentError
 from interfaces.probetest import TESTER_MODE
+
 
 class TestManager(object):
     '''
@@ -208,8 +214,9 @@ class TestManager(object):
         try:
             with cls.__testManLock:
                 if len(cls.testManagers) >= p.MAX_OUTGOING_PROBETESTS:
-                    raise ToManyTestsInProgress("To much tests are currently running : %s on %s allowed" % (len(cls.testManagers), p.MAX_OUTGOING_PROBETESTS))
-                try :
+                    raise ToManyTestsInProgress("To much tests are currently running : %s on %s allowed" % (
+                        len(cls.testManagers), p.MAX_OUTGOING_PROBETESTS))
+                try:
                     test = cls.getTesterTestClass(testName)(testOptions)
                 except TestArgumentError as e:
                     errorCallback(testName, e.getUsage())
@@ -235,7 +242,7 @@ class TestManager(object):
         try:
             cls.testManagers[testId].abort()
         except KeyError:
-            testLogger.info("Test %s already finished"%testId)
+            testLogger.info("Test %s already finished" % testId)
 
     @classmethod
     def stopTests(cls):
@@ -273,6 +280,7 @@ class TestManager(object):
         except KeyError:
             pass
 
+
 class _TestResponder(Thread):
     NAME_TPL = "TestResponder_%s-%s"
     '''
@@ -294,14 +302,14 @@ class _TestResponder(Thread):
         self.abort = False
 
     def run(self):
-        try :
+        try:
             self.replyPrepare()
             self.prepared = True
             if not self.abort:
                 self.replyTest()
                 self.tested = True
                 self.testFinished.wait(self.test.overTimeout)
-        finally :
+        finally:
             testLogger.info("Test is over")
             self.finish()
 
@@ -339,6 +347,7 @@ class _TestResponder(Thread):
 
 from interfaces.probetest import TESTEE_MODE
 
+
 class TestResponder(object):
     '''
     Manager for the test on the testee side.
@@ -354,12 +363,13 @@ class TestResponder(object):
     def startTest(cls, testId, testName, sourceId, options):
         testLogger.debug("TestResponder : received request to do test")
         # only if we are not already responding to too many tests!
-#         if len(cls.currentTests) > p.MAX_INCOMMING_TESTS:
-#             raise ToManyTestsInProgress("Already responding to the maximum allowed number of tests : %s" % p.MAX_INCOMMING_TESTS)
-        try :
+        #         if len(cls.currentTests) > p.MAX_INCOMMING_TESTS:
+        #             raise ToManyTestsInProgress("Already responding to the maximum allowed number of tests : %s" % p.MAX_INCOMMING_TESTS)
+        try:
             tr = _TestResponder(cls.getTesteeTestClass(testName)(options, testId), sourceId)
             cls.testResponders[testId] = tr
-            testLogger.info("TestResponder : responding new test %s with id : %s from source : %s", testName, testId, sourceId)
+            testLogger.info("TestResponder : responding new test %s with id : %s from source : %s", testName, testId,
+                            sourceId)
             tr.start()
         except ImportError:
             raise TestError("Error while loading responder test %s" % testName)
@@ -384,11 +394,11 @@ class TestResponder(object):
         try:
             tr = cls.testResponders[message.getTestId()]
             testLogger.ddebug("Got message for manager %s", tr.getName())
-            if(isinstance(message, Over)):
+            if (isinstance(message, Over)):
                 testLogger.debug("Over message received for manager %s", tr.getName())
                 tr.replyOver()
 
-            elif(isinstance(message, Abort)):
+            elif (isinstance(message, Abort)):
                 testLogger.debug("TestResponder : Abort message received")
                 tr.replyAbort()
         except KeyError:
@@ -396,7 +406,7 @@ class TestResponder(object):
 
     @classmethod
     def cleanTest(cls, testId):
-        try :
+        try:
             cls.testResponders.pop(testId)
         except KeyError as e:
             testLogger.warning('Failed to remove test responder from list : %s', e)

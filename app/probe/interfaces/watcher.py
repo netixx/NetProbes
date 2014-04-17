@@ -7,7 +7,6 @@ from threading import Thread
 
 
 class Watcher(Thread):
-
     def __init__(self, name, options, logger):
         Thread.__init__(self)
         self.setName(name)
@@ -16,6 +15,7 @@ class Watcher(Thread):
 
     def quit(self):
         pass
+
 
 class WatcherError(Exception):
     pass

@@ -14,6 +14,7 @@ from interfaces.standalonetest import TEST_LOGGER
 
 testLogger = logging.getLogger(TEST_LOGGER)
 
+
 def _testFactory(test):
     '''
     A factory to get the class from the name of the test
@@ -101,7 +102,7 @@ class _TestManager(Thread):
             else:
                 self.errorCallback(self.test.getId(), self.testError)
             testLogger.error("An error occurred during test %s", self.testError.getReason())
-        else :
+        else:
             if self.formatResult:
                 self.resultCallback(self.test.getName(), self.test.getResult())
             else:
@@ -138,8 +139,9 @@ class TestManager(object):
         try:
             with cls.__testManLock:
                 if len(cls.testManagers) >= p.MAX_STANDALONETESTS:
-                    raise ToManyTestsInProgress("To much tests are currently running : %s on %s allowed" % (len(cls.testManagers), p.MAX_STANDALONETESTS))
-                try :
+                    raise ToManyTestsInProgress("To much tests are currently running : %s on %s allowed" % (
+                        len(cls.testManagers), p.MAX_STANDALONETESTS))
+                try:
                     test = _testFactory(testName)(testOptions)
                 except TestArgumentError as e:
                     errorCallback(testName, e.getUsage())
@@ -158,14 +160,14 @@ class TestManager(object):
         except ImportError:
             raise TestError("Could not load test class for test : %s" % testName)
         except Exception as e:
-            raise TestError("Unexpected error occurred while loading test %s"%e)
+            raise TestError("Unexpected error occurred while loading test %s" % e)
 
     @classmethod
     def stopTest(cls, testId):
         try:
             cls.testManagers[testId].abort()
         except KeyError:
-            testLogger.info("Test %s already finished"%testId)
+            testLogger.info("Test %s already finished" % testId)
 
     @classmethod
     def stopTests(cls):

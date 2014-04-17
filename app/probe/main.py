@@ -59,10 +59,12 @@ def addLogs():
 
     wlogger.propagate = False
     wlogger.setLevel(logging.DEBUG)
-    wlogger.addHandler(logging.FileHandler(os.path.join(WATCHERS_LOGS_DIR, Identification.PROBE_ID+'watcher.log'), mode = 'w'))
+    wlogger.addHandler(
+        logging.FileHandler(os.path.join(WATCHERS_LOGS_DIR, Identification.PROBE_ID + 'watcher.log'), mode = 'w'))
 
     DDEBUG = 9
     logging.addLevelName(DDEBUG, "DDEBUG")
+
     def ddebug(logger, msg, *args, **kwargs):
         logger.log(DDEBUG, msg, *args, **kwargs)
 
@@ -78,16 +80,17 @@ def addLogs():
     logs.addStdoutAndStdErr(logLevel, logger, formatter)
 
     # TODO: readd file logs when tests are done
-#     logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, "probe.log"), 30, logger, formatter)
+    #     logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, "probe.log"), 30, logger, formatter)
 
     testLogger = logging.getLogger(TEST_LOGGER);
     testFormatter = Formatter(TEST_LOGS_FORMAT)
 
-#     logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, "tests.log"), 30, testLogger, testFormatter)
+    #     logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, "tests.log"), 30, testLogger, testFormatter)
     testLogger.propagate = True
 
+
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Starts the commander for a probe')
+    parser = argparse.ArgumentParser(description = 'Starts the commander for a probe')
     parser.add_argument('-id', '--probe-id',
                         dest = 'probe_id',
                         metavar = 'probeId',
@@ -95,15 +98,15 @@ if __name__ == '__main__':
                         default = Identification.randomId())
 
     parser.add_argument('--debug',
-                    dest = 'debug',
-                    action = 'store_true',
-                    help = "Enable debug mode.")
+                        dest = 'debug',
+                        action = 'store_true',
+                        help = "Enable debug mode.")
 
     parser.add_argument('--commander',
-                    dest = 'commander',
-                    action = 'store_true',
-                    help = "Start the commander server with this probe.")
-    
+                        dest = 'commander',
+                        action = 'store_true',
+                        help = "Start the commander server with this probe.")
+
     parser.add_argument('--watchers',
                         dest = 'watchers',
                         action = 'append',
@@ -115,7 +118,6 @@ if __name__ == '__main__':
                         action = 'append',
                         default = [],
                         help = 'Prefix to scan to add probes automatically')
-
 
     args = parser.parse_args()
 
@@ -146,7 +148,7 @@ if __name__ == '__main__':
 
     addLogs()
 
-    try :
+    try:
         server = None
         a = None
         c = None
@@ -155,10 +157,10 @@ if __name__ == '__main__':
         server = Server()
         server.start()
         server.isUp.wait()
-    
+
         a = ActionMan()
         a.start()
-    
+
         if Params.COMMANDER:
             commander = CommanderServer()
             commander.start();
@@ -170,7 +172,7 @@ if __name__ == '__main__':
                     WatcherManager.registerWatcher(parts[0], parts[2], wlogger)
                 except WatcherError as e:
                     logging.getLogger().warning("Starting watcher failed : %s", e, exc_info = 1)
-    
+
         # ProbeStorage.addProbe( Probe("id", "10.0.0.1" ) )
         c = Client()
         c.start()
@@ -190,15 +192,17 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
         logging.getLogger().info("Caught keyboard interrupt")
-    except :
+    except:
         logging.getLogger().critical("Critical error in probe", exc_info = 1)
     finally:
         if Params.COMMANDER and commander is not None:
             commander.quit()
         from calls.actions import Quit
+
         if Params.WATCHERS:
             WatcherManager.stopWatchers()
         from managers.probetests import TestManager, TestResponder
+
         TestManager.stopTests()
         TestResponder.stopTests()
         ActionMan.addTask(Quit())

@@ -1,10 +1,9 @@
-
 class NoSuchCommand(Exception):
     def __init__(self):
         pass
 
-class ProbeConnectionFailed(Exception):
 
+class ProbeConnectionFailed(Exception):
     def __init__(self, consequence):
         self.consequence = consequence
 

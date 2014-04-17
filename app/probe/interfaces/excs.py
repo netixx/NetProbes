@@ -33,7 +33,7 @@ class TestInProgress(Exception):
 class ActionError(Exception):
     """Generic error during the processing of an action"""
     tpl = "Error occurred while performing action %s : %s"
-    
+
     def __init__(self, message, action):
         self.action = action
         self.message = message
@@ -48,15 +48,15 @@ class TestArgumentError(Exception):
     '''
     Error while starting the test
     '''
+
     def __init__(self, usage):
         self.usage = usage
-        
+
     def getUsage(self):
         return "Wrong argument : " + self.usage
 
 
 class TestError(ActionError):
-
     def __init__(self, reason):
         self.action = "Test"
         self.message = reason

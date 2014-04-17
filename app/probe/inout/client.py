@@ -31,7 +31,7 @@ class Client(Thread):
     messageStack = Queue()
     stop = False
     logger = logging.getLogger()
-    
+
     def __init__(self):
         Thread.__init__(self)
         self.setName("Client")
@@ -47,9 +47,9 @@ class Client(Thread):
                 self.stop = True
                 return
             try:
-#                 if isinstance(message, StatusMessage):
-#                     self.sendStatusMessage(message)
-#                 else:
+                #                 if isinstance(message, StatusMessage):
+                #                     self.sendStatusMessage(message)
+                #                 else:
                 self.sendMessage(message)
             finally:
                 self.messageStack.task_done()
@@ -65,7 +65,7 @@ class Client(Thread):
         cls.logger.info("Stopping the Client")
         cls._terminate()
         ProbeStorage.closeAllConnections()
-    
+
     @classmethod
     def send(cls, message):
         '''
@@ -77,7 +77,7 @@ class Client(Thread):
         assert isinstance(message, Message)
         cls.messageStack.put(message)
         cls.logger.debug("Message %s added to the stack", message.__class__.__name__)
-    
+
     @classmethod
     def broadcast(cls, message, toMyself = False):
         '''
@@ -123,15 +123,15 @@ class Client(Thread):
     @classmethod
     def allMessagesSent(cls):
         cls.messageStack.join()
-        
+
     '''Inner functions'''
-        
+
     def sendMessage(self, message):
-        try :
+        try:
             self.logger.debug("Sending the message : %s to %s with ip %s",
-                      message.__class__.__name__ ,
-                      message.getTarget(),
-                      ProbeStorage.getProbeById(message.getTarget()).getIp())
+                              message.__class__.__name__,
+                              message.getTarget(),
+                              ProbeStorage.getProbeById(message.getTarget()).getIp())
         except NoSuchProbe:
             self.logger.debug("Probe unknown")
         self.sender.send(message)

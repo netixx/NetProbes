@@ -32,7 +32,7 @@ class Server(Thread):
     '''
 
     logger = logging.getLogger()
-    
+
     def __init__(self):
         self.helper = self.Helper(self)
         self.listener = Params.PROTOCOL.Listener(self.helper)
@@ -41,7 +41,7 @@ class Server(Thread):
         self.setName("Server")
         self.isUp = Event()
         ProbeStorage.addSelfProbe()
-    
+
     def run(self):
         self.logger.info("Starting Server")
         self.listener.start()
@@ -61,10 +61,10 @@ class Server(Thread):
         cls.logger.debug("Treating message %s", message.__class__.__name__)
         assert isinstance(message, Message)
         # forwarding mechanism
-#         if message.targetId != Identification.PROBE_ID:
-#             cls.logger.info("Forwarding message %s to id %s", message.__class__.__name__, message.targetId)
-#             Client.send(message)
-#             return
+        #         if message.targetId != Identification.PROBE_ID:
+        #             cls.logger.info("Forwarding message %s to id %s", message.__class__.__name__, message.targetId)
+        #             Client.send(message)
+        #             return
         if isinstance(message, TestMessage):
             cls.treatTestMessage(message)
         elif isinstance(message, BroadCast):
@@ -101,20 +101,20 @@ class Server(Thread):
             TestResponder.handleMessage(message)
         else:
             ActionMan.addTask(MTA.toAction(message))
-    
+
     class Helper(object):
         def __init__(self, server):
             self.server = server
 
         def treatMessage(self, message):
             self.server.treatMessage(message)
-        
+
         def getId(self):
             return Identification.PROBE_ID
-    
+
         def getStatus(self):
             return ActionMan.getStatus()
-    
+
         def handleResponse(self, response, message):
             if (isinstance(message, Hello)):
                 message.setRemoteIp(response.client_address[0])

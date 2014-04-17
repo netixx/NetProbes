@@ -31,10 +31,13 @@ class Parameters(object):
     MAX_SEND_TRY = 4
     REPLY_MESSAGE_ENCODING = 'latin-1'
 
+
 logger = logging.getLogger()
+
 
 def createConnection(ip):
     return HTTPConnection(ip, Parameters.COMMANDER_PORT_NUMBER)
+
 
 def connect(connection):
     try:
@@ -42,8 +45,10 @@ def connect(connection):
     except HTTPException as e:
         raise ProbeConnectionFailed(e)
 
+
 def disconnect(connection):
     connection.close()
+
 
 def getRemoteId(ip):
     try:
@@ -51,7 +56,7 @@ def getRemoteId(ip):
         connection.connect()
         connection.request("GET", Parameters.URL_SRV_ID_QUERY, "", {})
         probeId = connection.getresponse().read().decode(Parameters.REPLY_MESSAGE_ENCODING)
-    #     logger.logger.info("Id of probe with ip " + str(targetIp) + " is " + str(probeId))
+        #     logger.logger.info("Id of probe with ip " + str(targetIp) + " is " + str(probeId))
         connection.close()
         return probeId
     except Exception as e:
@@ -62,16 +67,18 @@ class Sender(object):
     def send(self, connection, message):
         i = 0
         tryAgain = True
-        while(tryAgain and i < Parameters.MAX_SEND_TRY):
-            try :
+        while (tryAgain and i < Parameters.MAX_SEND_TRY):
+            try:
                 # serialize our message
                 serializedMessage = Params.CODEC.encode(message)
                 # put it in a dictionnary
-                params = {Parameters.POST_MESSAGE_KEYWORD : serializedMessage}
+                params = {Parameters.POST_MESSAGE_KEYWORD: serializedMessage}
                 # transform dictionnary into string
                 params = urllib.parse.urlencode(params, doseq = True, encoding = Parameters.POST_MESSAGE_ENCODING)
                 # set the header as header for POST
-                headers = {"Content-type": "application/x-www-form-urlencoded;charset=" + Parameters.POST_MESSAGE_ENCODING, "Accept": "text/plain"}
+                headers = {
+                    "Content-type": "application/x-www-form-urlencoded;charset=" + Parameters.POST_MESSAGE_ENCODING,
+                    "Accept": "text/plain"}
 
                 connection.request("POST", "", params, headers)
                 connection.getresponse()
@@ -96,7 +103,6 @@ class Sender(object):
 
 
 class Listener(ThreadingMixIn, HTTPServer, Thread):
-
     def __init__(self, helper):
         HTTPServer.__init__(self, ("", Parameters.COMMANDER_PORT_NUMBER), __class__.RequestHandler)
         Thread.__init__(self)
@@ -116,8 +122,8 @@ class Listener(ThreadingMixIn, HTTPServer, Thread):
 
         def log_message(self, format, *args):
             self.server.helper.getLogger().ddebug("Process message : %s -- [%s] %s" % (self.address_string(),
-                                                                                self.log_date_time_string(),
-                                                                                format % args))
+                                                                                       self.log_date_time_string(),
+                                                                                       format % args))
 
         def do_POST(self):
             self.server.helper.getLogger().debug("Handling a command")
@@ -127,7 +133,8 @@ class Listener(ThreadingMixIn, HTTPServer, Thread):
             # convert from bytes to string
             args = str(args, Parameters.POST_MESSAGE_ENCODING)
             # parse our string to a dictionary
-            args = urllib.parse.parse_qs(args, keep_blank_values = True, strict_parsing = True, encoding = Parameters.POST_MESSAGE_ENCODING)
+            args = urllib.parse.parse_qs(args, keep_blank_values = True, strict_parsing = True,
+                                         encoding = Parameters.POST_MESSAGE_ENCODING)
             # get our object as string and transform it to bytes
             message = bytes(args.get(Parameters.POST_MESSAGE_KEYWORD)[0], Parameters.POST_MESSAGE_ENCODING)
             # transform our bytes into an object
@@ -151,7 +158,7 @@ class Listener(ThreadingMixIn, HTTPServer, Thread):
             elif (getPath == Parameters.URL_RESULT_QUERY):
                 self.server.helper.getLogger().debug("Asked for results of tests")
                 message = self.server.helper.handleResultQuery()
-            else :
+            else:
                 message = self.server.helper.handleGet()
             # answer with your id
             self._reply(message)

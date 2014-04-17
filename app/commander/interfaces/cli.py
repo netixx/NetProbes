@@ -5,6 +5,7 @@ Created on 7 juin 2013
 '''
 from interface import Interface
 
+
 class Cli(Interface):
     DISPLAY_WIDTH = 100
     HEADING = ("Probe Id \t Probe Ip \t Status\n")
@@ -12,12 +13,12 @@ class Cli(Interface):
     CMD_PREFIX = "do"
     DISP_CMD = "disp"
     EXIT_CMD = "exit"
-    
+
 
     def __init__(self, probeIp):
         Interface.__init__(self, probeIp)
-#         Thread.__init__(self)
-#         self.setName("Cli")
+        #         Thread.__init__(self)
+        #         self.setName("Cli")
         self.prompt = probeIp + " > "
         self.isRunning = True
         # wins and boxes
@@ -25,11 +26,12 @@ class Cli(Interface):
         self.commandInput = None
         # assures we end correctly
         # end session
-#         curses.endwin()
+
+    #         curses.endwin()
 
     def start(self):
         while (self.isRunning):
-            try :
+            try:
                 cmd = input(self.prompt)
                 if cmd.startswith(self.CMD_PREFIX):
                     self.doCommand(cmd)

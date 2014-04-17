@@ -13,15 +13,15 @@ from interface import Interface
 
 class Curses(Interface):
     DISPLAY_WIDTH = 100
-    FIELDS_DISPLAY_WIDTH = [30 , 20]
+    FIELDS_DISPLAY_WIDTH = [30, 20]
     COMMAND_LINE_NUMBER = 3
     REFRESH_TIME = 5
     HEADING = ("Probe Id", "Probe Ip")
 
     def __init__(self, probeIp):
         Interface.__init__(self, probeIp)
-#         Thread.__init__(self)
-#         self.setName("Cli")
+        #         Thread.__init__(self)
+        #         self.setName("Cli")
         self.isRunning = True
         # wins and boxes
         self.status = None
@@ -30,18 +30,19 @@ class Curses(Interface):
         self.probesPanel = None
         # assures we end correctly
         # end session
-#         curses.endwin()
+
+    #         curses.endwin()
 
     def start(self):
         try:
             curses.wrapper(self.main)
         finally:
             self.isRunning = False
-           
+
 
     def initPanels(self, stdscr):
         self.DISPLAY_WIDTH = curses.COLS - 1;
-    
+
         self.text = stdscr.subwin(1, self.DISPLAY_WIDTH, 0, 0)
         self.text.addstr(0, 0, "Enter a command :")
         self.text.refresh()
@@ -52,7 +53,8 @@ class Curses(Interface):
         self.status = stdscr.subwin(1, self.DISPLAY_WIDTH, self.COMMAND_LINE_NUMBER - 1, 0)
         self.updateStatus("Waiting for command ...")
 
-        self.probesPanel = stdscr.subwin(curses.LINES - 1 - self.COMMAND_LINE_NUMBER, self.DISPLAY_WIDTH, self.COMMAND_LINE_NUMBER, 0)
+        self.probesPanel = stdscr.subwin(curses.LINES - 1 - self.COMMAND_LINE_NUMBER, self.DISPLAY_WIDTH,
+                                         self.COMMAND_LINE_NUMBER, 0)
         self.probesPanel.refresh()
 
         # move the cursor at the right place
@@ -60,7 +62,7 @@ class Curses(Interface):
 
     def main(self, stdscr):
         try:
-        #   stdscr = curses.initscr()
+            #   stdscr = curses.initscr()
             # Clear screen
             stdscr.clear()
             # remove the cursor
@@ -70,19 +72,19 @@ class Curses(Interface):
             self.initPanels(stdscr)
 
             box = Textbox(self.commandInput)
-        #     stdscr.refresh()
-            th = Thread(target=self.refreshProbes, name="Probe-Refresh", daemon=True)
+            #     stdscr.refresh()
+            th = Thread(target = self.refreshProbes, name = "Probe-Refresh", daemon = True)
             th.start()
             stdscr.refresh()
 
-            while(self.isRunning):
+            while (self.isRunning):
                 stdscr.refresh()
                 box.edit()
                 self.doCommand(box.gather())
-        #         commandInput.refresh()
+                #         commandInput.refresh()
 
-            # listen without entering enter
-            # curses.cbreak())
+                # listen without entering enter
+                # curses.cbreak())
         finally:
             self.isRunning = False
             th.join()
@@ -93,7 +95,7 @@ class Curses(Interface):
 
 
     def refreshProbes(self):
-        while(self.isRunning):
+        while (self.isRunning):
             self.drawProbes(self.fetchProbes())
             self.probesPanel.refresh()
             time.sleep(self.REFRESH_TIME)
@@ -101,7 +103,7 @@ class Curses(Interface):
     # get an area where all the probes can be painted
     def drawProbes(self, probes):
         i = 0
-        self.probesPanel.addstr(i, 0, "-"*self.DISPLAY_WIDTH)
+        self.probesPanel.addstr(i, 0, "-" * self.DISPLAY_WIDTH)
         i += 1
         x = 0
         for idx, val in enumerate(self.FIELDS_DISPLAY_WIDTH):
@@ -111,7 +113,7 @@ class Curses(Interface):
         self.probesPanel.addstr(i, self.DISPLAY_WIDTH - 1, "|")
         i += 1
 
-        self.probesPanel.addstr(i, 0, "-"*self.DISPLAY_WIDTH)
+        self.probesPanel.addstr(i, 0, "-" * self.DISPLAY_WIDTH)
         i += 1
 
         for probe in probes:

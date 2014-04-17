@@ -25,16 +25,15 @@ from interfaces.excs import TestError, ActionError, \
 
 
 class ActionMan(Thread):
-
     '''Links Action classes to (static) methods'''
-    mapping = { "Add" : "manageAdd",
-                "Remove" : "manageRemove",
-                "Transfer" : "manageTransfer",
-                "Do" : "manageDo",
-                "Quit" : "manageQuit",
-                "Prepare" : "managePrepare",
-                "UpdateProbes" : "manageUpdateProbes"
-              }
+    mapping = {"Add": "manageAdd",
+               "Remove": "manageRemove",
+               "Transfer": "manageTransfer",
+               "Do": "manageDo",
+               "Quit": "manageQuit",
+               "Prepare": "managePrepare",
+               "UpdateProbes": "manageUpdateProbes"
+    }
 
     logger = logging.getLogger()
     # the list of actions to be done
@@ -45,7 +44,7 @@ class ActionMan(Thread):
         Thread.__init__(self)
         self.setName("ActionManager")
         self.stop = False
-    
+
     @classmethod
     def addTask(cls, action):
         cls.logger.debug("Queued new Action %s", action.__class__.__name__)
@@ -97,12 +96,13 @@ class ActionMan(Thread):
         ProbeStorage.addProbe(ProbeStorage.newProbe(action.getIdSonde(), action.getIpSonde()))
         if action.doHello:
             # tell the new probe about all other probe
-            Client.send(Hello(action.getIdSonde(), list(ProbeStorage.getAllOtherProbes()), sourceId = Identification.PROBE_ID))
+            Client.send(
+                Hello(action.getIdSonde(), list(ProbeStorage.getAllOtherProbes()), sourceId = Identification.PROBE_ID))
         cls.logger.info("Added probe %s, id %s to known probes", action.getIpSonde(), action.getIdSonde())
 
     @classmethod
     def manageAddPrefix(cls, action):
-        assert isinstance(action , a.AddPrefix)
+        assert isinstance(action, a.AddPrefix)
         try:
             net = ip_network(action.getPrefix(), strict = False)
             hosts = net.hosts() if net.num_addresses > 1 else [net.network_address]
@@ -136,7 +136,7 @@ class ActionMan(Thread):
             ProbeStorage.delProbeById(action.getIdSonde());
         except NoSuchProbe:
             cls.logger.warning("Probe not found in hashtable")
-    
+
     @classmethod
     def manageDo(cls, action):
         '''
@@ -149,7 +149,8 @@ class ActionMan(Thread):
         cls.logger.debug("Managing Do task")
         cls.logger.info("Request for test %s", action.getTestName())
         try:
-            testId = TestManager.startTest(action.getTestName(), action.getTestOptions(), action.getResultCallback(), action.getErrorCallback())
+            testId = TestManager.startTest(action.getTestName(), action.getTestOptions(), action.getResultCallback(),
+                                           action.getErrorCallback())
             action.setTestId(testId)
         except ToManyTestsInProgress as e:
             cls.logger.info("Test %s not started : %s", action.getTestName(), e)
@@ -157,7 +158,7 @@ class ActionMan(Thread):
         except TestError as e:
             action.getErrorCallback()(action.getTestName(), e.getReason())
             raise e
-        
+
     @classmethod
     def managePrepare(cls, action):
         '''
@@ -166,19 +167,21 @@ class ActionMan(Thread):
         a probe can respond to multiple tests at once
 
         '''
-        assert(isinstance(action, a.Prepare))
-        cls.logger.info("Prepare for test (%s-%s)" , action.getTestName(), action.getTestId())
+        assert (isinstance(action, a.Prepare))
+        cls.logger.info("Prepare for test (%s-%s)", action.getTestName(), action.getTestId())
         try:
-            TestResponder.startTest(action.getTestId(), action.getTestName(), action.getSourceId(), action.getTestOptions())
+            TestResponder.startTest(action.getTestId(), action.getTestName(), action.getSourceId(),
+                                    action.getTestOptions())
         except TestError:
-            cls.logger.error("Error while preparing for test %s-%s", action.getTestName(), action.getTestId(), exc_info = 1)
+            cls.logger.error("Error while preparing for test %s-%s", action.getTestName(), action.getTestId(),
+                             exc_info = 1)
 
     @classmethod
     def manageQuit(cls, action):
         assert isinstance(action, a.Quit)
         cls.logger.debug("Managing Quit task")
         cls.logger.info("Exiting the overlay")
-        Client.broadcast( Bye("", Identification.PROBE_ID), toMyself = False )
+        Client.broadcast(Bye("", Identification.PROBE_ID), toMyself = False)
         ''' Other commands to close all connections, etc '''
         Client.allMessagesSent()
         ProbeStorage.clearAllProbes()

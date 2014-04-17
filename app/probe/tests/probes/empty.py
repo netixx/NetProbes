@@ -11,8 +11,8 @@ from consts import Identification
 
 name = "Empty"
 
-class TesterEmpty(TesterTest):
 
+class TesterEmpty(TesterTest):
     def __init__(self, options):
         super().__init__(options)
         self.parseOptions()
@@ -24,13 +24,13 @@ class TesterEmpty(TesterTest):
     def doResult(self, reports):
         self.result = "Empty test ok (nothing to test)"
 
+
 class TesteeEmpty(TesteeTest):
-    
     def __init__(self, options, testId):
         super().__init__(options, testId)
         self.parseOptions()
         self.name = name
-        
+
     def parseOptions(self):
         self.targets = self.opts
 

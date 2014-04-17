@@ -19,13 +19,14 @@ sys.path.append(os.path.abspath(os.path.join(directory, "..", "..", "lib", 'tool
 
 from exceptions import ProbeConnectionFailed
 
+
 def interfaceFactory(intOption, ip):
     mod = importlib.import_module("interfaces." + intOption)
     return getattr(mod, intOption.capitalize())(ip)
-                                
+
 # executed when called but not when imported
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Starts the commander for a probe')
+    parser = argparse.ArgumentParser(description = 'Starts the commander for a probe')
     parser.add_argument('-i',
                         '--interface-type',
                         metavar = 'interface',
@@ -44,10 +45,11 @@ if __name__ == '__main__':
     from common.consts import Params as cParams
     from common.protocols import http
     from common.codecs import serialize
+
     cParams.CODEC = serialize
     cParams.PROTOCOL = http
 
-    try :
+    try:
         commander = interfaceFactory(args.interface_type, args.ip_probe)
         commander.start()
     except ProbeConnectionFailed as e:

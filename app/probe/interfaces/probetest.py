@@ -26,12 +26,14 @@ DEFAULT_DO_TIMEOUT = 100
 DEFAULT_RESULT_TIMEOUT = 100
 DEFAULT_OVER_TIMEOUT = 100
 
+
 class Report(object):
     '''
     A report from a probe regarding a Test
     Send after over signal is received. Often encapsulated in a Result message
 
     '''
+
     def __init__(self, probeId, isSuccess = True):
         self.isSuccess = isSuccess
         self.testId = None
@@ -39,6 +41,7 @@ class Report(object):
 
     def getProbeId(self):
         return self.probeId
+
 
 class _Test(object):
     '''
@@ -68,6 +71,7 @@ class _Test(object):
         '''
         return self.result
 
+
 class TesterTest(_Test):
     prepareTimeout = DEFAULT_PREPARE_TIMEOUT
     doTimeout = DEFAULT_DO_TIMEOUT
@@ -82,7 +86,7 @@ class TesterTest(_Test):
         _Test.__init__(self, '%020x' % random.randrange(256 ** 15), options)
         self.targets = []
         self.rawResult = None
-    
+
     def getProbeNumber(self):
         return len(self.targets)
 
@@ -94,7 +98,7 @@ class TesterTest(_Test):
         Prepare yourself for the test
         '''
         pass
-    
+
     def doTest(self):
         '''
         Does the actual test
@@ -123,12 +127,14 @@ class TesterTest(_Test):
     def getRawResult(self):
         return self.rawResult
 
+
 class TesteeTest(_Test):
     '''
     Methods for the probe(s) which receive the test
 
     '''
     overTimeout = DEFAULT_OVER_TIMEOUT
+
     def __init__(self, options, testId):
         _Test.__init__(self, testId, options)
 
@@ -143,7 +149,7 @@ class TesteeTest(_Test):
         Actions that must be taken when the probe received the test
         '''
         pass
-   
+
     def replyOver(self):
         '''
         Actions that the probe must perform when the test is over

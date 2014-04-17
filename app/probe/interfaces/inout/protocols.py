@@ -7,9 +7,11 @@ between probes
 '''
 from threading import Thread
 
+
 def createConnection(probe):
     '''Create connection object to remote probe given probe Object'''
     pass
+
 
 def connect(connection):
     '''Connect to remote host given connection (created by createConnection)
@@ -18,6 +20,7 @@ def connect(connection):
     '''
     pass
 
+
 def disconnect(connection):
     '''Close connection to remote probe
     @see: createConnection
@@ -25,12 +28,15 @@ def disconnect(connection):
     '''
     pass
 
+
 def getRemoteId(probeIp):
     '''Get the remote ID of the probe with probeIp'''
     pass
 
+
 class Sender(object):
     '''Class to send data across network'''
+
     def send(self, message):
         pass
 

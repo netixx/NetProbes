@@ -9,6 +9,7 @@ class TestServices(object):
     Provides services for tests
     
     '''
+
     @staticmethod
     def getProbeIpById(probeId):
         '''Returns the Ip of a probe given it's Id'''
@@ -18,10 +19,10 @@ class TestServices(object):
     def getIdAllOtherProbes():
         '''Returns the Ids of all the other known probes'''
         return ProbeStorage.getIdAllOtherProbes()
-    
+
     @staticmethod
     def runCmd(cmd, **popenParams):
-        defaultPopenParams = {'stdout' : PIPE}
+        defaultPopenParams = {'stdout': PIPE}
         defaultPopenParams.update(popenParams)
         process = Popen(shlex.split(cmd), **defaultPopenParams)
         return process.communicate()

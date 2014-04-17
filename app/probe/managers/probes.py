@@ -18,10 +18,10 @@ class ProbeStorage(object):
     '''
     knownProbes = {}
     __knownProbesLock = RLock()
-        
+
     def __init__(self):
         pass
-    
+
     @classmethod
     def isKnownId(cls, probeId):
         with cls.__knownProbesLock:
@@ -40,7 +40,7 @@ class ProbeStorage(object):
                 c.knownProbes.pop(probeid)
             except KeyError:
                 raise NoSuchProbe()
-    
+
 
     @classmethod
     def addProbe(cls, probe):
@@ -63,7 +63,7 @@ class ProbeStorage(object):
     @classmethod
     def getProbeById(cls, probeId):
         with cls.__knownProbesLock:
-            try :
+            try:
                 return cls.knownProbes[probeId]
             except KeyError as e:
                 raise NoSuchProbe(e)
@@ -83,15 +83,16 @@ class ProbeStorage(object):
     def numberOfConnections(cls):
         with cls.__knownProbesLock:
             return len(cls.getConnectedProbes())
-    
+
     @classmethod
     def getConnectedProbes(cls):
         return [k for k, probe in cls.knownProbes.items() if probe.connected]
-    
+
     @classmethod
     def getAllProbes(cls):
         with cls.__knownProbesLock:
             return cls.knownProbes.values()
+
     @classmethod
     def getIdAllProbes(cls):
         with cls.__knownProbesLock:
@@ -100,22 +101,22 @@ class ProbeStorage(object):
     @classmethod
     def getAllOtherProbes(cls):
         with cls.__knownProbesLock:
-            return [ probe for probe in cls.knownProbes.values() if probe.getId() != Identification.PROBE_ID]
+            return [probe for probe in cls.knownProbes.values() if probe.getId() != Identification.PROBE_ID]
 
     @classmethod
     def getIdAllOtherProbes(cls):
         with cls.__knownProbesLock:
-            return [ probeId for probeId in cls.knownProbes.keys() if probeId != Identification.PROBE_ID]
+            return [probeId for probeId in cls.knownProbes.keys() if probeId != Identification.PROBE_ID]
 
     @classmethod
     def getKeys(cls):
         with cls.__knownProbesLock:
             return cls.knownProbes.keys()
-        
+
     @staticmethod
     def newProbe(idProbe, ip):
         return Probe(idProbe, ip)
-        
+
     @classmethod
     def addSelfProbe(cls):
         cls.addProbe(cls.newProbe(Identification.PROBE_ID, Consts.LOCAL_IP_ADDR))
@@ -125,12 +126,13 @@ class Probe(object):
     '''
     Represents a probe
     '''
+
     def __init__(self, idProbe, ip):
         self.ip = ip
         self.id = idProbe
         self.connection = None
         self.connected = False
-        
+
     def getIp(self):
         return self.ip
 
@@ -145,11 +147,12 @@ class Probe(object):
         """Choose what to read when pickling"""
         self.id, self.ip = state
 
+
 from consts import Params
 from interfaces.excs import ProbeConnectionException
 
-class ProbeConnections(object):
 
+class ProbeConnections(object):
     @classmethod
     def connectToProbe(cls, probe):
         if probe.connection is None:
@@ -166,7 +169,7 @@ class ProbeConnections(object):
     @classmethod
     def disconnectProbe(cls, probe):
 
-        try :
+        try:
             if probe.connected:
                 Params.PROTOCOL.disconnect(probe.connection)
                 probe.connected = False

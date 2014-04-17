@@ -5,26 +5,29 @@ Created on 11 avr. 2014
 '''
 from threading import Thread
 
+
 def createConnection(probe):
     pass
+
 
 def connect(connection):
     pass
 
+
 def disconnect(connection):
     pass
+
 
 def getRemoteId(ip):
     pass
 
-class Listener(Thread):
 
+class Listener(Thread):
     def __init__(self, helper):
         pass
 
 
 class Sender(object):
-
     def send(self, connection, message):
         pass
 

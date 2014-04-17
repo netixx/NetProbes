@@ -16,6 +16,7 @@ from managers.tests import TestServices
 
 name = "Unicast"
 
+
 class Unicast(object):
     ENCODING = "latin1"
     port = 5678
@@ -40,6 +41,7 @@ class Unicast(object):
         Parse the options for the current test
         should populate at least the targets list
     '''
+
     def parseOptions(self):
         # creating the parsers
         parser = argparse.ArgumentParser(prog = self.__class__.__name__, description = "Parses the unicast test target")
@@ -54,8 +56,8 @@ class Unicast(object):
         except (argparse.ArgumentError, SystemExit):
             raise TestArgumentError(parser.format_usage())
 
-class TesterUnicast(Unicast, TesterTest):
 
+class TesterUnicast(Unicast, TesterTest):
     def __init__(self, options):
         Unicast.__init__(self)
         TesterTest.__init__(self, options)
@@ -64,17 +66,19 @@ class TesterUnicast(Unicast, TesterTest):
     '''
         Prepare yourself for the test
     '''
+
     def doPrepare(self):
         self.socket = socket.socket(socket.AF_INET, self.protocolToUnix(self.options.protocol))
 
     '''
         Does the actual test
     '''
+
     def doTest(self):
         self.logger.info("Unicast : Starting test")
         try:
             self.socket.settimeout(self.options.timeout)
-            self.socket.connect((TestServices.getProbeIpById(self.targets[0]) , self.options.port))
+            self.socket.connect((TestServices.getProbeIpById(self.targets[0]), self.options.port))
             self.logger.info("Unicast : Sending message")
             self.socket.sendall(self.messageSend.encode(self.ENCODING))
             self.logger.info("Unicast : Waiting for response message")
@@ -89,6 +93,7 @@ class TesterUnicast(Unicast, TesterTest):
     '''
         Prepare yourself for finish
     '''
+
     def doOver(self):
         self.socket.close()
 
@@ -96,6 +101,7 @@ class TesterUnicast(Unicast, TesterTest):
         Generate the result of the test given the set of reports from the tested probes
         Should populate self.result
     '''
+
     def doResult(self, reports):
         ok = []
         fail = []
@@ -116,7 +122,6 @@ class TesterUnicast(Unicast, TesterTest):
 
 
 class TesteeUnicast(TesteeTest, Unicast):
-
     def __init__(self, options, testId):
         Unicast.__init__(self)
         TesteeTest.__init__(self, options, testId)
@@ -128,16 +133,18 @@ class TesteeUnicast(TesteeTest, Unicast):
     '''
         Actions that the probe must perform in order to be ready
     '''
+
     def replyPrepare(self):
         self.socket = socket.socket(socket.AF_INET, self.protocolToUnix(self.options.protocol))
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind(("", self.options.port))
-        if(self.socket.type == socket.SOCK_STREAM):
+        if (self.socket.type == socket.SOCK_STREAM):
             self.socket.listen(1)
 
     '''
         Actions that must be taken when the probe received the test
     '''
+
     def replyTest(self):
         self.logger.debug("Unicast : Replying to unicast test")
         try:
@@ -152,10 +159,10 @@ class TesteeUnicast(TesteeTest, Unicast):
                 if (msg.decode(self.ENCODING) == self.messageSend):
                     connection.sendall(self.messageReply.encode(self.ENCODING))
                     self.msgSent = True
-                
+
             elif self.options.protocol == "udp":
                 self.logger.info("Unicast : Waiting for UDP message")
-                msg , adr = self.socket.recvfrom(len(self.messageSend))
+                msg, adr = self.socket.recvfrom(len(self.messageSend))
                 self.logger.info("Unicast : Message received")
                 self.msgReceived = True
                 if (msg.decode(self.ENCODING) == self.messageSend):
@@ -163,17 +170,18 @@ class TesteeUnicast(TesteeTest, Unicast):
                     self.msgSent = True
 
         except socket.timeout:
-                self.msgReceived = False
-                self.logger.info("Unicast : Unable to receive message : Socket timeout")
+            self.msgReceived = False
+            self.logger.info("Unicast : Unable to receive message : Socket timeout")
         except:
             self.msgReceived = False
             self.logger.info("Unicast : Unable to receive message")
-            
-    
+
+
     '''
         Actions that the probe must perform when the test is over
         generates the report and returns it!!!
     '''
+
     def replyOver(self):
         self.logger.info("Unicast : Replying over")
         if self.socket.type == socket.SOCK_STREAM:
