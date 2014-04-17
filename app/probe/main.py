@@ -1,17 +1,20 @@
 #!/usr/bin/python3
 # coding=UTF-8
-'''
-Main launcher for the probe.
-    Sets the global variable (constants and variables read from the command line)
+"""A probe is a program that can be used to perform test between nodes
+running the same program. It provides synchronisation needed to perform tests
+and can be commanded remotely if the --commander option is given
 
-Created on 7 juin 2013
+Main launcher for the probe
+    Sets the global variables (constants and variables read from the command line)
+    Initialises the logging facilities
+    Starts the different threads
 
 @author: francois
-@todo: catcher connexions impossibles
-@todo: ecrire les tests
-@todo: contraintes de securite
-
-'''
+todo: catcher connexions impossibles
+todo: ecrire les tests
+todo: contraintes de securite
+todo: Do availability index with : current queue sizes, current number of tests
+"""
 
 import os
 import sys
@@ -50,6 +53,7 @@ from logging import Formatter
 wlogger = logging.getLogger(WATCHER_LOGGER)
 # tlogger = logging.getLogger()
 def addLogs():
+    """Add logs to the program"""
     if not os.path.exists(DATA_DIR):
         os.mkdir(DATA_DIR)
     if not os.path.exists(LOGS_DIR):
@@ -66,6 +70,7 @@ def addLogs():
     logging.addLevelName(DDEBUG, "DDEBUG")
 
     def ddebug(logger, msg, *args, **kwargs):
+        """Verbose debugging function"""
         logger.log(DDEBUG, msg, *args, **kwargs)
 
     logging.Logger.ddebug = ddebug
@@ -82,7 +87,7 @@ def addLogs():
     # TODO: readd file logs when tests are done
     #     logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, "probe.log"), 30, logger, formatter)
 
-    testLogger = logging.getLogger(TEST_LOGGER);
+    testLogger = logging.getLogger(TEST_LOGGER)
     testFormatter = Formatter(TEST_LOGS_FORMAT)
 
     #     logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, "tests.log"), 30, testLogger, testFormatter)
@@ -147,12 +152,12 @@ if __name__ == '__main__':
     cParams.CODEC = cserialize
 
     addLogs()
-
+    server = None
+    a = None
+    c = None
+    commander = None
     try:
-        server = None
-        a = None
-        c = None
-        commander = None
+
         logging.getLogger().info("Starting probe with id : %s, pid : %s", Identification.PROBE_ID, os.getpid())
         server = Server()
         server.start()
@@ -163,7 +168,7 @@ if __name__ == '__main__':
 
         if Params.COMMANDER:
             commander = CommanderServer()
-            commander.start();
+            commander.start()
 
         if Params.WATCHERS:
             for watcher in args.watchers:

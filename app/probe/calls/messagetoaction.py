@@ -1,9 +1,9 @@
-'''
+"""
 Transforms a Message into an Action
 Mapping is done by the messages dict
 @author: francois
 
-'''
+"""
 __all__ = ['toAction']
 
 import logging
@@ -16,7 +16,7 @@ from managers.probes import Probe
 
 treatedAction = 0
 
-'''Matches message class to its corresponding method'''
+"""Matches message class to its corresponding method"""
 messages = {
     "Add": "_toAdd",
     "Bye": "_toBye",
@@ -29,6 +29,8 @@ logger = logging.getLogger()
 
 
 def toAction(message):
+    """Transform given message into an action
+    :param message: Message instance to transform"""
     logger.debug("Transforming message %s into action", message.__class__.__name__)
     assert isinstance(message, m.Message)
     global treatedAction

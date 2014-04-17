@@ -1,7 +1,8 @@
-'''
-
-
-'''
+"""Manager for the standalone tests
+They don't require synchronisation so the handling is much easier
+Architecture is the same : a TestManager starts on _TestManager thread
+for each test
+"""
 __all__ = ['TestManager']
 
 import importlib
@@ -16,24 +17,21 @@ testLogger = logging.getLogger(TEST_LOGGER)
 
 
 def _testFactory(test):
-    '''
+    """
     A factory to get the class from the name of the test
-    test : test to instanciate
-    mode : Tester mode or Testee mode
-    '''
+    :param test : test to instantiate
+    """
     mod = importlib.import_module("tests.standalone." + test)
     return getattr(mod, test.capitalize())
 
 
 class _TestManager(Thread):
+    """A tread to manage a test"""
     NAME_TPL = "TestManager_%s-%s"
 
     def __init__(self, test, formatResult, resultCallback, errorCallback):
         super().__init__()
         self.setName(self.NAME_TPL % (test.getName(), test.getId()))
-        '''
-        test : an instance of the test to run
-        '''
         self.test = test
         self.testError = None
         self.resultCallback = resultCallback
@@ -46,9 +44,7 @@ class _TestManager(Thread):
 
 
     def run(self):
-        '''
-        starts the process of testing
-        '''
+        """Starts the process of testing"""
         testLogger.info("Starting test %s-%s", self.test.getName(), self.test.getId())
         try:
             self.prepare()
@@ -66,35 +62,40 @@ class _TestManager(Thread):
 
 
     def prepare(self):
-        # prepare everyone
+        """Prepare for the test"""
         self.test.doPrepare()
         testLogger.info("Prepare over, executing test")
 
     def performTest(self):
+        """Do the actual test"""
         self.test.doTest()
         testLogger.info("Actual test is done")
 
 
     def over(self):
+        """End the test"""
         self.test.doOver()
         testLogger.info("Over done, processing results")
 
     def abort(self):
+        """End the test early"""
         if not self.overed:
             self.test.doOver()
         self.testError = TestAborted("Test aborted early.")
         testLogger.info("Test cancelled")
 
     def result(self):
+        """Compute results for this test"""
         self.test.doResult()
         testLogger.info("Results processing over, test is done")
 
-
     def getCurrentTestId(self):
+        """Return the ID of the running test"""
         return self.test.getId()
 
 
     def finish(self):
+        """Clean everything and write results using callbacks"""
         TestManager.cleanTest(self.test.getId())
         if self.testError is not None:
             if self.formatResult:
@@ -114,28 +115,29 @@ from interfaces.excs import ToManyTestsInProgress, TestArgumentError
 
 
 class TestManager(object):
-    '''
-    In charge of running a test
-    Started by the probes who receives the Do message/command
-    TesteeAnswer are handed down to this object by the Server
+    """In charge of running a test
+    Started by the probes who receives the request to do a
+    Standalone test
 
     Starts a new _TestManager thread for each new request to
     start a test. It is possible to control the maximum number
-    of concurrent tests by setting the Params.MAX_OUTGOING_TESTS
+    of concurrent tests by setting the Params.MAX_STANDALONE_TEST
     variable.
-    '''
+    """
     __testManLock = RLock()
     testManagers = {}
 
     @classmethod
     def startTest(cls, testName, testOptions, resultCallback, errorCallback, formatResult = True):
-        '''
-        Method to call in order to start a test.
-        It places a new instance of the TestManager into the static field for access purposes
-        testName : (class) name of the test to perform
-        testOptions : option (in string format) for this test
+        """Method to call in order to start a test.
+        It places a new instance of the TestManager into the static dict for access purposes
+        :param testName : (class) name of the test to perform
+        :param testOptions : option (in string format) for this test
+        :param resultCallback : method to call to give the results
+        :param errorCallback : method to call to give the errors
+        :param formatResult : should the results of this test be formatted ?
 
-        '''
+        """
         try:
             with cls.__testManLock:
                 if len(cls.testManagers) >= p.MAX_STANDALONETESTS:
@@ -164,6 +166,9 @@ class TestManager(object):
 
     @classmethod
     def stopTest(cls, testId):
+        """Stop a test
+        :param testId : id of the test to stop
+        """
         try:
             cls.testManagers[testId].abort()
         except KeyError:
@@ -171,6 +176,7 @@ class TestManager(object):
 
     @classmethod
     def stopTests(cls):
+        """Stop all test and wait for termination"""
         for tm in cls.testManagers.values():
             tm.abort()
         for tm in list(cls.testManagers.values()):
@@ -178,6 +184,8 @@ class TestManager(object):
 
     @classmethod
     def cleanTest(cls, testId):
+        """Remove test from managers
+        :param testId : id of the test to remove"""
         try:
             cls.testManagers.pop(testId)
         except KeyError:

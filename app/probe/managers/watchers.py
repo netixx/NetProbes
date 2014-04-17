@@ -1,8 +1,9 @@
-'''
-Created on 9 avr. 2014
+"""Module regrouping everything needed in a watcher
+WatcherManager manages the currently running watcher by loading/unloading them
+WahterServices provides a API to watchers
 
 @author: francois
-'''
+"""
 import importlib
 import logging
 
@@ -24,10 +25,17 @@ def _watcherFactory(watcher):
 
 
 class WatcherManager(object):
+    """Manager for Watchers
+    registers, starts and stop watchers"""
     watchers = []
 
     @classmethod
     def registerWatcher(cls, watcher, options, logger):
+        """Add a watcher to the list of known watchers
+        :param watcher : name of the watcher to add
+        :param options : option array for this watcher
+        :param logger : logger object for this watcher
+        """
         try:
             w = _watcherFactory(watcher.lower())(options, logger)
             cls.watchers.append(w)

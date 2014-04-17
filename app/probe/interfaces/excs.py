@@ -1,32 +1,27 @@
-'''
-Customized exceptions for the probes
+"""
+Customized exceptions for the probe program
 
-@author: francois
-
-'''
-
+"""
 __all__ = ['NoSuchProbe', 'ProbeConnection', 'ToManyTestsInProgress',
            'TestInProgress', 'ActionError', 'TestArgumentError',
            'TestError', 'TestAborted']
 
 
 class NoSuchProbe(Exception):
-    '''The probe asked for is unknown to this probe'''
+    """The probe asked for is unknown to this probe = the id does not exist in storage"""
     pass
 
 
 class ProbeConnectionException(Exception):
-    '''Problem while connecting to the probe'''
+    """Problem while connecting to the probe, could be a problem creating the connection, connection or
+    disconnecting. The probe is not available somehow
+
+    """
     pass
 
 
 class ToManyTestsInProgress(Exception):
-    '''Maximum number of allowed test has been reached'''
-    pass
-
-
-class TestInProgress(Exception):
-    '''You requested to do a test but another test is in progress'''
+    """Maximum number of allowed test has been reached"""
     pass
 
 
@@ -44,26 +39,27 @@ class ActionError(Exception):
         return self.tpl % (self.action, self.message)
 
 
-class TestArgumentError(Exception):
-    '''
-    Error while starting the test
-    '''
-
-    def __init__(self, usage):
-        self.usage = usage
-
-    def getUsage(self):
-        return "Wrong argument : " + self.usage
-
-
 class TestError(ActionError):
+    """Error occurred during a test, usually recoverable error"""
+
     def __init__(self, reason):
         self.action = "Test"
         self.message = reason
 
     def getReason(self):
+        """Returns the reason for failure"""
         return self.message
 
+class TestArgumentError(TestError):
+    """The arguments supply for this test are not recognised by the test/parser"""
+
+    def __init__(self, usage):
+        self.usage = usage
+
+    def getUsage(self):
+        """Return the supported syntax for options"""
+        return "Wrong argument : " + self.usage
 
 class TestAborted(TestError):
+    """The test was aborted early"""
     pass

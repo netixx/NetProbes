@@ -1,4 +1,4 @@
-'''
+"""
 Sends Message instances to other probes
     Thread that waits for a message to be added to the messageStack
     and sends message as soon as one is added
@@ -7,7 +7,7 @@ It also implements a mechanism to broadcast a message to all probes
 
 @author: francois
 
-'''
+"""
 __all__ = ['Client']
 
 from queue import Queue
@@ -22,11 +22,11 @@ from interfaces.excs import NoSuchProbe
 
 
 class Client(Thread):
-    '''
-    Client Thread : talks to the Server through http
+    """
+    Client Thread : talks to the Server through Params.PROTOCOL class
     Server can be local (localhost) or remote
     
-    '''
+    """
 
     messageStack = Queue()
     stop = False
@@ -39,6 +39,7 @@ class Client(Thread):
         self.sender = Params.PROTOCOL.Sender(self.logger)
 
     def run(self):
+        """Start listening to message added to the stack"""
         self.isUp.set()
         self.logger.info("Starting the Client")
         while not self.stop or not self.messageStack.empty():
@@ -62,17 +63,17 @@ class Client(Thread):
 
     @classmethod
     def quit(cls):
+        """Terminate this instance properly"""
         cls.logger.info("Stopping the Client")
         cls._terminate()
         ProbeStorage.closeAllConnections()
 
     @classmethod
     def send(cls, message):
-        '''
-        Send message to target probe
-        message : message to send (contains the targetId)
-        
-        '''
+        """Send message to target probe
+        :param message: Message instance to send (contains the targetId of the probe to send the message to)
+
+        """
         cls.logger.ddebug("Adding a message %s to the client stack", message.__class__.__name__)
         assert isinstance(message, Message)
         cls.messageStack.put(message)
@@ -80,13 +81,14 @@ class Client(Thread):
 
     @classmethod
     def broadcast(cls, message, toMyself = False):
-        '''
-        If called with a Broadcast message, the method will send
+        """If called with a Broadcast message, the method will send
         messages to all targets listed in the broadcast
         If called with a Message instance, the method will send a message
         to all known probes
+        :param message: Message to broadcast, can also be an Broadcast message to propagate
+        :param toMyself: Should the broadcast be sent to the local server as well ?
 
-        '''
+        """
         cls.logger.debug("Broadcasting the message : %s", message.__class__.__name__)
         # propagation phase
         if isinstance(message, BroadCast):
@@ -116,17 +118,21 @@ class Client(Thread):
                 while (i + 1) * pRate < len(prop):
                     propIds = prop[i * pRate:(i + 1) * pRate]
                     cls.send(BroadCast(sendTo[i], message, propIds))
-                    i = i + 1
+                    i += 1
                 # be sure to propagate to all probes
                 cls.send(BroadCast(sendTo[i], message, prop[i * pRate:]))
 
     @classmethod
     def allMessagesSent(cls):
+        """Method that returns when all messages in the stack are sent"""
         cls.messageStack.join()
 
     '''Inner functions'''
 
     def sendMessage(self, message):
+        """Send this message using the Params.PROTOCOL
+        :param message: The message to send
+        """
         try:
             self.logger.debug("Sending the message : %s to %s with ip %s",
                               message.__class__.__name__,

@@ -1,12 +1,12 @@
-'''
-Manager that wraps tests with all the preparation necessary
+"""Manager that wraps tests with all the preparation necessary
 
 The probe that initiates the test uses the TestManager class
 Internally the TestManager creates a _TestManager thread for each tests.
+
 The probe that receives the test uses the TestResponder class
 Internally the TestResponder creates a _TestResponder thread for each tests.
 
-'''
+"""
 __all__ = ['TestManager', 'TestResponder']
 
 import importlib
@@ -18,11 +18,10 @@ testLogger = logging.getLogger(TEST_LOGGER)
 
 
 def testFactory(test, mode = ""):
-    '''
-    A factory to get the class from the name of the test
-    test : test to instanciate
-    mode : Tester mode or Testee mode
-    '''
+    """A factory to get the class from the name of the test
+    :param test : name of the test
+    :param mode : Tester mode or Testee mode
+    """
     mod = importlib.import_module("tests.probes." + test)
     return getattr(mod, mode + test.capitalize())
 
@@ -38,14 +37,12 @@ from managers.probes import ProbeStorage
 
 
 class _TestManager(Thread):
+    """The test manager is a internal thread who runs the test independently"""
     NAME_TPL = "TestManager_%s-%s"
 
     def __init__(self, test, formatResult, resultCallback, errorCallback):
         super().__init__()
         self.setName(self.NAME_TPL % (test.getName(), test.getId()))
-        '''
-        test : an instance of the test to run
-        '''
         self.readies = 0
         self.readyLock = RLock()
         self.isReadyForTest = Event()
@@ -64,9 +61,7 @@ class _TestManager(Thread):
 
 
     def run(self):
-        '''
-        starts the process of testing
-        '''
+        """Starts the process of testing"""
         testLogger.info("Starting test %s-%s", self.test.getName(), self.test.getId())
         try:
             self.prepare()
@@ -84,6 +79,11 @@ class _TestManager(Thread):
 
 
     def prepare(self):
+        """Prepare for this test
+        - does test.doPrepare()
+        - sends prepare messages to target probes
+        - waits for all targets to reply with ready
+        """
         # prepare everyone
         self.test.doPrepare()
         for target in self.test.getTargets():
@@ -104,11 +104,17 @@ class _TestManager(Thread):
         testLogger.info("Prepare over, executing test")
 
     def performTest(self):
+        """Perform the actual test"""
         self.test.doTest()
         testLogger.info("Actual test is done")
 
 
     def over(self):
+        """Finish testing
+        - does test.doOver()
+        - sends Over message to targets
+        - wait for target probes to reply with Result
+        """
         self.test.doOver()
         for target in self.test.getTargets():
             # this test is over!
@@ -123,6 +129,8 @@ class _TestManager(Thread):
         testLogger.info("Over done, processing results")
 
     def abort(self):
+        """Abort a currently running test
+        Does different actions depending of the current status of the test"""
         if not self.overed:
             self.test.doOver()
         self.testError = TestAborted("A probe send an abort signal")
@@ -137,6 +145,7 @@ class _TestManager(Thread):
         testLogger.info("Test cancelled")
 
     def result(self):
+        """Disconnect probes and compute result of the test"""
         for target in self.test.getTargets():
             ProbeStorage.disconnectFromProbe(target)
         self.test.doResult(self.reports)
@@ -144,31 +153,41 @@ class _TestManager(Thread):
 
 
     def getCurrentTestId(self):
+        """Returns the ID of the current test"""
         return self.test.getId()
 
     '''Tools methods'''
 
     def addReady(self, message):
+        """Adds a ready message from a remote probe
+        :param message : a Ready message from the target probes"""
         if message.getTestId() == self.test.getId():
             with self.readyLock:
                 testLogger.ddebug("Received new Ready from target probe")
                 self.readies += 1
-                if (self.readies == self.test.getProbeNumber()):
+                if self.readies == self.test.getProbeNumber():
                     testLogger.info("All Readies received, proceeding with test")
                     time.sleep(0.2)
                     self.isReadyForTest.set()
                     self.readies = 0
 
 
-    def addReport(self, probeId, report):
+    def addReport(self, report):
+        """Adds a report from the remote probe
+        :param report : Report of this probe about the test
+        """
         with self.reportsLock:
+            probeId = report.getProbeId()
             self.reports[probeId] = report
             testLogger.ddebug("Received new report from target probe")
-            if (len(self.reports) == self.test.getProbeNumber()):
+            if len(self.reports) == self.test.getProbeNumber():
                 testLogger.info("All reports received, proceeding with result")
                 self.areReportsCollected.set()
 
     def finish(self):
+        """Finish the _testManager, removing yourself from the index
+        Sends result with callback provided on initialisation
+        """
         TestManager.cleanTest(self.test.getId())
         if self.testError is not None:
             if self.formatResult:
@@ -189,8 +208,7 @@ from interfaces.probetest import TESTER_MODE
 
 
 class TestManager(object):
-    '''
-    In charge of running a test
+    """In charge of running a test
     Started by the probes who receives the Do message/command
     TesteeAnswer are handed down to this object by the Server
 
@@ -198,19 +216,21 @@ class TestManager(object):
     start a test. It is possible to control the maximum number
     of concurrent tests by setting the Params.MAX_OUTGOING_TESTS
     variable.
-    '''
+
+    """
     __testManLock = RLock()
     testManagers = {}
 
     @classmethod
     def startTest(cls, testName, testOptions, resultCallback, errorCallback, formatResult = True):
-        '''
-        Method to call in order to start a test.
-        It places a new instance of the TestManager into the static field for access purposes
-        testName : (class) name of the test to perform
-        testOptions : option (in string format) for this test
-
-        '''
+        """Method to call in order to start a test.
+        It places a new instance of the TestManager into the static list for access purposes
+        :param testName : (class) name of the test to perform
+        :param testOptions : option (in string format) for this test
+        :param resultCallback : method to call to give the results
+        :param errorCallback : method to call to give the errors
+        :param formatResult : should we return the raw results or the formatted ones
+        """
         try:
             with cls.__testManLock:
                 if len(cls.testManagers) >= p.MAX_OUTGOING_PROBETESTS:
@@ -232,13 +252,16 @@ class TestManager(object):
         except TestError as e:
             testLogger.error("Failed to run test : \n" + e.getReason(), exc_info = 1)
             raise
-        except ImportError as e:
-            raise TestError("Could not load test class for test : %s", testName)
-        except:
-            raise TestError("Unexpected error occurred while loading test %s", e)
+        except ImportError:
+            raise TestError("Could not load test class for test : %s" % testName)
+        except Exception as e:
+            raise TestError("Unexpected error occurred while loading test %s" % e)
 
     @classmethod
     def stopTest(cls, testId):
+        """Send abort signal to the test, if test is finished, log an error
+        :param testId : id of the test to abort
+        """
         try:
             cls.testManagers[testId].abort()
         except KeyError:
@@ -246,6 +269,7 @@ class TestManager(object):
 
     @classmethod
     def stopTests(cls):
+        """Stops all tests and waits for termination of all tests"""
         for tm in cls.testManagers.values():
             tm.abort()
         for tm in list(cls.testManagers.values()):
@@ -253,12 +277,15 @@ class TestManager(object):
 
     @classmethod
     def handleMessage(cls, message):
+        """Handle a Testee message, gives it to the right _TestManager
+        :param message: TesteeAnswer to handle
+        """
         try:
             assert isinstance(message, TesteeAnswer)
             testMan = cls.testManagers[message.getTestId()]
             testLogger.debug("Handling test message : %s", message.__class__.__name__)
             if isinstance(message, Result):
-                testMan.addReport(message.getSourceId(), message.getReport())
+                testMan.addReport(message.getReport())
             elif isinstance(message, Ready):
                 testMan.addReady(message)
             elif isinstance(message, Abort):
@@ -271,10 +298,16 @@ class TestManager(object):
 
     @staticmethod
     def getTesterTestClass(testName):
+        """Factory to return the class to instantiate from the test name
+        :param testName: name of the test to start
+        """
         return testFactory(testName.lower(), TESTER_MODE)
 
     @classmethod
     def cleanTest(cls, testId):
+        """Remove test from currently registered managers
+        :param testId: id of the test to remove
+        """
         try:
             cls.testManagers.pop(testId)
         except KeyError:
@@ -282,11 +315,12 @@ class TestManager(object):
 
 
 class _TestResponder(Thread):
-    NAME_TPL = "TestResponder_%s-%s"
-    '''
-        Manages one test on the testee's side
+    """Manages one test on the Testee side
+    An internal thread that responds to a test
 
-    '''
+    """
+
+    NAME_TPL = "TestResponder_%s-%s"
 
     def __init__(self, test, sourceId):
         super().__init__()
@@ -302,26 +336,31 @@ class _TestResponder(Thread):
         self.abort = False
 
     def run(self):
+        """Start replying to test"""
         try:
             self.replyPrepare()
             self.prepared = True
             if not self.abort:
                 self.replyTest()
                 self.tested = True
+                #wait for the test to be over before finishing test
                 self.testFinished.wait(self.test.overTimeout)
         finally:
             testLogger.info("Test is over")
             self.finish()
 
     def replyPrepare(self):
+        """Prepare for the test and send Ready when ready"""
         self.test.replyPrepare()
         Client.send(Ready(self.sourceId, self.test.getId(), Identification.PROBE_ID))
 
     def replyTest(self):
+        """Reply to the actual test"""
         self.test.replyTest()
         self.testDone.set()
 
     def replyOver(self):
+        """Perform cleaning action for the test"""
         # TODO: change timeout
         self.testDone.wait(self.test.overTimeout)
         self.report = self.test.replyOver()
@@ -329,6 +368,7 @@ class _TestResponder(Thread):
         self.overed = True
 
     def replyAbort(self):
+        """End this test early"""
         testLogger.info("Asked to terminate test %s", self.test.getId())
         if not self.overed:
             self.testDone.set()
@@ -340,8 +380,9 @@ class _TestResponder(Thread):
 
 
     def finish(self):
+        """Clean the test and send the results"""
         if self.report is not None:
-            Client.send(Result(self.sourceId, self.test.getId(), Identification.PROBE_ID, self.report))
+            Client.send(Result(self.sourceId, self.test.getId(), self.report))
         TestResponder.cleanTest(self.test.getId())
 
 
@@ -349,22 +390,29 @@ from interfaces.probetest import TESTEE_MODE
 
 
 class TestResponder(object):
-    '''
-    Manager for the test on the testee side.
+    """Manager for the test on the testee side.
     Starts a _TestResponder thread for each request to
     answer a test
-    TesterMessages are automatically handed over to him
-    by the server (no processing is done)
 
-    '''
+    TesterMessages are automatically handed over to him
+    by the server (no processing is done upstream)
+
+    """
+
     testResponders = {}
 
     @classmethod
     def startTest(cls, testId, testName, sourceId, options):
+        """Stars responding to a test
+        :param testId : id of the test to respond to
+        :param testName : name of the test to respond to
+        :param sourceId : id of the probe who started the test
+        :param options : options list for this test
+        """
         testLogger.debug("TestResponder : received request to do test")
         # only if we are not already responding to too many tests!
-        #         if len(cls.currentTests) > p.MAX_INCOMMING_TESTS:
-        #             raise ToManyTestsInProgress("Already responding to the maximum allowed number of tests : %s" % p.MAX_INCOMMING_TESTS)
+        #         if len(cls.currentTests) > p.MAX_INCOMING_TESTS:
+        #             raise ToManyTestsInProgress("Already responding to the maximum allowed number of tests : %s" % p.MAX_INCOMING_TESTS)
         try:
             tr = _TestResponder(cls.getTesteeTestClass(testName)(options, testId), sourceId)
             cls.testResponders[testId] = tr
@@ -376,6 +424,7 @@ class TestResponder(object):
 
     @classmethod
     def stopTests(cls):
+        """Stop answering to all tests and wait for their termination"""
         for resp in cls.testResponders.values():
             resp.replyAbort()
         for resp in list(cls.testResponders.values()):
@@ -385,20 +434,26 @@ class TestResponder(object):
 
     @staticmethod
     def getTesteeTestClass(testName):
+        """Factory to return the class of the test to instantiate
+        :param testName: name of the test to instantiate
+        """
         return testFactory(testName.lower(), TESTEE_MODE)
 
     @classmethod
     def handleMessage(cls, message):
+        """Handle a TesterMessage, gives it to the right _testResponder
+        :param message : TesterMessage to handle
+        """
         testLogger.debug("Handling request for test : " + message.__class__.__name__)
         assert isinstance(message, TesterMessage)
         try:
             tr = cls.testResponders[message.getTestId()]
             testLogger.ddebug("Got message for manager %s", tr.getName())
-            if (isinstance(message, Over)):
+            if isinstance(message, Over):
                 testLogger.debug("Over message received for manager %s", tr.getName())
                 tr.replyOver()
 
-            elif (isinstance(message, Abort)):
+            elif isinstance(message, Abort):
                 testLogger.debug("TestResponder : Abort message received")
                 tr.replyAbort()
         except KeyError:
@@ -406,6 +461,9 @@ class TestResponder(object):
 
     @classmethod
     def cleanTest(cls, testId):
+        """Remove a test from the current managers
+        :param testId : id of the test to remove
+        """
         try:
             cls.testResponders.pop(testId)
         except KeyError as e:

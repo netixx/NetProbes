@@ -1,8 +1,9 @@
-'''
-Created on 9 avr. 2014
+"""
+HTTP protocol uses http to encapsulate data and send it on the network
+it is base on the http.* modules from python std library
 
 @author: francois
-'''
+"""
 
 import datetime
 from http.server import HTTPServer, SimpleHTTPRequestHandler
@@ -19,20 +20,32 @@ from managers.probes import ProbeStorage, ProbeConnections
 
 
 def createConnection(probe):
+    """Creates a connection for this probe
+    :param probe: the probe to create a connection for
+    """
     return HTTPConnection(probe.getIp(), Parameters.PORT_NUMBER)
 
 
 def connect(connection):
+    """Connect this connection
+    :param connection: connection object to connect
+    """
     connection.connect()
 
 
 def disconnect(connection):
+    """Disconnect this connection
+    :param connection: connection object to disconnect
+    """
     connection.close()
 
 
 def getRemoteId(targetIp):
+    """Get the remote ID of the probe at targetIp
+    :param targetIp: the IP where we should ask for the id
+    """
     try:
-        connection = HTTPConnection(targetIp, Parameters.PORT_NUMBER);
+        connection = HTTPConnection(targetIp, Parameters.PORT_NUMBER)
         connection.connect()
         connection.request("GET", Parameters.URL_SRV_ID_QUERY, "", {})
         probeId = connection.getresponse().read().decode(Parameters.REPLY_MESSAGE_ENCODING)
@@ -44,6 +57,7 @@ def getRemoteId(targetIp):
 
 
 class Parameters(object):
+    """Class containing parameters for this protocol"""
     PORT_NUMBER = 5000
     POST_MESSAGE_KEYWORD = "@message"
     POST_MESSAGE_ENCODING = "latin-1"
@@ -52,20 +66,25 @@ class Parameters(object):
     HTTP_GET_REQUEST = "GET"
     URL_SRV_TESTS_QUERY = "/tests"
     URL_SRV_ID_QUERY = "/id"
+    URL_SRV_STATUS_QUERY = "/status"
 
 
 class Sender(object):
+    """Object responsible for sending data"""
     def __init__(self, logger):
         self.logger = logger
 
     def send(self, message):
+        """Send this message on the network
+        :param message: Message instance to send
+        """
         try:
             target = ProbeStorage.getProbeById(message.targetId)
             # serialize our message
             serializedMessage = Params.CODEC.encode(message)
-            # put it in a dictionnary
+            # put it in a dictionary
             params = {Parameters.POST_MESSAGE_KEYWORD: serializedMessage}
-            # transform dictionnary into string
+            # transform dictionary into string
             params = urllib.parse.urlencode(params, doseq = True, encoding = Parameters.POST_MESSAGE_ENCODING)
             # set the header as header for POST
             headers = {
@@ -108,28 +127,32 @@ class Sender(object):
 
 
 class Listener(ThreadingMixIn, HTTPServer, Thread):
-    '''
+    """
     Threaded listener that processes a request on the server
+    Instantiate one thread RequestHandler per request
 
-    '''
+    """
 
     def __init__(self, helper):
         self.helper = helper
-        HTTPServer.__init__(self, ("", Parameters.PORT_NUMBER), __class__.RequestHandler)
+        HTTPServer.__init__(self, ("", Parameters.PORT_NUMBER), self.RequestHandler)
         Thread.__init__(self)
         self.setName("HTTP Listener")
 
     def run(self):
+        """Run is simply serve forever"""
         self.serve_forever()
 
     def close(self):
+        """Close is shutdown"""
         self.shutdown()
 
     class RequestHandler(SimpleHTTPRequestHandler):
-        '''
-        Handler that does the actual work
+        """
+        Handler that does the actual work of parsing the request
+        and adding it the the queue of action after transformation
     
-        '''
+        """
 
         def __init__(self, request, client_address, server_socket):
             SimpleHTTPRequestHandler.__init__(self, request, client_address, server_socket)
@@ -140,6 +163,8 @@ class Listener(ThreadingMixIn, HTTPServer, Thread):
                                                                                        format % args))
 
         def do_POST(self):
+            """Handle a post request
+            @see the sender for which request are post"""
             self.server.helper.getLogger().ddebug("Handling POST request from another probe")
             contentLength = self.headers.get("content-length")
             # read content
@@ -162,6 +187,8 @@ class Listener(ThreadingMixIn, HTTPServer, Thread):
             self.server.helper.treatMessage(message)
 
         def do_GET(self):
+            """Handles a get request
+            @see the sender for which requests are get request"""
             query = urllib.parse.urlparse(self.path).path
             if query == Parameters.URL_SRV_ID_QUERY:
                 self.giveId()
@@ -171,11 +198,13 @@ class Listener(ThreadingMixIn, HTTPServer, Thread):
                 self.giveId()
 
         def giveId(self):
+            """Return the id of this probe when asked"""
             self.server.helper.getLogger().ddebug("Server : handling get request, giving my ID : %s",
                                                   Identification.PROBE_ID)
             self._reply(self.server.helper.getId())
 
         def giveStatus(self):
+            """Returns the status of this probe"""
             self._reply(self.server.helper.getStatus())
 
         def _reply(self, message):
