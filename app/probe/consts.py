@@ -25,11 +25,10 @@ class Params(object):
     COMMANDER = False
     WATCHERS = False
     MAX_OUTGOING_PROBETESTS = 5
-    MAX_INCOMMING_PROBETESTS = 10
+    MAX_INCOMING_PROBETESTS = 10
     MAX_STANDALONETESTS = 10
     CODEC = codecs
     PROTOCOL = protocols
-    COMMANDER_PROTOCOL = protocols
 
 
 class Identification(object):

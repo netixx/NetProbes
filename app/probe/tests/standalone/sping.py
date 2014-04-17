@@ -26,7 +26,6 @@ class PingParseError(TestError):
 
 
 class Sping(Test):
-    CMD = 'ping -c 1 '
     npings = 1
 
     def __init__(self, options):
@@ -34,11 +33,8 @@ class Sping(Test):
         self.options = None
         self.stats = None
         self.isSweep = False
-        self.process = None
         self.parseOptions()
-        self.format = None
         self.errors = {}
-        self.allSuccess = False
         self.parallelPing = False
 
     ''' Methods for the probe which starts the test'''

@@ -57,7 +57,6 @@ class _TestManager(Thread):
         self.prepared = False
         self.tested = False
         self.overed = False
-        self.resulted = False
 
 
     def run(self):
@@ -71,7 +70,6 @@ class _TestManager(Thread):
             self.over()
             self.overed = True
             self.result()
-            self.resulted = True
         except TestError as e:
             self.testError = e
         finally:
@@ -151,10 +149,6 @@ class _TestManager(Thread):
         self.test.doResult(self.reports)
         testLogger.info("Results processing over, test is done")
 
-
-    def getCurrentTestId(self):
-        """Returns the ID of the current test"""
-        return self.test.getId()
 
     '''Tools methods'''
 
@@ -411,8 +405,8 @@ class TestResponder(object):
         """
         testLogger.debug("TestResponder : received request to do test")
         # only if we are not already responding to too many tests!
-        #         if len(cls.currentTests) > p.MAX_INCOMING_TESTS:
-        #             raise ToManyTestsInProgress("Already responding to the maximum allowed number of tests : %s" % p.MAX_INCOMING_TESTS)
+        if len(cls.testResponders) > p.MAX_INCOMING_PROBETESTS:
+            raise ToManyTestsInProgress("Already responding to the maximum allowed number of tests : %s" % p.MAX_INCOMING_PROBETESTS)
         try:
             tr = _TestResponder(cls.getTesteeTestClass(testName)(options, testId), sourceId)
             cls.testResponders[testId] = tr

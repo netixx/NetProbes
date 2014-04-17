@@ -40,7 +40,6 @@ class _TestManager(Thread):
         self.prepared = False
         self.tested = False
         self.overed = False
-        self.resulted = False
 
 
     def run(self):
@@ -54,7 +53,6 @@ class _TestManager(Thread):
             self.over()
             self.overed = True
             self.result()
-            self.resulted = True
         except TestError as e:
             self.testError = e
         finally:
@@ -88,11 +86,6 @@ class _TestManager(Thread):
         """Compute results for this test"""
         self.test.doResult()
         testLogger.info("Results processing over, test is done")
-
-    def getCurrentTestId(self):
-        """Return the ID of the running test"""
-        return self.test.getId()
-
 
     def finish(self):
         """Clean everything and write results using callbacks"""

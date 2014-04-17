@@ -141,7 +141,6 @@ if __name__ == '__main__':
     from inout.protocol import http
 
     Params.PROTOCOL = http
-    Params.COMMANDER_PROTOCOL = http
     Params.CODEC = deflate_serialize
 
     from common.codecs import serialize as cserialize

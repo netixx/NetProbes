@@ -18,6 +18,18 @@ from calls.messages import TestMessage
 from interfaces.excs import NoSuchProbe, ProbeConnectionException
 from managers.probes import ProbeStorage, ProbeConnections
 
+class Parameters(object):
+    """Class containing parameters for this protocol"""
+    PORT_NUMBER = 5000
+    POST_MESSAGE_KEYWORD = "@message"
+    POST_MESSAGE_ENCODING = "latin-1"
+    REPLY_MESSAGE_ENCODING = 'latin-1'
+    HTTP_POST_REQUEST = "POST"
+    HTTP_GET_REQUEST = "GET"
+    URL_SRV_TESTS_QUERY = "/tests"
+    URL_SRV_ID_QUERY = "/id"
+    URL_SRV_STATUS_QUERY = "/status"
+
 
 def createConnection(probe):
     """Creates a connection for this probe
@@ -47,26 +59,13 @@ def getRemoteId(targetIp):
     try:
         connection = HTTPConnection(targetIp, Parameters.PORT_NUMBER)
         connection.connect()
-        connection.request("GET", Parameters.URL_SRV_ID_QUERY, "", {})
+        connection.request(Parameters.HTTP_GET_REQUEST, Parameters.URL_SRV_ID_QUERY, "", {})
         probeId = connection.getresponse().read().decode(Parameters.REPLY_MESSAGE_ENCODING)
         #     logger.logger.info("Id of probe with ip " + str(targetIp) + " is " + str(probeId))
         connection.close()
         return probeId
     except Exception as e:
         raise ProbeConnectionException(e)
-
-
-class Parameters(object):
-    """Class containing parameters for this protocol"""
-    PORT_NUMBER = 5000
-    POST_MESSAGE_KEYWORD = "@message"
-    POST_MESSAGE_ENCODING = "latin-1"
-    REPLY_MESSAGE_ENCODING = 'latin-1'
-    HTTP_POST_REQUEST = "POST"
-    HTTP_GET_REQUEST = "GET"
-    URL_SRV_TESTS_QUERY = "/tests"
-    URL_SRV_ID_QUERY = "/id"
-    URL_SRV_STATUS_QUERY = "/status"
 
 
 class Sender(object):

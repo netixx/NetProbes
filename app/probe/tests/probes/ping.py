@@ -7,6 +7,7 @@ __all__ = ['TesterPing', 'TesteePing']
 
 import re
 import argparse
+from threading import Thread
 
 from consts import Identification
 from interfaces.excs import TestArgumentError, TestError
@@ -26,7 +27,6 @@ class PingParseError(TestError):
 
 
 class Ping(object):
-    CMD = 'ping -c 1 '
     npings = 1
 
     def __init__(self):
@@ -209,13 +209,10 @@ class TesterPing(TesterTest, Ping):
     eformat = "Ping failed %s"
 
     def __init__(self, options):
-        self.process = None
         Ping.__init__(self)
         TesterTest.__init__(self, options)
         self.parseOptions()
-        self.format = None
         self.errors = {}
-        self.allSuccess = False
 
     '''
         Prepare yourself for the test
@@ -284,7 +281,7 @@ class TesterPing(TesterTest, Ping):
                 self.result += str(self.perrors[target])
             else:
                 if target in self.perrors and self.perrors[target] is not None:
-                    self.result += self.eformats % (target, self.perrors[target])
+                    self.result += self.eformat % (target, self.perrors[target])
                 else:
                     self.result += self.rformat % (target, self.stats[target].printAll())
                     #         self.rawResult = self.errors
