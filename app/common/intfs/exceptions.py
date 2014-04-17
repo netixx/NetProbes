@@ -1,9 +1,10 @@
-'''
-Created on 11 avr. 2014
+"""
+Exceptions for the Commander (connections etc...)
 
 @author: francois
-'''
+"""
 
 
 class ProbeConnectionFailed(Exception):
+    """Connection to the commander of this probe failed"""
     pass

@@ -1,10 +1,9 @@
-'''
-Created on 9 avr. 2014
+"""HTTP protocol implementation based on the http.* python modules
+Uses http POST and GET request to send data
 
 @author: francois
-'''
+"""
 
-import logging
 import datetime
 import time
 from http.server import HTTPServer, SimpleHTTPRequestHandler
@@ -18,7 +17,9 @@ from common.intfs.exceptions import ProbeConnectionFailed
 from common.consts import Params
 
 
+#TODO : remove PORT_NUMBER constant (add giveID function in commanderServer)
 class Parameters(object):
+    """Parameters for this protocol"""
     PORT_NUMBER = 5000
     POST_MESSAGE_KEYWORD = "@message"
     POST_MESSAGE_ENCODING = "latin-1"
@@ -32,14 +33,17 @@ class Parameters(object):
     REPLY_MESSAGE_ENCODING = 'latin-1'
 
 
-logger = logging.getLogger()
-
-
 def createConnection(ip):
+    """Create HTTP connection object for this ip address
+    :param ip : ip to connect to
+    """
     return HTTPConnection(ip, Parameters.COMMANDER_PORT_NUMBER)
 
 
 def connect(connection):
+    """Connection given http connection
+    :param connection : http connection to call connect on
+    """
     try:
         connection.connect()
     except HTTPException as e:
@@ -47,14 +51,19 @@ def connect(connection):
 
 
 def disconnect(connection):
+    """Close given connection
+    :param connection : http connection to close"""
     connection.close()
 
 
 def getRemoteId(ip):
+    """Send a GET request to given IP and return its id
+    :param ip : ip to send the request to
+    """
     try:
-        connection = HTTPConnection(ip, Parameters.PORT_NUMBER);
+        connection = HTTPConnection(ip, Parameters.PORT_NUMBER)
         connection.connect()
-        connection.request("GET", Parameters.URL_SRV_ID_QUERY, "", {})
+        connection.request(Parameters.HTTP_GET_REQUEST, Parameters.URL_SRV_ID_QUERY, "", {})
         probeId = connection.getresponse().read().decode(Parameters.REPLY_MESSAGE_ENCODING)
         #     logger.logger.info("Id of probe with ip " + str(targetIp) + " is " + str(probeId))
         connection.close()
@@ -64,23 +73,32 @@ def getRemoteId(ip):
 
 
 class Sender(object):
-    def send(self, connection, message):
+    """HTTP request maker
+    Uses http.client request method to create outgoing requests
+    """
+
+    @staticmethod
+    def send(connection, message):
+        """Send the message via http on given connection
+        :param message: message to send
+        :param connection: connection to use to send the message
+        """
         i = 0
         tryAgain = True
-        while (tryAgain and i < Parameters.MAX_SEND_TRY):
+        while tryAgain and i < Parameters.MAX_SEND_TRY:
             try:
                 # serialize our message
                 serializedMessage = Params.CODEC.encode(message)
-                # put it in a dictionnary
+                # put it in a dictionary
                 params = {Parameters.POST_MESSAGE_KEYWORD: serializedMessage}
-                # transform dictionnary into string
+                # transform dictionary into string
                 params = urllib.parse.urlencode(params, doseq = True, encoding = Parameters.POST_MESSAGE_ENCODING)
                 # set the header as header for POST
                 headers = {
                     "Content-type": "application/x-www-form-urlencoded;charset=" + Parameters.POST_MESSAGE_ENCODING,
                     "Accept": "text/plain"}
 
-                connection.request("POST", "", params, headers)
+                connection.request(Parameters.HTTP_POST_REQUEST, "", params, headers)
                 connection.getresponse()
                 tryAgain = False
             except CannotSendRequest:
@@ -90,32 +108,46 @@ class Sender(object):
             finally:
                 i += 1
 
-    def requestProbes(self, connection):
+    @staticmethod
+    def requestProbes(connection):
+        """Request list of probes on given connection
+        :param connection: connection to use to send request
+        """
         connection.request("GET", "/probes", "", {})
         response = connection.getresponse()
         pi = response.read(int(response.getheader('content-length')))
         return Params.CODEC.decode(pi)
 
-    def requestResults(self, connection):
+    @staticmethod
+    def requestResults(connection):
+        """Request results on given connection
+
+        :param connection: connection to use
+        """
         connection.request("GET", "/results", "", {})
         response = connection.getresponse()
         return response.read(int(response.getheader('content-length'))).decode()
 
 
 class Listener(ThreadingMixIn, HTTPServer, Thread):
+    """Listen to HTTP request on dedicated CommanderServer port"""
+
     def __init__(self, helper):
-        HTTPServer.__init__(self, ("", Parameters.COMMANDER_PORT_NUMBER), __class__.RequestHandler)
+        HTTPServer.__init__(self, ("", Parameters.COMMANDER_PORT_NUMBER), self.RequestHandler)
         Thread.__init__(self)
         self.setName('Common listener')
         self.helper = helper
 
     def run(self):
+        """Listen forever"""
         self.serve_forever()
 
     def close(self):
+        """Stop listening to requests"""
         self.shutdown()
 
     class RequestHandler(SimpleHTTPRequestHandler):
+        """Handler instantiated for each request which is received"""
 
         def __init__(self, request, client_address, server_socket):
             SimpleHTTPRequestHandler.__init__(self, request, client_address, server_socket)
@@ -126,6 +158,7 @@ class Listener(ThreadingMixIn, HTTPServer, Thread):
                                                                                        format % args))
 
         def do_POST(self):
+            """Handle an HTTP POST request"""
             self.server.helper.getLogger().debug("Handling a command")
             contentLength = self.headers.get("content-length")
             # read content
@@ -148,14 +181,15 @@ class Listener(ThreadingMixIn, HTTPServer, Thread):
 
 
         def do_GET(self):
+            """Handle an HTTP Get request"""
             self.server.helper.getLogger().ddebug("Handling get Request")
             getPath = urllib.parse.urlparse(self.path).path
 
-            if (getPath == Parameters.URL_PROBES_QUERY):
+            if getPath == Parameters.URL_PROBES_QUERY:
                 self.server.helper.getLogger().debug("Giving the list of probes")
                 message = self.server.helper.handleProbeQuery()
 
-            elif (getPath == Parameters.URL_RESULT_QUERY):
+            elif getPath == Parameters.URL_RESULT_QUERY:
                 self.server.helper.getLogger().debug("Asked for results of tests")
                 message = self.server.helper.handleResultQuery()
             else:
@@ -164,6 +198,7 @@ class Listener(ThreadingMixIn, HTTPServer, Thread):
             self._reply(message)
 
         def _reply(self, message):
+            """Reply to given request"""
             if type(message) is not bytes:
                 message = message.encode(Parameters.POST_MESSAGE_ENCODING)
             self.send_response(200)
