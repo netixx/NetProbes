@@ -11,27 +11,22 @@ class Cli(Interface):
     Displays a prompt that reads commands from user's keyboard input
 
     """
-    DISPLAY_WIDTH = 100
-    HEADING = "Probe Id \t Probe Ip \t Status\n"
-    PROBE_TEMPLATE = "%s \t %s \t %s\n"
+    COL_WIDTHS = (10, 20, 20)
+    COL_NAMES = ("ProbeId", "ProbeIp", "Status")
+    HEADING = "{names[0]:<{wi[0]}}{names[1]:<{wi[1]}}{names[2]:<{wi[2]}}\n"
+    PROBE_TEMPLATE = "{names[0]:<{wi[0]}}{names[1]:<{wi[1]}}{names[2]:<{wi[2]}}\n"
     CMD_PREFIX = "do"
     DISP_CMD = "disp"
     EXIT_CMD = "exit"
+    PROMPT = "%s (%s) > "
 
 
     def __init__(self, probeIp):
         Interface.__init__(self, probeIp)
-        #         Thread.__init__(self)
-        #         self.setName("Cli")
-        self.prompt = probeIp + " > "
+        self.prompt = self.PROMPT % (self.targetId, self.targetIp)
         self.isRunning = True
-        # wins and boxes
         self.status = None
         self.commandInput = None
-        # assures we end correctly
-        # end session
-
-    #         curses.endwin()
 
     def start(self):
         """Start reading and replying to commands"""
@@ -58,14 +53,16 @@ class Cli(Interface):
 
     def getCommands(self):
         """Return available commands"""
-        return "cmd"
+        return "Commands : %s"% ', '.join([self.CMD_PREFIX, self.DISP_CMD, self.EXIT_CMD])
+
 
     def getProbes(self):
         """Get probe from remote commander server and prints them as string"""
         try:
-            probes = self.HEADING
-            for probe in self.fetchProbes():
-                probes += self.PROBE_TEMPLATE % (probe.getId(), probe.getIp(), probe.getStatus())
+            p = self.fetchProbes()
+            probes = self.HEADING.format(wi = self.COL_WIDTHS, names = self.COL_NAMES)
+            for probe in p:
+                probes += self.PROBE_TEMPLATE.format(names = (probe.getId(), probe.getIp(), probe.getStatus()), wi = self.COL_WIDTHS)
             return probes
         except ProbeConnectionFailed:
             self.updateStatus("Cannot get the list of probes")

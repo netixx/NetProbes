@@ -56,6 +56,7 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose',
                         dest = 'verbose',
                         action = 'count',
+                        default = 0,
                         help = "Set verbosity")
     args = parser.parse_args()
 

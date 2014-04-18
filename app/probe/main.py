@@ -104,6 +104,7 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose',
                         dest = 'verbose',
                         action = 'count',
+                        default = 0,
                         help = "Set verbosity.")
 
     parser.add_argument('--commander',
