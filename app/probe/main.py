@@ -49,6 +49,7 @@ import tools.logs as logs
 import logging
 from managers.watchers import WATCHER_LOGGER
 from logging import Formatter
+DDEBUG = 9
 
 wlogger = logging.getLogger(WATCHER_LOGGER)
 # tlogger = logging.getLogger()
@@ -66,7 +67,7 @@ def addLogs():
     wlogger.addHandler(
         logging.FileHandler(os.path.join(WATCHERS_LOGS_DIR, Identification.PROBE_ID + 'watcher.log'), mode = 'w'))
 
-    DDEBUG = 9
+
     logging.addLevelName(DDEBUG, "DDEBUG")
 
     def ddebug(logger, msg, *args, **kwargs):
@@ -76,9 +77,7 @@ def addLogs():
     logging.Logger.ddebug = ddebug
 
     logger = logging.getLogger()
-    logLevel = logging.INFO
-    if Params.DEBUG:
-        logLevel = logging.DEBUG
+    logLevel = Params.VERBOSE
 
     formatter = Formatter(LOG_FORMAT)
 
@@ -102,10 +101,10 @@ if __name__ == '__main__':
                         help = 'Enter an string that represent the id of the probe',
                         default = Identification.randomId())
 
-    parser.add_argument('--debug',
-                        dest = 'debug',
-                        action = 'store_true',
-                        help = "Enable debug mode.")
+    parser.add_argument('-v', '--verbose',
+                        dest = 'verbose',
+                        action = 'count',
+                        help = "Set verbosity.")
 
     parser.add_argument('--commander',
                         dest = 'commander',
@@ -128,8 +127,12 @@ if __name__ == '__main__':
 
     Identification.PROBE_ID = args.probe_id
 
-    if args.debug:
-        Params.DEBUG = True
+    if args.verbose >= 3:
+        Params.VERBOSE = DDEBUG
+    elif args.verbose == 2:
+        Params.VERBOSE = logging.DEBUG
+    elif args.verbose <= 1:
+        Params.VERBOSE = logging.INFO
 
     if args.commander:
         Params.COMMANDER = True

@@ -21,7 +21,7 @@ class Consts(object):
 
 class Params(object):
     """Parameters for the runtime"""
-    DEBUG = False
+    VERBOSE = 0
     COMMANDER = False
     WATCHERS = False
     MAX_OUTGOING_PROBETESTS = 5
