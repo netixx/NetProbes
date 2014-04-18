@@ -17,10 +17,8 @@ from common.intfs.exceptions import ProbeConnectionFailed
 from common.consts import Params
 
 
-#TODO : remove PORT_NUMBER constant (add giveID function in commanderServer)
 class Parameters(object):
     """Parameters for this protocol"""
-    PORT_NUMBER = 5000
     POST_MESSAGE_KEYWORD = "@message"
     POST_MESSAGE_ENCODING = "latin-1"
     COMMANDER_PORT_NUMBER = 6000
@@ -28,7 +26,7 @@ class Parameters(object):
     HTTP_GET_REQUEST = "GET"
     URL_RESULT_QUERY = "/results"
     URL_PROBES_QUERY = "/probes"
-    URL_SRV_ID_QUERY = "/id"
+    URL_ID_QUERY = "/id"
     MAX_SEND_TRY = 4
     REPLY_MESSAGE_ENCODING = 'latin-1'
 
@@ -61,9 +59,9 @@ def getRemoteId(ip):
     :param ip : ip to send the request to
     """
     try:
-        connection = HTTPConnection(ip, Parameters.PORT_NUMBER)
+        connection = HTTPConnection(ip, Parameters.COMMANDER_PORT_NUMBER)
         connection.connect()
-        connection.request(Parameters.HTTP_GET_REQUEST, Parameters.URL_SRV_ID_QUERY, "", {})
+        connection.request(Parameters.HTTP_GET_REQUEST, Parameters.URL_ID_QUERY, "", {})
         probeId = connection.getresponse().read().decode(Parameters.REPLY_MESSAGE_ENCODING)
         #     logger.logger.info("Id of probe with ip " + str(targetIp) + " is " + str(probeId))
         connection.close()
@@ -192,6 +190,8 @@ class Listener(ThreadingMixIn, HTTPServer, Thread):
             elif getPath == Parameters.URL_RESULT_QUERY:
                 self.server.helper.getLogger().debug("Asked for results of tests")
                 message = self.server.helper.handleResultQuery()
+            elif getPath == Parameters.URL_ID_QUERY:
+                message = self.server.helper.getId()
             else:
                 message = self.server.helper.handleGet()
             # answer with your id

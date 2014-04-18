@@ -134,3 +134,7 @@ class CommanderServer(Thread):
         def getLogger(self):
             """Return the CommanderServer logger object"""
             return self.server.logger
+
+        def getId(self):
+            """Returns the ID of this probe"""
+            return Identification.PROBE_ID
