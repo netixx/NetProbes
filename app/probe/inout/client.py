@@ -100,12 +100,9 @@ class Client(Thread):
                 # make sure we are the first on our list
                 prop.insert(0, Identification.PROBE_ID)
 
-        if len(prop) == 1:
-            mes = copy.deepcopy(message)
-            mes.targetId = prop[0]
-            cls.send(mes)
-        elif len(prop) > 1:
-            if len(prop) < Consts.PROPAGATION_RATE:
+        #Only do something if there is something to do
+        if len(prop) > 0:
+            if len(prop) <= Consts.PROPAGATION_RATE:
                 for p in prop:
                     mes = copy.deepcopy(message)
                     mes.targetId = p
@@ -114,13 +111,10 @@ class Client(Thread):
                 pRate = Consts.PROPAGATION_RATE
                 # take targets for first hop out of the list
                 sendTo = prop[0:pRate]
-                i = 1
-                while (i + 1) * pRate < len(prop):
-                    propIds = prop[i * pRate:(i + 1) * pRate]
-                    cls.send(BroadCast(sendTo[i], message, propIds))
-                    i += 1
-                # be sure to propagate to all probes
-                cls.send(BroadCast(sendTo[i], message, prop[i * pRate:]))
+                pt = prop[pRate:]
+                propTargets = [ pt[i::pRate] for i in range(pRate) ]
+                for i, firstHop in enumerate(sendTo):
+                    cls.send(BroadCast(firstHop, message, propTargets[i]))
 
     @classmethod
     def allMessagesSent(cls):

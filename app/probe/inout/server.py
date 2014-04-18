@@ -10,7 +10,7 @@ be performed for this probe.
 __all__ = ['Server']
 
 import copy
-from threading import Thread, Event
+from threading import Thread, Event, RLock
 import logging
 
 from .client import Client
@@ -21,7 +21,7 @@ from consts import Params, Identification
 from managers.probes import ProbeStorage
 from managers.probetests import TestManager, TestResponder
 from managers.actions import ActionMan
-from interfaces.excs import ActionError
+from interfaces.excs import ActionError, ProbeConnectionException
 
 
 class Server(Thread):
@@ -37,7 +37,7 @@ class Server(Thread):
     """
 
     logger = logging.getLogger()
-
+    _addLock = RLock()
     def __init__(self):
         self.helper = self.Helper(self)
         self.listener = Params.PROTOCOL.Listener(self.helper)
@@ -85,15 +85,19 @@ class Server(Thread):
             Client.broadcast(message)
         elif isinstance(message, AddToOverlay):
             cls.logger.debug("Add probe to overlay")
-            probeId = Params.PROTOCOL.getRemoteId(message.getProbeIp())
+            try:
+                with cls._addLock:
+                    probeId = Params.PROTOCOL.getRemoteId(message.getProbeIp())
 
-            addMessage = Add(Identification.PROBE_ID, probeId, message.getProbeIp())
-            selfAddMessage = copy.deepcopy(addMessage)
-            selfAddMessage.doHello = True
-            # Do broadcast before adding the probe so that it doesn't receive unnecessary message
-            # addMessage = m.Add(Identification.PROBE_ID, probeId, message.targetIp, hello=True)
-            Client.broadcast(addMessage)
-            cls.treatMessage(selfAddMessage)
+                    addMessage = Add(Identification.PROBE_ID, probeId, message.getProbeIp())
+                    selfAddMessage = copy.deepcopy(addMessage)
+                    selfAddMessage.doHello = True
+                    # Do broadcast before adding the probe so that it doesn't receive unnecessary message
+                    # addMessage = m.Add(Identification.PROBE_ID, probeId, message.targetIp, hello=True)
+                    Client.broadcast(addMessage)
+                    cls.treatMessage(selfAddMessage)
+            except ProbeConnectionException as e:
+                cls.logger.info("Adding probe failed %s : %s", message.getProbeIp(), e)
         else:
             # handles everything else, including Do messages
             ActionMan.addTask(MTA.toAction(message))

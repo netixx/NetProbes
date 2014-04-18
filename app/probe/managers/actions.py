@@ -21,7 +21,7 @@ from managers.probes import ProbeStorage
 import calls.actions as a
 from .probetests import TestResponder, TestManager
 from interfaces.excs import TestError, ActionError, \
-    NoSuchProbe, ProbeConnectionException, ToManyTestsInProgress
+    NoSuchProbe, ToManyTestsInProgress
 
 
 class ActionMan(Thread):
@@ -124,8 +124,6 @@ class ActionMan(Thread):
                     h = str(host)
                     if not ProbeStorage.isKnownIp(h):
                         Client.send(AddToOverlay(Identification.PROBE_ID, h))
-                except ProbeConnectionException as e:
-                    cls.logger.info("Adding probe failed %s : %s", h, e)
                 except Exception as e:
                     cls.logger.warning("Error while adding probe %s : %s", h, e)
         except ValueError:
@@ -137,6 +135,7 @@ class ActionMan(Thread):
         :param action: UpdateProbes action instance
         """
         assert isinstance(action, a.UpdateProbes)
+        cls.logger.info("Joined overlay size %s", len(action.getProbeList()))
         for probe in action.getProbeList():
             # don't re-add ourselves to the local DHT
             if probe.getId() != Identification.PROBE_ID:

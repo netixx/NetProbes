@@ -36,6 +36,7 @@ WATCHERS_LOGS_DIR = os.path.join(LOGS_DIR, "watchers")
 LOG_FORMAT = Consts.DEFAULT_LOG_FORMAT
 TEST_LOGS_FORMAT = "%(levelname)s\t%(asctime)s %(name)s (%(module)s)\t: %(message)s"
 
+import time
 from interfaces.watcher import WatcherError
 from managers.probetests import TEST_LOGGER
 from managers.actions import ActionMan
@@ -124,6 +125,12 @@ if __name__ == '__main__':
                         default = [],
                         help = 'Prefix to scan to add probes automatically')
 
+    parser.add_argument('-w', '--wait',
+                        dest = 'wait',
+                        default = 0,
+                        type = int,
+                        help = 'Seconds to wait before starting')
+
     args = parser.parse_args()
 
     Identification.PROBE_ID = args.probe_id
@@ -160,7 +167,7 @@ if __name__ == '__main__':
     client = None
     commander = None
     try:
-
+        time.sleep(args.wait)
         logging.getLogger().info("Starting probe with id : %s, pid : %s", Identification.PROBE_ID, os.getpid())
         server = Server()
         server.start()
@@ -190,7 +197,7 @@ if __name__ == '__main__':
         for prefix in args.add_prefix:
             logging.getLogger().info("Adding probes in prefix %s", prefix)
             ActionMan.manageAddPrefix(actions.AddPrefix(prefix))
-            logging.getLogger().info("Probe(s) in prefix %s added", prefix)
+            logging.getLogger().info("Probe(s) in prefix %s committed for addition", prefix)
 
         if Params.WATCHERS:
             WatcherManager.startWatchers()
