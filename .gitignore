@@ -1,4 +1,4 @@
-*.log.*
+*.log*
 
 .settings
 *.py[cod]
@@ -35,4 +35,5 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+.idea*
 /.metadata
