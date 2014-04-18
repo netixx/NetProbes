@@ -7,7 +7,7 @@ from tkinter import *
 from tkinter.ttk import Treeview
 
 from interface import Interface
-import consts
+from common.intfs.exceptions import ProbeConnectionFailed
 
 
 class Gui(Interface):
@@ -114,12 +114,17 @@ class Gui(Interface):
     def updateProbes(self):
         """Update the list of probes in the Treeview"""
         while self.isRunning:
-            probes = self.probesToItems(self.fetchProbes())
-            self.probesDisplay.set_children("")
-            for item in probes:
-                self.probesDisplay.insert('', 'end', values = item)
-            #             self.probesDisplay.set_children('', probes)
-            self.doFetchProbes.wait()
+            try:
+                probes = self.probesToItems(self.fetchProbes())
+                self.probesDisplay.set_children("")
+                for item in probes:
+                    self.probesDisplay.insert('', 'end', values = item)
+                #             self.probesDisplay.set_children('', probes)
+            except ProbeConnectionFailed:
+                self.updateStatus("Cannot get list of probes")
+                self.logger.error("Error while getting list of probes : connection failed", exc_info = 1)
+            finally:
+                self.doFetchProbes.wait()
 
     @staticmethod
     def probesToItems(probes):
@@ -131,9 +136,15 @@ class Gui(Interface):
     def updateResults(self):
         """Update the results is the box"""
         while self.isRunning:
-            result = self.fetchResults()
-            self.addResult(result)
-            self.doFetchResults.wait()
+            try:
+                result = self.fetchResults()
+                self.addResult(result)
+            except ProbeConnectionFailed:
+                self.updateStatus("Cannot fetch results")
+                self.logger.error("Cannot fetch results : connection to probe failed", exc_info = 1)
+            finally:
+                self.doFetchResults.wait()
+
 
 
     def quit(self):

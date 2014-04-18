@@ -155,8 +155,8 @@ if __name__ == '__main__':
 
     addLogs()
     server = None
-    a = None
-    c = None
+    actionMan = None
+    client = None
     commander = None
     try:
 
@@ -165,8 +165,8 @@ if __name__ == '__main__':
         server.start()
         server.isUp.wait()
 
-        a = ActionMan()
-        a.start()
+        actionMan = ActionMan()
+        actionMan.start()
 
         if Params.COMMANDER:
             commander = CommanderServer()
@@ -181,9 +181,9 @@ if __name__ == '__main__':
                     logging.getLogger().warning("Starting watcher failed : %s", e, exc_info = 1)
 
         # ProbeStorage.addProbe( Probe("id", "10.0.0.1" ) )
-        c = Client()
-        c.start()
-        c.isUp.wait()
+        client = Client()
+        client.start()
+        client.isUp.wait()
         logging.getLogger().info("Startup Done")
 
         for prefix in args.add_prefix:
@@ -194,8 +194,8 @@ if __name__ == '__main__':
         if Params.WATCHERS:
             WatcherManager.startWatchers()
         server.join()
-        c.join()
-        a.join()
+        client.join()
+        actionMan.join()
 
     except KeyboardInterrupt:
         logging.getLogger().info("Caught keyboard interrupt")
@@ -215,9 +215,9 @@ if __name__ == '__main__':
         ActionMan.addTask(Quit())
         if server is not None:
             server.quit()
-        if c is not None:
-            c.quit()
-        if a is not None:
-            a.quit()
+        if client is not None:
+            client.quit()
+        if actionMan is not None:
+            actionMan.quit()
         logging.getLogger().info("Shutdown complete")
 

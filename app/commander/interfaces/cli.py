@@ -2,6 +2,7 @@
 
 @author: francois
 """
+from common.intfs.exceptions import ProbeConnectionFailed
 from interface import Interface
 
 
@@ -61,10 +62,14 @@ class Cli(Interface):
 
     def getProbes(self):
         """Get probe from remote commander server and prints them as string"""
-        probes = self.HEADING
-        for probe in self.fetchProbes():
-            probes += self.PROBE_TEMPLATE % (probe.getId(), probe.getIp(), probe.getStatus())
-        return probes
+        try:
+            probes = self.HEADING
+            for probe in self.fetchProbes():
+                probes += self.PROBE_TEMPLATE % (probe.getId(), probe.getIp(), probe.getStatus())
+            return probes
+        except ProbeConnectionFailed:
+            self.updateStatus("Cannot get the list of probes")
+            self.logger.error("Connection failed", exc_info = 1)
 
     def updateStatus(self, status):
         """Update the status of this commander

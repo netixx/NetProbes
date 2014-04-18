@@ -6,6 +6,7 @@ from threading import Thread
 import curses
 import time
 from curses.textpad import Textbox
+from common.intfs.exceptions import ProbeConnectionFailed
 
 from interface import Interface
 
@@ -102,9 +103,13 @@ class Curses(Interface):
     def refreshProbes(self):
         """Refresh the list of probes"""
         while self.isRunning:
-            self.drawProbes(self.fetchProbes())
-            self.probesPanel.refresh()
-            time.sleep(self.REFRESH_TIME)
+            try:
+                self.drawProbes(self.fetchProbes())
+                self.probesPanel.refresh()
+            except ProbeConnectionFailed:
+                self.updateStatus("Cannot get list of probes")
+            finally:
+                time.sleep(self.REFRESH_TIME)
 
     # get an area where all the probes can be painted
     def drawProbes(self, probes):

@@ -57,6 +57,9 @@ class Interface(object):
         #             cmd.join()
         except (ValueError, NoSuchCommand):
             pass
+        except ProbeConnectionFailed:
+            self.logger.error("Error while sending command : connection failed", exc_info = 1)
+            self.updateStatus("Cannot send command")
             #       self.updateStatus("Command is false or unkown")
 
     @staticmethod

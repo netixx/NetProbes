@@ -43,6 +43,7 @@ class CommanderServer(Thread):
 
     def quit(self):
         """Stop listening"""
+        self.logger.info("Closing Commander Server")
         self.listener.close()
 
     @classmethod

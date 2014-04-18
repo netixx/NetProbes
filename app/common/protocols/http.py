@@ -103,6 +103,8 @@ class Sender(object):
                 # retry later
                 tryAgain = True
                 time.sleep(2)
+            except HTTPException as e:
+                raise ProbeConnectionFailed("Cannot send the message %s"%e)
             finally:
                 i += 1
 
@@ -111,10 +113,13 @@ class Sender(object):
         """Request list of probes on given connection
         :param connection: connection to use to send request
         """
-        connection.request("GET", "/probes", "", {})
-        response = connection.getresponse()
-        pi = response.read(int(response.getheader('content-length')))
-        return Params.CODEC.decode(pi)
+        try:
+            connection.request("GET", "/probes", "", {})
+            response = connection.getresponse()
+            pi = response.read(int(response.getheader('content-length')))
+            return Params.CODEC.decode(pi)
+        except HTTPException as e:
+            raise ProbeConnectionFailed("Error while getting list of probes %s"%e)
 
     @staticmethod
     def requestResults(connection):
@@ -122,15 +127,19 @@ class Sender(object):
 
         :param connection: connection to use
         """
-        connection.request("GET", "/results", "", {})
-        response = connection.getresponse()
-        return response.read(int(response.getheader('content-length'))).decode()
+        try:
+            connection.request("GET", "/results", "", {})
+            response = connection.getresponse()
+            return response.read(int(response.getheader('content-length'))).decode()
+        except HTTPException as e:
+            raise ProbeConnectionFailed("Error while getting results %s"%e)
 
 
 class Listener(ThreadingMixIn, HTTPServer, Thread):
     """Listen to HTTP request on dedicated CommanderServer port"""
 
     def __init__(self, helper):
+        ThreadingMixIn.daemon_threads = True
         HTTPServer.__init__(self, ("", Parameters.COMMANDER_PORT_NUMBER), self.RequestHandler)
         Thread.__init__(self)
         self.setName('Common listener')
