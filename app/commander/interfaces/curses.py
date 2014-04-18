@@ -1,8 +1,7 @@
-'''
-Created on 7 juin 2013
+"""Curses interface for the commander
 
 @author: francois
-'''
+"""
 from threading import Thread
 import curses
 import time
@@ -12,6 +11,10 @@ from interface import Interface
 
 
 class Curses(Interface):
+    """The curses interfaces uses the Curses python module
+    to generate a pseudo window inside the CLI
+    """
+
     DISPLAY_WIDTH = 100
     FIELDS_DISPLAY_WIDTH = [30, 20]
     COMMAND_LINE_NUMBER = 3
@@ -34,14 +37,16 @@ class Curses(Interface):
     #         curses.endwin()
 
     def start(self):
+        """Start the curses interface"""
         try:
-            curses.wrapper(self.main)
+            curses.wrapper(self._main)
         finally:
             self.isRunning = False
 
 
-    def initPanels(self, stdscr):
-        self.DISPLAY_WIDTH = curses.COLS - 1;
+    def _initPanels(self, stdscr):
+        """Load each panels : text display, command input, probe display and status display"""
+        self.DISPLAY_WIDTH = curses.COLS - 1
 
         self.text = stdscr.subwin(1, self.DISPLAY_WIDTH, 0, 0)
         self.text.addstr(0, 0, "Enter a command :")
@@ -60,7 +65,7 @@ class Curses(Interface):
         # move the cursor at the right place
         stdscr.move(1, 0)
 
-    def main(self, stdscr):
+    def _main(self, stdscr):
         try:
             #   stdscr = curses.initscr()
             # Clear screen
@@ -69,7 +74,7 @@ class Curses(Interface):
             curses.curs_set(True)
             # remove echo from touched keys
             # curses.noecho()
-            self.initPanels(stdscr)
+            self._initPanels(stdscr)
 
             box = Textbox(self.commandInput)
             #     stdscr.refresh()
@@ -77,7 +82,7 @@ class Curses(Interface):
             th.start()
             stdscr.refresh()
 
-            while (self.isRunning):
+            while self.isRunning:
                 stdscr.refresh()
                 box.edit()
                 self.doCommand(box.gather())
@@ -95,13 +100,17 @@ class Curses(Interface):
 
 
     def refreshProbes(self):
-        while (self.isRunning):
+        """Refresh the list of probes"""
+        while self.isRunning:
             self.drawProbes(self.fetchProbes())
             self.probesPanel.refresh()
             time.sleep(self.REFRESH_TIME)
 
     # get an area where all the probes can be painted
     def drawProbes(self, probes):
+        """Draw the list of probes in the panel
+        :param probes: list of probes to draw
+        """
         i = 0
         self.probesPanel.addstr(i, 0, "-" * self.DISPLAY_WIDTH)
         i += 1
@@ -123,9 +132,12 @@ class Curses(Interface):
             self.probesPanel.addstr(i, self.FIELDS_DISPLAY_WIDTH[0], "| " + ip)
             self.probesPanel.addstr(i, self.DISPLAY_WIDTH - 1, "|")
             i += 1
-        return self.probesPanel;
+        return self.probesPanel
 
     def updateStatus(self, newStatus):
+        """Update the status box
+        :param newStatus: the new status to write
+        """
         self.status.addstr(0, 0, newStatus)
         self.status.clrtobot()
         self.status.refresh()

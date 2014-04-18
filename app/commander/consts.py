@@ -1,15 +1,12 @@
-'''
-Created on 7 juin 2013
+"""Constants for use by the commander
 
 @author: francois
-'''
-__all__ = ['Consts', 'Params']
+"""
 
+DEFAULT_LOG_FORMAT = "%(levelname)s\t%(asctime)s %(threadName)s (%(module)s)\t: %(message)s"
 
 class Params(object):
+    """Runtime parameters"""
     DEBUG = True
 
 
-def debug(message):
-    if (Params.DEBUG):
-        print(message)

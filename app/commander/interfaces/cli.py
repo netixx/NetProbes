@@ -1,14 +1,17 @@
-'''
-Created on 7 juin 2013
+"""Command line interface for the commander
 
 @author: francois
-'''
+"""
 from interface import Interface
 
 
 class Cli(Interface):
+    """Command line interface
+    Displays a prompt that reads commands from user's keyboard input
+
+    """
     DISPLAY_WIDTH = 100
-    HEADING = ("Probe Id \t Probe Ip \t Status\n")
+    HEADING = "Probe Id \t Probe Ip \t Status\n"
     PROBE_TEMPLATE = "%s \t %s \t %s\n"
     CMD_PREFIX = "do"
     DISP_CMD = "disp"
@@ -30,7 +33,8 @@ class Cli(Interface):
     #         curses.endwin()
 
     def start(self):
-        while (self.isRunning):
+        """Start reading and replying to commands"""
+        while self.isRunning:
             try:
                 cmd = input(self.prompt)
                 if cmd.startswith(self.CMD_PREFIX):
@@ -47,17 +51,23 @@ class Cli(Interface):
                 print("\n")
 
     def stop(self):
+        """Stop listening"""
         self.isRunning = False
 
 
     def getCommands(self):
+        """Return available commands"""
         return "cmd"
 
     def getProbes(self):
+        """Get probe from remote commander server and prints them as string"""
         probes = self.HEADING
         for probe in self.fetchProbes():
             probes += self.PROBE_TEMPLATE % (probe.getId(), probe.getIp(), probe.getStatus())
         return probes
 
     def updateStatus(self, status):
+        """Update the status of this commander
+        :param status: new status to apply
+        """
         print("Status : %s" % status)

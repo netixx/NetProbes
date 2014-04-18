@@ -1,28 +1,42 @@
 #!/usr/bin/python3
-'''
-Created on 14 juin 2013
+"""The commander enables control of a remote probe
+It allows the user to send specific queries to a remote probe
+in order to manipulate the probe overlay or execute tests
 
 @author: francois
-@todo: refresh à volonté
-'''
-
+"""
 import argparse
 import importlib
 import os
 import sys
+import logging
+from logging import Formatter
 
 directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(directory)
 sys.path.append(os.path.abspath(os.path.join(directory, "..")))
 sys.path.append(os.path.abspath(os.path.join(directory, "..", "..", "lib")))
-sys.path.append(os.path.abspath(os.path.join(directory, "..", "..", "lib", 'tools', 'tools')))
+sys.path.append(os.path.abspath(os.path.join(directory, "..", "..", "lib", 'tools')))
 
-from exceptions import ProbeConnectionFailed
+from common.intfs.exceptions import ProbeConnectionFailed
+import tools.logs as logs
+import consts
 
 
-def interfaceFactory(intOption, ip):
-    mod = importlib.import_module("interfaces." + intOption)
-    return getattr(mod, intOption.capitalize())(ip)
+def interfaceFactory(interfaceName):
+    """Return interface instance from name
+    :param interfaceName: the name of the interface to load
+    """
+    mod = importlib.import_module("interfaces." + interfaceName)
+    return getattr(mod, interfaceName.capitalize())
+
+def addLogs():
+    """Add basic logging to STDOUT"""
+    logger = logging.getLogger()
+    formatter = Formatter(consts.DEFAULT_LOG_FORMAT)
+
+    logs.addStdoutAndStdErr(consts.Params.VERBOSE, logger, formatter)
+
 
 # executed when called but not when imported
 if __name__ == '__main__':
@@ -39,8 +53,18 @@ if __name__ == '__main__':
                         dest = 'ip_probe',
                         help = 'The ip of the probe you which to command',
                         default = "127.0.0.1")
-
+    parser.add_argument('-v', '--verbose',
+                        dest = 'verbose',
+                        action = 'count',
+                        help = "Set verbosity")
     args = parser.parse_args()
+
+    if args.verbose >= 2:
+        consts.Params.VERBOSE = 10
+    elif args.verbose == 1:
+        consts.Params.VERBOSE = 20
+    else:
+        consts.Params.VERBOSE = 30
 
     from common.consts import Params as cParams
     from common.protocols import http
@@ -48,11 +72,13 @@ if __name__ == '__main__':
 
     cParams.CODEC = serialize
     cParams.PROTOCOL = http
-
+    #add logs here to that the interface may modify the logging facility
+    addLogs()
     try:
-        commander = interfaceFactory(args.interface_type, args.ip_probe)
+
+        commander = interfaceFactory(args.interface_type)(args.ip_probe)
         commander.start()
     except ProbeConnectionFailed as e:
-        print("Could not connect to probe %s : (%s)" % (args.ip_probe, e))
+        logging.getLogger().error("Could not connect to probe %s : (%s)", args.ip_probe, e, exc_info = 1)
     except Exception as e:
-        print("Could not start commander : %s" % e)
+        logging.getLogger().critical("Could not start commander : %s", e, exc_info = 1)

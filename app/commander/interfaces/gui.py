@@ -1,8 +1,7 @@
-'''
-Created on 16 juin 2013
+"""Gui interface for the commander
 
 @author: francois
-'''
+"""
 from threading import Thread
 from tkinter import *
 from tkinter.ttk import Treeview
@@ -12,6 +11,10 @@ import consts
 
 
 class Gui(Interface):
+    """The GUI interface uses the tkinter module to generate
+    a window using tk
+    """
+
     TREE_COLUMNS = ("Probe id", "Probe ip", "Status")
     RESULT_DIPLAY_HEIGHT = 10
 
@@ -30,11 +33,10 @@ class Gui(Interface):
 
         # define the threads
         self.thProbe = Thread(target = self.updateProbes, name = "Probe updater", daemon = True)
-        self.thProbeTrigger = Thread(target = self.probeFetcherScheduler, name = "Probe Scheduler", daemon = True)
         self.thResults = Thread(target = self.updateResults, name = "Results Updater", daemon = True)
-        self.thResultsTrigger = Thread(target = self.resultFetcherScheduler, name = "Results Scheduler", daemon = True)
 
     def start(self):
+        """Starts (opens) the commander window"""
         self.mainWin.geometry('800x600')
         txtText = Label(self.mainWin, textvariable = self.text)
         txtText.grid(row = 0, column = 0, sticky = W)
@@ -61,46 +63,57 @@ class Gui(Interface):
         self.mainWin.grid_rowconfigure(2, weight = 1)
         self.mainWin.grid_columnconfigure(1, weight = 1)
 
-        self.thProbeTrigger.start()
+        self.probeFetcherScheduler()
         self.thProbe.start()
 
-        self.thResultsTrigger.start()
+        self.resultFetcherScheduler()
         self.thResults.start()
 
-        consts.debug("Commander : Starting main window")
+        self.logger.info("Commander : Starting main window")
 
         self.mainWin.mainloop()
 
-        consts.debug("Commander : mainloop over")
+        self.logger.debug("Commander : mainloop over")
 
     def recallCommand(self, event):
+        """Function to rewrite previous command in box"""
         if len(self.commandHistory) != 0:
             self.command.set(self.commandHistory[-1])
         return "break"
 
     def doCommand(self, event):
+        """Executes user command"""
         self.commandHistory.append(self.command.get())
-        consts.debug("Commander : executing command")
+        self.logger.info("Commander : executing command")
         super().doCommand(self.command.get())
         self.command.set("")
 
     def updateStatus(self, status):
+        """Update status of the probe in status label
+        :param status: new status"""
         self.status.set(status)
         self.mainWin.update_idletasks()
 
     def addResult(self, result):
+        """Add (prepend) a result in the result test area
+        :param result: the result to add
+        """
         self.result.configure(state = NORMAL)
         self.result.insert('1.0', result + "\n")
         self.result.configure(state = DISABLED)
 
     def setResult(self, result):
+        """Put this result in the result area
+        :param result: result to put
+        """
         self.result.configure(state = NORMAL)
         self.result.set(result)
         self.result.configure(state = DISABLED)
 
 
     def updateProbes(self):
-        while (self.isRunning):
+        """Update the list of probes in the Treeview"""
+        while self.isRunning:
             probes = self.probesToItems(self.fetchProbes())
             self.probesDisplay.set_children("")
             for item in probes:
@@ -110,30 +123,26 @@ class Gui(Interface):
 
     @staticmethod
     def probesToItems(probes):
+        """Transform probe object into lists for display
+        :param probes: list of probes to transform
+        """
         return [(str(probe.getId()), probe.getIp(), probe.getStatus()) for probe in probes]
 
     def updateResults(self):
-        while (self.isRunning):
+        """Update the results is the box"""
+        while self.isRunning:
             result = self.fetchResults()
             self.addResult(result)
             self.doFetchResults.wait()
 
 
     def quit(self):
-        consts.debug("Commander : exiting commander")
-        #         self.mainWin.quit()
+        """Exit and close the commander window"""
+        self.logger.info("Commander : exiting commander")
         self.isRunning = False
-        # terminate fetch threads
         self.triggerFetchProbes()
-        self.triggerFetchResult()
         self.thProbe.join()
-        # no joint because answer is blocking...
-        #         self.thResults.join()
-        # closing connection etc...
         super().quit()
+        # no join because answer is blocking...
+        #         self.thResults.join()
         self.mainWin.quit()
-        # no join because triggers might be sleeping...
-
-#         self.thProbeTrigger.join()
-#         self.thResultsTrigger.join()
-
