@@ -44,10 +44,11 @@ class Client(Thread):
         self.logger.info("Starting the Client")
         while not self.stop or not self.messageStack.empty():
             message = Client.messageStack.get()
-            if message is None:
-                self.stop = True
-                return
             try:
+                if message is None:
+                    self.stop = True
+                    return
+
                 #                 if isinstance(message, StatusMessage):
                 #                     self.sendStatusMessage(message)
                 #                 else:
@@ -58,8 +59,8 @@ class Client(Thread):
 
     @classmethod
     def _terminate(cls):
-        cls.stop = True
         cls.messageStack.put(None)
+        cls.messageStack.join()
 
     @classmethod
     def quit(cls):

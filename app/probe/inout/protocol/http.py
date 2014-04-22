@@ -7,7 +7,7 @@ it is base on the http.* modules from python std library
 
 import datetime
 from http.server import HTTPServer, SimpleHTTPRequestHandler
-from http.client import HTTPConnection
+from http.client import HTTPConnection, HTTPException
 from socketserver import ThreadingMixIn
 from threading import Thread
 
@@ -96,11 +96,14 @@ class Sender(object):
             response = self._sendMessage(target, Parameters.HTTP_POST_REQUEST, urlQuery, params, headers)
 
             if response.status != 200:
-                self.logger.warning("Wrong status received! Trying to resend message.")
-                self.send(message)
+                self.logger.warning("Wrong status received!")
+                # self.send(message)
         except NoSuchProbe:
             self.logger.error("The probe you requested to send a message to : '%s', is currently unknown to me.",
                               message.targetId)
+        except HTTPException:
+            self.logger.error("Cannot send message to %s@%s", (message.targetId, target))
+            self.logger.debug("Cannot send message", exc_info = 1)
 
 
     def _sendMessage(self, targetProbe, requestType, requestUrl, params, headers):

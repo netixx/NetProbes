@@ -75,8 +75,8 @@ class ActionMan(Thread):
     def run(self):
         """Start treating tasks"""
         while not self.stop:
-            task = self.getTask()
             try:
+                task = self.getTask()
                 if task is None:
                     self.stop = True
                     return
@@ -92,7 +92,6 @@ class ActionMan(Thread):
     def quit(self):
         """Terminate the thread : read all remaining Action and end the queue"""
         self.logger.info("Stopping ActionMan !")
-        self.stop = True
         self._terminate()
 
     @classmethod
