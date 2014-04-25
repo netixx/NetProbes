@@ -63,10 +63,11 @@ def addLogs():
     if not os.path.exists(WATCHERS_LOGS_DIR):
         os.mkdir(WATCHERS_LOGS_DIR)
 
-    wlogger.propagate = False
-    wlogger.setLevel(logging.DEBUG)
-    wlogger.addHandler(
-        logging.FileHandler(os.path.join(WATCHERS_LOGS_DIR, Identification.PROBE_ID + 'watcher.log'), mode = 'w'))
+    if Params.WATCHERS:
+        wlogger.propagate = False
+        wlogger.setLevel(logging.DEBUG)
+        wlogger.addHandler(
+            logging.FileHandler(os.path.join(WATCHERS_LOGS_DIR, Identification.PROBE_ID + 'watcher.log'), mode = 'w'))
 
 
     logging.addLevelName(DDEBUG, "DDEBUG")

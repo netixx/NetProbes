@@ -44,7 +44,7 @@ class _TestManager(Thread):
 
     def run(self):
         """Starts the process of testing"""
-        testLogger.info("Starting test %s-%s", self.test.getName(), self.test.getId())
+        testLogger.info("Starting test %s", self.test.getName())
         try:
             self.prepare()
             self.prepared = True
