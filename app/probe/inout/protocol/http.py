@@ -122,8 +122,9 @@ class Sender(object):
         except Exception as e:
             raise e
 
-    def __sendRequest(self, connection, requestType, requestUrl = "", params = "", header = {}):
-        connection.request(requestType, requestUrl, params, header)
+    def __sendRequest(self, connection, requestType, requestUrl = "", params = "", header = None):
+        connection.request(requestType, requestUrl, params,
+                           header if header is not None else {})
         self.logger.ddebug("Request %s @ %s has been sent", requestType, requestUrl)
         return connection.getresponse()
 

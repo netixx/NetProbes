@@ -82,7 +82,7 @@ class ProbeStorage(object):
         with cls.__knownProbesLock:
             return [p.getIp() for p in cls.knownProbes.values() if p.getId() != Identification.PROBE_ID]
 
-    """Table manipulation methods"""
+    ###Table manipulation methods
 
     @classmethod
     def addProbe(cls, probe):
@@ -120,7 +120,7 @@ class ProbeStorage(object):
         """Add the local probe to the index"""
         cls.addProbe(cls.newProbe(Identification.PROBE_ID, Consts.LOCAL_IP_ADDR))
 
-    """Connection methods"""
+    ###Connection methods
 
     @classmethod
     def connectToProbe(cls, probeId):

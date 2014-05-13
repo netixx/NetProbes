@@ -122,7 +122,7 @@ class Client(Thread):
         """Method that returns when all messages in the stack are sent"""
         cls.messageStack.join()
 
-    '''Inner functions'''
+    ### Inner functions
 
     def sendMessage(self, message):
         """Send this message using the Params.PROTOCOL

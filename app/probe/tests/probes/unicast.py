@@ -1,8 +1,8 @@
-'''
+"""
 Implementation of a unicast test
 Protocols tcp and udp are supported
 
-'''
+"""
 __all__ = ['TesterUnicast', 'TesteeUnicast']
 
 import socket
@@ -31,16 +31,16 @@ class Unicast(object):
 
     @staticmethod
     def protocolToUnix(protocol):
-        if (protocol == 'udp'):
+        if protocol == 'udp':
             return socket.SOCK_DGRAM
 
         return socket.SOCK_STREAM
 
-    ''' Methods for the probe which starts the test'''
-    '''
-        Parse the options for the current test
-        should populate at least the targets list
-    '''
+    ### Methods for the probe which starts the test###
+    ###
+    ###    Parse the options for the current test
+    ###    should populate at least the targets list
+    ###
 
     def parseOptions(self):
         # creating the parsers
@@ -63,16 +63,16 @@ class TesterUnicast(Unicast, TesterTest):
         TesterTest.__init__(self, options)
         self.parseOptions()
 
-    '''
-        Prepare yourself for the test
-    '''
+    ###
+    ###    Prepare yourself for the test
+    ###
 
     def doPrepare(self):
         self.socket = socket.socket(socket.AF_INET, self.protocolToUnix(self.options.protocol))
 
-    '''
-        Does the actual test
-    '''
+    ###
+    ### Does the actual test
+    ###
 
     def doTest(self):
         self.logger.info("Unicast : Starting test")
@@ -85,22 +85,22 @@ class TesterUnicast(Unicast, TesterTest):
 
             response = self.socket.recv(len(self.messageReply))
             self.logger.info("Unicast : Message received")
-            if (response.decode(self.ENCODING) == self.messageReply):
+            if response.decode(self.ENCODING) == self.messageReply:
                 self.success = True
         except socket.timeout:
             self.success = False
 
-    '''
-        Prepare yourself for finish
-    '''
+    ###
+    ###     Prepare yourself for finish
+    ###
 
     def doOver(self):
         self.socket.close()
 
-    '''
-        Generate the result of the test given the set of reports from the tested probes
-        Should populate self.result
-    '''
+    ###
+    ###    Generate the result of the test given the set of reports from the tested probes
+    ###    Should populate self.result
+    ###
 
     def doResult(self, reports):
         ok = []
@@ -111,9 +111,9 @@ class TesterUnicast(Unicast, TesterTest):
             else:
                 ok.append(probeId)
 
-        if (len(ok) == len(reports) and self.success):
+        if len(ok) == len(reports) and self.success:
             self.result = "Ok, probe replied successfully."
-        elif (len(ok) == len(reports)):
+        elif len(ok) == len(reports):
             self.result = "Partial Fail : probe received the message but didn't reply correctly."
         else:
             self.result = "Fail, probe did not receive the message."
@@ -130,20 +130,20 @@ class TesteeUnicast(TesteeTest, Unicast):
         self.msgSent = False
         self.success = False
 
-    '''
-        Actions that the probe must perform in order to be ready
-    '''
+    ###
+    ###    Actions that the probe must perform in order to be ready
+    ###
 
     def replyPrepare(self):
         self.socket = socket.socket(socket.AF_INET, self.protocolToUnix(self.options.protocol))
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind(("", self.options.port))
-        if (self.socket.type == socket.SOCK_STREAM):
+        if self.socket.type == socket.SOCK_STREAM:
             self.socket.listen(1)
 
-    '''
-        Actions that must be taken when the probe received the test
-    '''
+    ###
+    ###    Actions that must be taken when the probe received the test
+    ###
 
     def replyTest(self):
         self.logger.debug("Unicast : Replying to unicast test")
@@ -156,7 +156,7 @@ class TesteeUnicast(TesteeTest, Unicast):
                 msg = connection.recv(len(self.messageSend))
                 self.logger.info("Unicast : Message received")
                 self.msgReceived = True
-                if (msg.decode(self.ENCODING) == self.messageSend):
+                if msg.decode(self.ENCODING) == self.messageSend:
                     connection.sendall(self.messageReply.encode(self.ENCODING))
                     self.msgSent = True
 
@@ -165,7 +165,7 @@ class TesteeUnicast(TesteeTest, Unicast):
                 msg, adr = self.socket.recvfrom(len(self.messageSend))
                 self.logger.info("Unicast : Message received")
                 self.msgReceived = True
-                if (msg.decode(self.ENCODING) == self.messageSend):
+                if msg.decode(self.ENCODING) == self.messageSend:
                     self.socket.sendto(self.messageReply.encode(self.ENCODING), adr)
                     self.msgSent = True
 
@@ -177,10 +177,10 @@ class TesteeUnicast(TesteeTest, Unicast):
             self.logger.info("Unicast : Unable to receive message")
 
 
-    '''
-        Actions that the probe must perform when the test is over
-        generates the report and returns it!!!
-    '''
+    ###
+    ###    Actions that the probe must perform when the test is over
+    ###    generates the report and returns it!!!
+    ###
 
     def replyOver(self):
         self.logger.info("Unicast : Replying over")

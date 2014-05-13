@@ -1,9 +1,9 @@
-'''
+"""
 Convenient Empty test that does nothing
 Useful to test the probe test mechanism
 
 @author: francois
-'''
+"""
 __all__ = ['TesterEmpty', 'TesteeEmpty']
 
 from interfaces.probetest import Report, TesteeTest, TesterTest

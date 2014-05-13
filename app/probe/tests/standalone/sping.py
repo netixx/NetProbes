@@ -1,8 +1,8 @@
-'''
+"""
 Implementation of a unicast test
 Protocols tcp and udp are supported
 
-'''
+"""
 __all__ = ['Ping']
 
 import re
@@ -37,11 +37,11 @@ class Sping(Test):
         self.errors = {}
         self.parallelPing = False
 
-    ''' Methods for the probe which starts the test'''
-    '''
-        Parse the options for the current test
-        should populate at least the targets list
-    '''
+    ### Methods for the probe which starts the test
+    ###
+    ###    Parse the options for the current test
+    ###    should populate at least the targets list
+    ###
 
     def parseOptions(self):
         # ping -c 3 -t 30 -m 10 -W 2 -s 50 -i 1 -D
@@ -246,10 +246,10 @@ class Sping(Test):
             self.stats[probeIp] = PingStats(*r)
         self.psuccess[probeIp] = True
 
-    '''
-        Generate the result of the test given the set of reports from the tested probes
-        Should populate self.result
-    '''
+    ###
+    ###    Generate the result of the test given the set of reports from the tested probes
+    ###    Should populate self.result
+    ###
 
     def doResult(self):
         self.result = ""
@@ -259,7 +259,7 @@ class Sping(Test):
                 self.result += str(self.perrors[target])
             else:
                 if target in self.perrors and self.perrors[target] is not None:
-                    self.result += self.eformats % (target, self.perrors[target])
+                    self.result += self.eformat % (target, self.perrors[target])
                 else:
                     self.result += self.rformat % (target, self.stats[target].printAll())
                     #         self.rawResult = self.errors

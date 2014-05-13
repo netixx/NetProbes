@@ -1,8 +1,8 @@
-'''
+"""
 Implementation of a unicast test
 Protocols tcp and udp are supported
 
-'''
+"""
 __all__ = ['TesterPing', 'TesteePing']
 
 import re
@@ -37,11 +37,11 @@ class Ping(object):
         self.parallelPing = False
 
 
-    ''' Methods for the probe which starts the test'''
-    '''
-        Parse the options for the current test
-        should populate at least the targets list
-    '''
+    ### Methods for the probe which starts the test
+    ###
+    ###    Parse the options for the current test
+    ###    should populate at least the targets list
+    ###
 
     def parseOptions(self):
         # ping -c 3 -t 30 -m 10 -W 2 -s 50 -i 1 -D
@@ -214,16 +214,16 @@ class TesterPing(TesterTest, Ping):
         self.parseOptions()
         self.errors = {}
 
-    '''
-        Prepare yourself for the test
-    '''
+    ###
+    ###    Prepare yourself for the test
+    ###
 
     def doPrepare(self):
         pass
 
-    '''
-        Does the actual test
-    '''
+    ###
+    ###    Does the actual test
+    ###
 
     def doTest(self):
         self.logger.info("Starting test")
@@ -261,17 +261,17 @@ class TesterPing(TesterTest, Ping):
             self.stats[probeId] = PingStats(*r)
         self.psuccess[probeId] = True
 
-    '''
-        Prepare yourself for finish
-    '''
+    ###
+    ###    Prepare yourself for finish
+    ###
 
     def doOver(self):
         pass
 
-    '''
-        Generate the result of the test given the set of reports from the tested probes
-        Should populate self.result
-    '''
+    ###
+    ###    Generate the result of the test given the set of reports from the tested probes
+    ###    Should populate self.result
+    ###
 
     def doResult(self, reports):
         self.result = ""
@@ -300,25 +300,25 @@ class TesteePing(TesteeTest, Ping):
         self.msgSent = False
         self.success = False
 
-    '''
-        Actions that the probe must perform in order to be ready
-    '''
+    ###
+    ###     Actions that the probe must perform in order to be ready
+    ###
 
     def replyPrepare(self):
         pass
 
-    '''
-        Actions that must be taken when the probe received the test
-    '''
+    ###
+    ###     Actions that must be taken when the probe received the test
+    ###
 
     def replyTest(self):
         pass
 
 
-    '''
-        Actions that the probe must perform when the test is over
-        generates the report and returns it!!!
-    '''
+    # '''
+    #     Actions that the probe must perform when the test is over
+    #     generates the report and returns it!!!
+    # '''
 
     def replyOver(self):
         return Report(Identification.PROBE_ID)

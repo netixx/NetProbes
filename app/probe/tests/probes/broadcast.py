@@ -1,7 +1,7 @@
-'''
+"""
 Implementation of a broadcast test
 
-'''
+"""
 __all__ = ['TesterBroadcast', 'TesteeBroadcast']
 
 import socket
@@ -33,11 +33,11 @@ class Broadcast(object):
     def getName(self):
         return name
 
-    ''' Methods for the probe which starts the test'''
-    '''
-        Parse the options for the current test
-        should populate at least the targets list
-    '''
+    ## Methods for the probe which starts the test ##
+    ###
+    ###    Parse the options for the current test
+    ###    should populate at least the targets list
+    ###
 
     def parseOptions(self):
         parser = argparse.ArgumentParser(description = "Parses the broadcast test options")
@@ -58,18 +58,18 @@ class TesterBroadcast(TesterTest, Broadcast):
         TesterTest.__init__(self, options)
         self.parseOptions()
 
-    '''
-        Prepare yourself for the test
-    '''
+    ###
+    ###    Prepare yourself for the test
+    ###
 
     def doPrepare(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.socket.settimeout(self.options.timeout)
 
-    '''
-        Does the actual test
-    '''
+    ###
+    ###    Does the actual test
+    ###
 
     def doTest(self):
         self.logger.info("BroadCast : Starting test")
@@ -79,17 +79,17 @@ class TesterBroadcast(TesterTest, Broadcast):
 
     #         self.socket.settimeout(self.options.timeout)
 
-    '''
-        Prepare yourself for finish
-    '''
+
+    ###    Prepare yourself for finish
+    ###
 
     def doOver(self):
         self.socket.close()
 
-    '''
-        Generate the result of the test given the set of reports from the tested probes
-        Should populate self.result
-    '''
+    ###
+    ###    Generate the result of the test given the set of reports from the tested probes
+    ###    Should populate self.result
+    ###
 
     def doResult(self, reports):
         ok = []
@@ -100,14 +100,14 @@ class TesterBroadcast(TesterTest, Broadcast):
             else:
                 ok.append(probeId)
 
-        if (len(ok) == len(reports)):
+        if len(ok) == len(reports):
             self.result = "Ok : probe received the message."
         else:
             self.result = "Fail, probe did not receive the message."
 
         self.result += "\n Id ok : " + ", ".join(ok) + "\n Id fail : " + ", ".join(fail)
 
-    ''' Methods for the probe(s) which receive the test'''
+    ### Methods for the probe(s) which receive the test
 
 
 class TesteeBroadcast(TesteeTest, Broadcast):
@@ -117,9 +117,9 @@ class TesteeBroadcast(TesteeTest, Broadcast):
         self.parseOptions()
         self.msgReceived = False
 
-    '''
-        Actions that the probe must perform in order to be ready
-    '''
+    ###
+    ###    Actions that the probe must perform in order to be ready
+    ###
 
     def replyPrepare(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -127,19 +127,19 @@ class TesteeBroadcast(TesteeTest, Broadcast):
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.socket.bind(('', self.options.port))
 
-    '''
-        Actions that must be taken when the probe received the test
-    '''
+    ###
+    ###    Actions that must be taken when the probe received the test
+    ###
 
     def replyTest(self):
         message, address = self.socket.recvfrom(len(self.messageSend))
-        if (message.decode(self.ENCODING) == self.messageSend):
+        if message.decode(self.ENCODING) == self.messageSend:
             self.msgReceived = True
 
-    '''
-        Actions that the probe must perform when the test is over
-        generates the report and returns it!!!
-    '''
+    ###
+    ###    Actions that the probe must perform when the test is over
+    ###    generates the report and returns it!!!
+    ###
 
     def replyOver(self):
         self.socket.close()

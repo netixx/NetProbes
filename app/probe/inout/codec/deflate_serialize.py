@@ -10,7 +10,7 @@ import zlib
 _ENCODING = 'latin1'
 _LEVEL = 6
 
-'''Encode message to send on the network by serialization'''
+#Encode message to send on the network by serialization
 
 
 def encode(message):
@@ -22,7 +22,7 @@ def encode(message):
     return r
 
 
-'''Decode message received with serialisation'''
+#Decode message received with serialisation
 
 
 def decode(message):

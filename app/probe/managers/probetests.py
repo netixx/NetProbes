@@ -150,7 +150,7 @@ class _TestManager(Thread):
         testLogger.info("Results processing over, test is done")
 
 
-    '''Tools methods'''
+    ###Tools methods
 
     def addReady(self, message):
         """Adds a ready message from a remote probe

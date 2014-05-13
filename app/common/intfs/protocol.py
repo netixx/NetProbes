@@ -44,23 +44,29 @@ class Listener(Thread):
     def __init__(self, helper):
         pass
 
+    def close(self):
+        pass
+
 
 class Sender(object):
     """Object to send data across the network"""
 
-    def send(self, connection, message):
+    @staticmethod
+    def send(cls, connection, message):
         """Method to send data
         :param connection: connection to use
         :param message: message to send"""
         pass
 
-    def requestProbes(self, connection):
+    @staticmethod
+    def requestProbes(cls, connection):
         """Method to request the list of probes
         :param connection : connection to request the probe on
         """
         pass
 
-    def requestResults(self, connection):
+    @staticmethod
+    def requestResults(cls, connection):
         """Method to request results of a test
         :param connection : connection to request the results on
         """

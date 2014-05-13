@@ -9,7 +9,7 @@ from threading import Thread
 
 def createConnection(probe):
     """Create connection object to remote probe given Probe Object
-    :param probe: Probe to create the connection fors"""
+    :param probe: Probe to create the connection for"""
     pass
 
 
@@ -30,7 +30,7 @@ def disconnect(connection):
 
 def getRemoteId(probeIp):
     """Get the remote ID of the probe with probeIp
-    :probeIp : the Ip of the probe to query"""
+    :param probeIp : the Ip of the probe to query"""
     pass
 
 

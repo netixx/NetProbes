@@ -60,7 +60,7 @@ class Interface(object):
         except ProbeConnectionFailed:
             self.logger.error("Error while sending command : connection failed", exc_info = 1)
             self.updateStatus("Cannot send command")
-            #       self.updateStatus("Command is false or unkown")
+            #       self.updateStatus("Command is false or unknown")
 
     @staticmethod
     def getTargetId(ip):

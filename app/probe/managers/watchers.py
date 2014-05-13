@@ -1,6 +1,6 @@
 """Module regrouping everything needed in a watcher
 WatcherManager manages the currently running watcher by loading/unloading them
-WahterServices provides a API to watchers
+WatcherServices provides a API to watchers
 
 @author: francois
 """

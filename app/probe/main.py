@@ -11,8 +11,7 @@ Main launcher for the probe
 
 @author: francois
 todo: catcher connexions impossibles
-todo: ecrire les tests
-todo: contraintes de securite
+todo: security
 todo: Do availability index with : current queue sizes, current number of tests
 """
 

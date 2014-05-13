@@ -1,7 +1,7 @@
-'''
+"""
 Implementation of a multicast test
 
-'''
+"""
 __all__ = ['TesterMulticast', 'TesteeMulticast']
 
 import socket
@@ -36,11 +36,11 @@ class Multicast(object):
     def getName(self):
         return name
 
-    ''' Methods for the probe which starts the test'''
-    '''
-        Parse the options for the current test
-        should populate at least the targets list
-    '''
+    ### Methods for the probe which starts the test###
+    ###
+        # Parse the options for the current test
+        # should populate at least the targets list
+    ###
 
     def parseOptions(self):
         parser = argparse.ArgumentParser(description = "Parses the multicast test target")
@@ -64,34 +64,34 @@ class TesterMulticast(TesterTest, Multicast):
         TesterTest.__init__(self, options)
         self.parseOptions()
 
-    '''
-        Prepare yourself for the test
-    '''
+    ###
+    ###    Prepare yourself for the test
+    ###
 
     def doPrepare(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, struct.pack('b', self.options.ttl))
 
-    '''
-        Does the actual test
-    '''
+    ###
+    ###    Does the actual test
+    ###
 
     def doTest(self):
         self.logger.info("Starting test / Sending message")
         self.socket.sendto(self.messageSend.encode(self.ENCODING), (self.options.m_address, self.options.port))
 
 
-    '''
-        Prepare yourself for finish
-    '''
+    ###
+    ###    Prepare yourself for finish
+    ###
 
     def doOver(self):
         self.socket.close()
 
-    '''
-        Generate the result of the test given the set of reports from the tested probes
-        Should populate self.result
-    '''
+    ###
+    ###    Generate the result of the test given the set of reports from the tested probes
+    ###    Should populate self.result
+    ###
 
     def doResult(self, reports):
         ok = []
@@ -102,7 +102,7 @@ class TesterMulticast(TesterTest, Multicast):
             else:
                 ok.append(probeId)
 
-        if (len(ok) == len(reports)):
+        if len(ok) == len(reports):
             self.result = "Ok, probe replied successfully."
         else:
             self.result = "Fail, probe did not receive the message."
@@ -117,15 +117,15 @@ class TesteeMulticast(TesteeTest, Multicast):
         self.parseOptions()
         self.msgReceived = False
 
-    '''
-        Actions that the probe must perform in order to be ready
-    '''
+    ###
+    ###     Actions that the probe must perform in order to be ready
+    ###
 
     def replyPrepare(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind(('', self.options.port))
 
-        ''' Add probe to multicast group (IGMP)  '''
+        ### Add probe to multicast group (IGMP)
         self.logger.debug("Trying to add probe to multicast group")
         group = socket.inet_aton(self.options.m_address)
         mreq = struct.pack('4sL', group, socket.INADDR_ANY)
@@ -133,9 +133,9 @@ class TesteeMulticast(TesteeTest, Multicast):
         self.logger.info("Added Probe to multicast group")
 
 
-    '''
-        Actions that must be taken when the probe received the test
-    '''
+    ###
+    ###    Actions that must be taken when the probe received the test
+    ###
 
     def replyTest(self):
         self.logger.info("Waiting for message")
@@ -153,10 +153,10 @@ class TesteeMulticast(TesteeTest, Multicast):
             self.logger.warning("ReplyTest -> unknown error", exc_info = 1)
 
 
-    '''
-        Actions that the probe must perform when the test is over
-        generates the report and returns it!!!
-    '''
+    ###
+    ###    Actions that the probe must perform when the test is over
+    ###    generates the report and returns it!!!
+    ###
 
     def replyOver(self):
         self.socket.close()

@@ -34,7 +34,7 @@ class Message(object):
         return self.targetId
 
 
-'''----- Network discovery messages -----'''
+###----- Network discovery messages -----###
 
 
 class AddToOverlay(Message):
@@ -107,9 +107,9 @@ class BroadCast(Message):
 
     """
 
-    def __init__(self, targetId, payload, propagateTo = []):
+    def __init__(self, targetId, payload, propagateTo = None):
         super().__init__(targetId)
-        self.propagate = propagateTo
+        self.propagate = propagateTo if propagateTo is not None else []
         self.payload = payload
 
     def getNextTargets(self):
@@ -158,7 +158,7 @@ class Do(Message):
         return self.errorCallback
 
 
-'''----- Messages to manage tests -----'''
+###----- Messages to manage tests -----###
 
 
 class TestMessage(Message):
@@ -201,7 +201,7 @@ class Prepare(TestMessage):
         return self.testName
 
 
-'''----- Messages send by the probe starting the test after its been started-----'''
+###----- Messages send by the probe starting the test after its been started-----###
 
 
 class TesterMessage(TestMessage):
@@ -258,7 +258,7 @@ class Result(TesteeAnswer):
         return self.report
 
 
-''' For future uses'''
+### For future uses ###
 
 class StatusMessage(Message):
     """Message for telling current status to other probes"""
