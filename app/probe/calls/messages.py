@@ -257,6 +257,21 @@ class Result(TesteeAnswer):
         """Return the report that the receiving probe generated"""
         return self.report
 
+class WatcherMessage(Message):
+    """Message for speaking to watcher instances"""
+
+    def __init__(self, targetId, watcherId):
+        super().__init__(targetId)
+        self.watcherId = watcherId
+
+
+class InitializeWatcher(WatcherMessage):
+    """Start the init phase of the watcher"""
+    pass
+
+class RunWatcher(WatcherMessage):
+    """Start the run phase of the watcher"""
+    pass
 
 ### For future uses ###
 

@@ -11,7 +11,7 @@ import logging
 from queue import Queue
 from threading import Thread
 
-from common.commanderMessages import Add, Delete, Do
+from common.commanderMessages import Add, Delete, Do, WatcherCommand, InitializeWatcher, RunWatcher
 import common.probedisp as pd
 import calls.messages as m
 from managers.probes import ProbeStorage
@@ -93,6 +93,14 @@ class CommanderServer(Thread):
                     msg.resultCallback = CommanderServer.addResult
                     msg.errorCallback = CommanderServer.addError
                 Server.treatMessage(msg)
+            elif isinstance(message, WatcherCommand):
+                msg = None
+                if isinstance(message, InitializeWatcher):
+                    msg = m.InitializeWatcher(message.targetId, message.watcherId)
+                elif isinstance(message, RunWatcher):
+                    msg = m.RunWatcher(message.targetId, message.watcherId)
+                if msg is not None:
+                    Server.treatMessage(msg)
 
         @classmethod
         def handleProbeQuery(cls):

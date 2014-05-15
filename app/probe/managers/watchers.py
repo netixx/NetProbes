@@ -17,7 +17,7 @@ logger = logging.getLogger(WATCHER_LOGGER)
 from managers.probetests import TestManager as ProbeTestManager
 from managers.standalonetests import TestManager as StandaloneTestManager
 from managers.probes import ProbeStorage
-
+from calls.messages import RunWatcher, InitializeWatcher
 
 def _watcherFactory(watcher):
     mod = importlib.import_module(WATCHER_PACKAGE + "." + watcher)
@@ -58,6 +58,16 @@ class WatcherManager(object):
             logger.info("Stopping watcher %s", w.__class__.__name__)
             w.quit()
 
+    @classmethod
+    def handleMessage(cls, message):
+        watcherId = message.watcherId
+        for wa in cls.watchers:
+            if wa.name == watcherId:
+                if isinstance(message, RunWatcher):
+                    wa.workEvent.set()
+                elif isinstance(message, InitializeWatcher):
+                    wa.initializeEvent.set()
+                break
 
 class WatcherServices(object):
     @classmethod

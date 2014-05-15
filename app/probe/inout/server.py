@@ -7,6 +7,8 @@ be performed for this probe.
 
 @author: francois
 """
+from managers.watchers import WatcherManager
+
 __all__ = ['Server']
 
 import copy
@@ -15,7 +17,7 @@ import logging
 
 from .client import Client
 from calls.messages import Message, TesterMessage, TesteeAnswer, BroadCast, \
-    TestMessage, Hello, Add, AddToOverlay
+    TestMessage, Hello, Add, AddToOverlay, WatcherMessage
 import calls.messagetoaction as MTA
 from consts import Params, Identification
 from managers.probes import ProbeStorage
@@ -75,6 +77,8 @@ class Server(Thread):
         #             return
         if isinstance(message, TestMessage):
             cls.treatTestMessage(message)
+        elif isinstance(message, WatcherMessage):
+            cls.treatWatcherMessage(message)
         elif isinstance(message, BroadCast):
             cls.logger.ddebug("Handling Broadcast")
             try:
@@ -122,6 +126,12 @@ class Server(Thread):
         elif isinstance(message, TestMessage):
             #Prepare are test messages
             ActionMan.addTask(MTA.toAction(message))
+
+    @classmethod
+    def treatWatcherMessage(cls, message):
+        """Treats a watcher message which is intended for one watcher instance"""
+        assert isinstance(message, WatcherMessage)
+        WatcherManager.handleMessage(message)
 
     class Helper(object):
         """Helper object to enable interaction with Server from the protocol"""

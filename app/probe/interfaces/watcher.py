@@ -3,8 +3,7 @@ in charge of monitoring aspects of the network
 
 @author: francois
 """
-from threading import Thread
-
+from threading import Thread, Event
 
 class Watcher(Thread):
     """A watcher is a thread"""
@@ -13,6 +12,18 @@ class Watcher(Thread):
         self.setName(name)
         self.opts = options
         self.logger = logger
+        self.initializeEvent = Event()
+        self.workEvent = Event()
+        self.name = 'watcher'
+
+    def initialize(self):
+        """Init phase"""
+        pass
+
+
+    def work(self):
+        """Run phase"""
+        pass
 
     def quit(self):
         """End this watcher's activities"""
