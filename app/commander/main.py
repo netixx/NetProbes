@@ -41,12 +41,19 @@ def addLogs():
 # executed when called but not when imported
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = 'Starts the commander for a probe')
-    parser.add_argument('-i',
+    interface = parser.add_mutually_exclusive_group()
+    interface.add_argument('-i',
                         '--interface-type',
                         metavar = 'interface',
                         dest = 'interface_type',
                         help = 'Choose which interface you which to use this commander with',
                         default = "gui")
+
+    interface.add_argument('-c', '--command',
+                           dest = 'command',
+                           type = str,
+                           help = 'Command to send to script interface')
+
     parser.add_argument('-ip',
                         '--ip-probe',
                         metavar = 'ip',
@@ -58,6 +65,7 @@ if __name__ == '__main__':
                         action = 'count',
                         default = 0,
                         help = "Set verbosity")
+
     args = parser.parse_args()
 
     if args.verbose >= 2:
@@ -76,9 +84,12 @@ if __name__ == '__main__':
     #add logs here to that the interface may modify the logging facility
     addLogs()
     try:
-
-        commander = interfaceFactory(args.interface_type)(args.ip_probe)
+        if args.command:
+            commander = interfaceFactory('script')(args.ip_probe, args.command)
+        else:
+            commander = interfaceFactory(args.interface_type)(args.ip_probe)
         commander.start()
+        commander.quit()
     except ProbeConnectionFailed as e:
         logging.getLogger().error("Could not connect to probe %s : (%s)", args.ip_probe, e, exc_info = 1)
     except Exception as e:

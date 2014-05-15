@@ -10,7 +10,7 @@ import argparse
 import logging
 
 from exceptions import NoSuchCommand
-from common.commanderMessages import Add, Do, Delete
+from common.commanderMessages import Add, Do, Delete, InitializeWatcher, RunWatcher
 from common.consts import Params as cParams
 from common.intfs.exceptions import ProbeConnectionFailed
 
@@ -54,6 +54,7 @@ class Interface(object):
         try:
             cmd = Command(Parser(command, self), self)
             cmd.start()
+            return cmd
         #             cmd.join()
         except (ValueError, NoSuchCommand):
             pass
@@ -175,6 +176,11 @@ class Parser(object):
                            help = 'The id of the probe you wish to remove')
         subp3.set_defaults(func = self.setRemove)
 
+        watcher = subp.add_parser('watcher')
+        watcher.add_argument('watcherId')
+        watcher.add_argument('signal',
+                             choices = ['init', 'run'])
+        watcher.set_defaults(func = self.setWatcherMessage)
         try:
             self.command = args.parse_args(shlex.split(command))
             self.command.func()
@@ -209,6 +215,16 @@ class Parser(object):
     def setRemove(self):
         """Set what should be done when the command is remove"""
         self.message = Delete(self.command.id)
+
+    def setWatcherMessage(self):
+        """Function for command watcher"""
+        if self.command.signal == 'init':
+            self.message = InitializeWatcher(self.command.target_probe,
+                                             self.command.watcherId)
+        elif self.command.signal == 'run':
+            self.message = RunWatcher(self.command.target_probe,
+                                      self.command.watcherId)
+
 
     def getMessage(self):
         return self.message

@@ -85,7 +85,8 @@ class Gui(Interface):
         """Executes user command"""
         self.commandHistory.append(self.command.get())
         self.logger.info("Commander : executing command")
-        super().doCommand(self.command.get())
+        cmd = super().doCommand(self.command.get())
+        cmd.join()
         self.command.set("")
 
     def updateStatus(self, status):

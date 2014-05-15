@@ -33,3 +33,21 @@ class Delete(CommanderMessage):
 
     def __init__(self, targetId):
         super().__init__(targetId)
+
+
+class WatcherCommand(CommanderMessage):
+     def __init__(self, targetId, watcherId):
+        super().__init__(targetId)
+        self.watcherId = watcherId
+
+
+class InitializeWatcher(WatcherCommand):
+    pass
+
+
+class RunWatcher(WatcherCommand):
+    pass
+
+
+
+

@@ -34,21 +34,23 @@ class Cli(Interface):
             try:
                 cmd = input(self.prompt)
                 if cmd.startswith(self.CMD_PREFIX):
-                    self.doCommand(cmd)
+                    tcmd = self.doCommand(cmd)
+                    tcmd.join()
                 elif cmd == self.DISP_CMD:
                     print(self.getProbes())
                 elif cmd == self.EXIT_CMD:
-                    self.stop()
+                    self.quit()
                 else:
                     print("Command not recognized, commands are %s" % self.getCommands())
             except (KeyboardInterrupt, EOFError):
-                self.stop()
+                self.quit()
             finally:
                 print("\n")
 
-    def stop(self):
+    def quit(self):
         """Stop listening"""
         self.isRunning = False
+        super().quit()
 
 
     def getCommands(self):
