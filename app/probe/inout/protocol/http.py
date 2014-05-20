@@ -29,20 +29,25 @@ class Parameters(object):
     URL_SRV_TESTS_QUERY = "/tests"
     URL_SRV_ID_QUERY = "/id"
     URL_SRV_STATUS_QUERY = "/status"
+    GET_REMOTE_ID_CONNECT_TIMEOUT = 5.0
+    CONNECT_TIMEOUT = 5.0
 
 
 def createConnection(probe):
     """Creates a connection for this probe
     :param probe: the probe to create a connection for
     """
-    return HTTPConnection(probe.getIp(), Parameters.PORT_NUMBER)
+    return HTTPConnection(probe.getIp(), Parameters.PORT_NUMBER, timeout=Parameters.CONNECT_TIMEOUT)
 
 
 def connect(connection):
     """Connect this connection
     :param connection: connection object to connect
     """
-    connection.connect()
+    try:
+        connection.connect()
+    except Exception as e:
+        raise ProbeConnectionException(e)
 
 
 def disconnect(connection):
@@ -57,7 +62,7 @@ def getRemoteId(targetIp):
     :param targetIp: the IP where we should ask for the id
     """
     try:
-        connection = HTTPConnection(targetIp, Parameters.PORT_NUMBER)
+        connection = HTTPConnection(targetIp, Parameters.PORT_NUMBER, timeout=Parameters.GET_REMOTE_ID_CONNECT_TIMEOUT)
         connection.connect()
         connection.request(Parameters.HTTP_GET_REQUEST, Parameters.URL_SRV_ID_QUERY, "", {})
         probeId = connection.getresponse().read().decode(Parameters.REPLY_MESSAGE_ENCODING)

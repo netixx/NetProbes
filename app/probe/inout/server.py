@@ -88,11 +88,10 @@ class Server(Thread):
             # be sure to propagate broadcast if a reasonable error occurs
             Client.broadcast(message)
         elif isinstance(message, AddToOverlay):
-            cls.logger.debug("Add probe to overlay")
-            try:
-                with cls._addLock:
+            with cls._addLock:
+                cls.logger.ddebug("Add probe to overlay")
+                try:
                     probeId = Params.PROTOCOL.getRemoteId(message.getProbeIp())
-
                     addMessage = Add(Identification.PROBE_ID, probeId, message.getProbeIp())
                     selfAddMessage = copy.deepcopy(addMessage)
                     selfAddMessage.doHello = True
@@ -100,8 +99,9 @@ class Server(Thread):
                     # addMessage = m.Add(Identification.PROBE_ID, probeId, message.targetIp, hello=True)
                     Client.broadcast(addMessage)
                     cls.treatMessage(selfAddMessage)
-            except ProbeConnectionException as e:
-                cls.logger.info("Adding probe failed %s : %s", message.getProbeIp(), e)
+                    cls.logger.debug("Probe %s added to overlay", probeId)
+                except ProbeConnectionException as e:
+                    cls.logger.info("Adding probe failed %s : %s", message.getProbeIp(), e)
         else:
             # handles everything else, including Do messages
             ActionMan.addTask(MTA.toAction(message))
