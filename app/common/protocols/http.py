@@ -10,7 +10,6 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from threading import Thread
 from http.client import HTTPConnection, CannotSendRequest, HTTPException
-
 import urllib
 
 from common.intfs.exceptions import ProbeConnectionFailed
@@ -200,9 +199,9 @@ class Listener(ThreadingMixIn, HTTPServer, Thread):
                 self.server.helper.getLogger().debug("Asked for results of tests")
                 message = self.server.helper.handleResultQuery()
             elif getPath == Parameters.URL_ID_QUERY:
-                message = self.server.helper.getId()
+                message = self.server.helper.handleIdQuery()
             else:
-                message = self.server.helper.handleGet()
+                message = self.server.helper.handleDefaultQuery()
             # answer with your id
             self._reply(message)
 

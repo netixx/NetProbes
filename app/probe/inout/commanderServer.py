@@ -11,12 +11,11 @@ import logging
 from queue import Queue
 from threading import Thread
 
-from common.commanderMessages import Add, Delete, Do, WatcherCommand, InitializeWatcher, RunWatcher
+from common.commanderMessages import Add, Delete, Do, WatcherCommand, InitializeWatcher, RunWatcher, CommanderMessage
 import common.probedisp as pd
 import calls.messages as m
 from managers.probes import ProbeStorage
 from consts import Identification
-from .client import Client
 from .server import Server
 import common.consts as cconsts
 
@@ -67,9 +66,37 @@ class CommanderServer(Thread):
         """Blocking method returning the first result in the queue"""
         return cls.resultsQueue.get()
 
+    @classmethod
+    def commanderMessageToMessage(cls, message):
+        """Transform a commander message into a Server Message
+        :param message : message to convert
+        """
+        msg = None
+        if isinstance(message, Add):
+            msg = m.AddToOverlay(message.targetId, message.targetIp, mergeRemoteOverlay = True)
+        elif isinstance(message, Delete):
+            cls.logger.info("Received command delete probe with ID %s", message.targetId)
+            msg = m.Bye(message.targetId, message.targetId)
+        elif isinstance(message, Do):
+            cls.logger.info("Received command do a test : %s", message.test)
+            msg = m.Do(message.targetId, message.test, message.testOptions)
+            if msg.targetId == Identification.PROBE_ID:
+                msg.resultCallback = cls.addResult
+                msg.errorCallback = cls.addError
+        elif isinstance(message, WatcherCommand):
+            if isinstance(message, InitializeWatcher):
+                msg = m.InitializeWatcher(message.targetId, message.watcherId)
+            elif isinstance(message, RunWatcher):
+                msg = m.RunWatcher(message.targetId, message.watcherId)
+        if msg is None:
+            cls.logger.warning("Received a command %s but not action could be performed", message)
+        return msg
+
+
     class Helper(object):
         """Helper object to pass to the cParams.PROTOCOL.Listener object
         TODO: consider refactoring"""
+
         def __init__(self, server):
             self.server = server
 
@@ -78,29 +105,11 @@ class CommanderServer(Thread):
             :param message: The Message instance which was received by the protocol
             """
             self.getLogger().ddebug("Handling constructed message")
-            if isinstance(message, Add):
-                msg = m.AddToOverlay(message.targetId, message.targetIp)
+            msg = self.server.commanderMessageToMessage(message)
+            if msg is not None:
                 Server.treatMessage(msg)
-            elif isinstance(message, Delete):
-                self.getLogger().info("Trying to delete probe with ID %s", message.targetId)
-                byeMessage = m.Bye(message.targetId, message.targetId)
-                Client.send(byeMessage)
 
-            elif isinstance(message, Do):
-                self.getLogger().info("Trying to do a test : %s", message.test)
-                msg = m.Do(message.targetId, message.test, message.testOptions)
-                if msg.targetId == Identification.PROBE_ID:
-                    msg.resultCallback = CommanderServer.addResult
-                    msg.errorCallback = CommanderServer.addError
-                Server.treatMessage(msg)
-            elif isinstance(message, WatcherCommand):
-                msg = None
-                if isinstance(message, InitializeWatcher):
-                    msg = m.InitializeWatcher(message.targetId, message.watcherId)
-                elif isinstance(message, RunWatcher):
-                    msg = m.RunWatcher(message.targetId, message.watcherId)
-                if msg is not None:
-                    Server.treatMessage(msg)
+        ### Query handling methods
 
         @classmethod
         def handleProbeQuery(cls):
@@ -127,23 +136,25 @@ class CommanderServer(Thread):
             self.getLogger().debug("Giving the results")
             return message
 
-        def handleGet(self):
-            """Handle a simple get query (does nothing but reply)"""
+        def handleDefaultQuery(self):
+            """Handle the default query (does nothing but reply)"""
             return "Commander server running, state your command ..."
 
 
-        def handleResponse(self, response, message):
+        def handleResponse(self, message):
             """Handle response to a query to validate that it was received
-            :param response: the response object
             :param message: the message that was received
             TODO: remove response
             """
-            return "ok"
+            if isinstance(message, CommanderMessage):
+                return "ok"
+            else:
+                return "nok"
 
         def getLogger(self):
             """Return the CommanderServer logger object"""
             return self.server.logger
 
-        def getId(self):
+        def handleIdQuery(self):
             """Returns the ID of this probe"""
             return Identification.PROBE_ID
