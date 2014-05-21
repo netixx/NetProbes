@@ -91,6 +91,6 @@ if __name__ == '__main__':
         commander.start()
         commander.quit()
     except ProbeConnectionFailed as e:
-        logging.getLogger().error("Could not connect to probe %s : (%s)", args.ip_probe, e, exc_info = 1)
+        logging.getLogger().error("Could not connect to probe %s : (%s)", args.ip_probe, e)
     except Exception as e:
         logging.getLogger().critical("Could not start commander : %s", e, exc_info = 1)

@@ -25,13 +25,13 @@ class Interface(object):
     def __init__(self, ip):
         self.logger = logging.getLogger()
         self.targetIp = ip
-        self.targetId = self.getTargetId(ip)
         self.isRunning = True
         self.doFetchProbes = Event()
         self.doFetchResults = Event()
         self.resFetchTimer = None
         self.probeFetchTimer = None
         try:
+            self.targetId = self.getTargetId(ip)
             self.connection = cParams.PROTOCOL.createConnection(self.targetIp)
             cParams.PROTOCOL.connect(self.connection)
             self.connectionProbes = cParams.PROTOCOL.createConnection(self.targetIp)
@@ -39,8 +39,7 @@ class Interface(object):
             self.connectionResults = cParams.PROTOCOL.createConnection(self.targetIp)
             cParams.PROTOCOL.connect(self.connectionResults)
         except ProbeConnectionFailed:
-            raise ProbeConnectionFailed(
-                "Error while attempting to perform an HTTP request to the probe %s" % self.targetIp)
+            raise
         except ConnectionRefusedError:
             raise ProbeConnectionFailed("Error while connecting to probe : connection refused")
 
