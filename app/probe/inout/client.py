@@ -70,6 +70,10 @@ class Client(Thread):
         ProbeStorage.closeAllConnections()
 
     @classmethod
+    def getRemoteId(cls, targetIp):
+        return Params.PROTOCOL.getRemoteId(targetIp)
+
+    @classmethod
     def send(cls, message):
         """Send message to target probe
         :param message: Message instance to send (contains the targetId of the probe to send the message to)

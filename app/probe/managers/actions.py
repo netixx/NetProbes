@@ -13,27 +13,21 @@ from threading import Thread
 import logging
 from queue import PriorityQueue
 from ipaddress import ip_network
+import copy
 
-from calls.messages import Hello, Bye, AddToOverlay
+from calls.messages import Hello, Bye, AddToOverlay, Add
 from consts import Identification
 from inout.client import Client
 from managers.probes import ProbeStorage
 import calls.actions as a
 from .probetests import TestResponder, TestManager
 from interfaces.excs import TestError, ActionError, \
-    NoSuchProbe, ToManyTestsInProgress
+    NoSuchProbe, ToManyTestsInProgress, ProbeConnectionException
 
 
 class ActionMan(Thread):
     """Links Action classes to (class) methods"""
-    mapping = {"Add": "manageAdd",
-               "Remove": "manageRemove",
-               "Transfer": "manageTransfer",
-               "Do": "manageDo",
-               "Quit": "manageQuit",
-               "Prepare": "managePrepare",
-               "UpdateProbes": "manageUpdateProbes"
-    }
+    MAP_PREFIX = 'manage'
 
     logger = logging.getLogger()
     # the list of actions to be done
@@ -80,7 +74,7 @@ class ActionMan(Thread):
                 if task is None:
                     self.stop = True
                     return
-                getattr(self.__class__, self.mapping.get(task.__class__.__name__))(task)
+                getattr(self.__class__, self.MAP_PREFIX + task.__class__.__name__)(task)
             except ActionError:
                 # TODO: convert to warning ??
                 self.logger.error("Action execution failed", exc_info = 1)
@@ -103,11 +97,32 @@ class ActionMan(Thread):
         cls.logger.debug("Managing Add task")
         #add the probe to the local DHT
         ProbeStorage.addProbe(ProbeStorage.newProbe(action.getIdSonde(), action.getIpSonde()))
-        if action.doHello:
+        if action.hello is not None:
             # tell the new probe about all other probe
-            Client.send(
-                Hello(action.getIdSonde(), list(ProbeStorage.getAllOtherProbes()), sourceId = Identification.PROBE_ID))
+            Client.send(action.hello)
         cls.logger.info("Added probe %s, id %s to known probes", action.getIpSonde(), action.getIdSonde())
+
+
+    @classmethod
+    def manageAddToOverlay(cls, action):
+        cls.logger.ddebug("Add probe to overlay")
+        try:
+            probeId = Client.getRemoteId(action.getTargetIp())
+            addMessage = Add(Identification.PROBE_ID, probeId, action.probeIp)
+            selfAddMessage = copy.deepcopy(addMessage)
+            selfAddMessage.hello = Hello(probeId,
+                                         list(ProbeStorage.getAllOtherProbes()),
+                                         Identification.PROBE_ID,
+                                         echo = Identification.PROBE_ID)
+
+            # Do broadcast before adding the probe so that it doesn't receive unnecessary message
+            # addMessage = m.Add(Identification.PROBE_ID, probeId, message.targetIp, hello=True)
+            Client.broadcast(addMessage)
+            #treat message after so that the new guy does not receive bogus add message
+            Client.send(selfAddMessage)
+            cls.logger.debug("Probe %s added to overlay", probeId)
+        except ProbeConnectionException as e:
+            cls.logger.info("Adding probe failed %s : %s", action.probeIp, e)
 
     @classmethod
     def manageAddPrefix(cls, action):
@@ -135,6 +150,9 @@ class ActionMan(Thread):
         """
         assert isinstance(action, a.UpdateProbes)
         cls.logger.info("Joined overlay size %s", len(action.getProbeList()))
+        if action.echo is not None:
+            Client.send(Hello(action.echo, list(ProbeStorage.getAllOtherProbes()), Identification.PROBE_ID))
+            cls.logger.info("Sent echo to %s", action.echo)
         for probe in action.getProbeList():
             # don't re-add ourselves to the local DHT
             if probe.getId() != Identification.PROBE_ID:

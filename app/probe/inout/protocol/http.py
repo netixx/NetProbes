@@ -109,6 +109,8 @@ class Sender(object):
         except HTTPException:
             self.logger.error("Cannot send message to %s@%s", (message.targetId, target))
             self.logger.debug("Cannot send message", exc_info = 1)
+            #TODO : raise exception
+            # raise ProbeConnectionException(e)
 
 
     def _sendMessage(self, targetProbe, requestType, requestUrl, params, headers):

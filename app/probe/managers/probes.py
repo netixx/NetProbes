@@ -193,10 +193,8 @@ class ProbeConnections(object):
             Params.PROTOCOL.connect(probe.connection)
             probe.connected = True
         except:
-            raise ProbeConnectionException("Connection to probe %s:%s failed" % (probe.id, probe.ip))
+            raise ProbeConnectionException("Connection to probe %s:%s failed" % (probe.id, probe.address))
 
-        probe.connection.connect()
-        probe.connected = True
 
     @classmethod
     def disconnectProbe(cls, probe):

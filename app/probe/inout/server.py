@@ -71,15 +71,17 @@ class Server(Thread):
         cls.logger.debug("Treating message %s", message.__class__.__name__)
         assert isinstance(message, Message)
         # forwarding mechanism
-        #         if message.targetId != Identification.PROBE_ID:
-        #             cls.logger.info("Forwarding message %s to id %s", message.__class__.__name__, message.targetId)
-        #             Client.send(message)
-        #             return
+        if message.targetId != Identification.PROBE_ID:
+            cls.logger.info("Forwarding message %s to id %s", message.__class__.__name__, message.targetId)
+            Client.send(message)
+            return
+        # handle special class of messages separately
         if isinstance(message, TestMessage):
             cls.treatTestMessage(message)
         elif isinstance(message, WatcherMessage):
             cls.treatWatcherMessage(message)
         elif isinstance(message, BroadCast):
+            # broadcast = do required action first and continue broadcast
             cls.logger.ddebug("Handling Broadcast")
             try:
                 ActionMan.addTask(MTA.toAction(message.getMessage()))
@@ -87,24 +89,10 @@ class Server(Thread):
                 pass
             # be sure to propagate broadcast if a reasonable error occurs
             Client.broadcast(message)
-        elif isinstance(message, AddToOverlay):
-            with cls._addLock:
-                cls.logger.ddebug("Add probe to overlay")
-                try:
-                    probeId = Params.PROTOCOL.getRemoteId(message.getProbeIp())
-                    addMessage = Add(Identification.PROBE_ID, probeId, message.getProbeIp())
-                    selfAddMessage = copy.deepcopy(addMessage)
-                    selfAddMessage.doHello = True
-                    # Do broadcast before adding the probe so that it doesn't receive unnecessary message
-                    # addMessage = m.Add(Identification.PROBE_ID, probeId, message.targetIp, hello=True)
-                    Client.broadcast(addMessage)
-                    cls.treatMessage(selfAddMessage)
-                    cls.logger.debug("Probe %s added to overlay", probeId)
-                except ProbeConnectionException as e:
-                    cls.logger.info("Adding probe failed %s : %s", message.getProbeIp(), e)
         else:
             # handles everything else, including Do messages
             ActionMan.addTask(MTA.toAction(message))
+
 
     @classmethod
     def treatTestMessage(cls, message):

@@ -40,9 +40,10 @@ class Message(object):
 class AddToOverlay(Message):
     """Add probe with given IP to overlay"""
 
-    def __init__(self, targetId, probeIp):
+    def __init__(self, targetId, probeIp, mergeRemoteOverlay = True):
         super().__init__(targetId)
         self.probeIp = probeIp
+        self.mergeOverlays = mergeRemoteOverlay
 
     def getProbeIp(self):
         """Returns the Id of the probe to add"""
@@ -52,16 +53,17 @@ class AddToOverlay(Message):
 class Add(Message):
     """
     Message to add a new probe (probeId, probeIp) to the overlay
-    If the hello flag is set to true, then the recipient of
-    this message is expected to send a hello message to the probe (probeId, probeIp)
+    If the hello flag is an Hello message, then the recipient of
+    this message is expected to send the hello message upon
+    reception of this message
 
     """
 
-    def __init__(self, targetId, probeID, probeIP, doHello = False):
+    def __init__(self, targetId, probeID, probeIP, hello = None):
         super().__init__(targetId)
         self.probeID = probeID
         self.probeIP = probeIP
-        self.doHello = doHello
+        self.hello = hello
 
 
 class Hello(Message):
@@ -71,11 +73,12 @@ class Hello(Message):
 
     """
 
-    def __init__(self, targetId, probeList, sourceId):
+    def __init__(self, targetId, probeList, sourceId, echo = None):
         super().__init__(targetId)
         self.probeList = probeList
         self.remoteIp = None
         self.sourceId = sourceId
+        self.echo = echo
 
     def getProbeList(self):
         """Return the list of probes to add"""
@@ -257,6 +260,7 @@ class Result(TesteeAnswer):
         """Return the report that the receiving probe generated"""
         return self.report
 
+
 class WatcherMessage(Message):
     """Message for speaking to watcher instances"""
 
@@ -269,9 +273,11 @@ class InitializeWatcher(WatcherMessage):
     """Start the init phase of the watcher"""
     pass
 
+
 class RunWatcher(WatcherMessage):
     """Start the run phase of the watcher"""
     pass
+
 
 ### For future uses ###
 
@@ -282,6 +288,7 @@ class StatusMessage(Message):
 
 class StatusRequest(StatusMessage):
     """Message to ask a probe for it's status"""
+
     def __init__(self, idProbe):
         StatusMessage.__init__(self, idProbe)
         self.response = None
@@ -295,6 +302,7 @@ class StatusRequest(StatusMessage):
 
 class StatusResponse(StatusMessage):
     """Message to tell a probe about my current stati"""
+
     def __init__(self, idProbe):
         StatusMessage.__init__(self, idProbe)
         self.stati = []

@@ -31,11 +31,11 @@ class Action(object):
 class Add(Action):
     """Add action : adds a probe to the currently known probes"""
 
-    def __init__(self, ipSonde, idSonde, hello = False):
+    def __init__(self, ipSonde, idSonde, hello = None):
         super().__init__()
         self.ipSonde = ipSonde
         self.idSonde = idSonde
-        self.doHello = hello
+        self.hello = hello
         self.priority = 3
 
     def getIpSonde(self):
@@ -45,6 +45,12 @@ class Add(Action):
     def getIdSonde(self):
         """Returns the Id of the probe to add"""
         return self.idSonde
+
+
+class AddToOverlay(Action):
+    def __init__(self, probeIp):
+        super().__init__()
+        self.probeIp = probeIp
 
 
 class AddPrefix(Action):
@@ -63,9 +69,10 @@ class AddPrefix(Action):
 class UpdateProbes(Action):
     """Add the given list of probes to the hash table (ProbeStorage)"""
 
-    def __init__(self, probeList):
+    def __init__(self, probeList, echo = None):
         super().__init__()
         self.probeList = probeList
+        self.echo = echo
         self.priority = 3
 
     def getProbeList(self):

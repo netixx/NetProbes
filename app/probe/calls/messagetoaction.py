@@ -10,23 +10,15 @@ import logging
 
 from . import messages as m
 from consts import Identification
-from .actions import Add, Quit, Remove, Prepare, UpdateProbes, Do
+from .actions import Add, Quit, Remove, Prepare, UpdateProbes, Do, AddToOverlay
 from managers.probes import Probe
 
 
 treatedAction = 0
 
 """Matches message class to its corresponding method"""
-messages = {
-    "Add": "_toAdd",
-    "Bye": "_toBye",
-    "Hello": "_toHello",
-    "Prepare": "_toPrepare",
-    "Do": '_toDo'
-}
-
+prefix = '_to'
 logger = logging.getLogger()
-
 
 def toAction(message):
     """Transform given message into an action
@@ -36,12 +28,12 @@ def toAction(message):
     global treatedAction
     treatedAction += 1
     # calls the right method
-    return globals()[messages.get(message.__class__.__name__)](message)
+    return globals()[prefix + message.__class__.__name__](message)
 
 
 def _toAdd(addMessage):
     assert isinstance(addMessage, m.Add)
-    return Add(addMessage.probeIP, addMessage.probeID, addMessage.doHello)
+    return Add(addMessage.probeIP, addMessage.probeID, addMessage.hello)
 
 
 def _toBye(byeMessage):
@@ -59,7 +51,7 @@ def _toHello(message):
     assert isinstance(message, m.Hello)
     probes = message.getProbeList()
     probes.append(Probe(message.sourceId, message.remoteIp))
-    return UpdateProbes(probes)
+    return UpdateProbes(probes, echo = message.echo)
 
 
 def _toPrepare(message):
@@ -73,3 +65,5 @@ def _toDo(message):
     assert isinstance(message, m.Do)
     return Do(message.getTestName(), message.getTestOptions(), message.getResultCallback(), message.getErrorCallback())
 
+def _toAddToOverlay(message):
+    return AddToOverlay(message.getTarget())
