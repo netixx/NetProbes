@@ -5,14 +5,12 @@ Protocols tcp and udp are supported
 """
 __all__ = ['Ping']
 
-import re
 import argparse
 from threading import Thread
 
 from interfaces.standalonetest import Test
-from managers.tests import TestServices
 from interfaces.excs import TestError, TestArgumentError
-
+from tests.adapters import delay
 
 name = "Sping"
 
@@ -37,11 +35,6 @@ class Sping(Test):
         self.errors = {}
         self.parallelPing = False
 
-    ### Methods for the probe which starts the test
-    ###
-    ###    Parse the options for the current test
-    ###    should populate at least the targets list
-    ###
 
     def parseOptions(self):
         # ping -c 3 -t 30 -m 10 -W 2 -s 50 -i 1 -D
@@ -68,11 +61,11 @@ class Sping(Test):
                             dest = 'timeout',
                             type = float,
                             help = 'Timeout before ping command exits')
-        parser.add_argument('-T',
-                            metavar = 'TTL',
-                            dest = 'multicastTtl',
-                            type = int,
-                            help = 'Set IP TTL value for multicast packets')
+        # parser.add_argument('-T',
+        #                     metavar = 'TTL',
+        #                     dest = 'multicastTtl',
+        #                     type = int,
+        #                     help = 'Set IP TTL value for multicast packets')
         parser.add_argument('-m',
                             metavar = 'IP_TTL',
                             dest = 'ipTtl',
@@ -92,117 +85,46 @@ class Sping(Test):
                               dest = 'packetSize',
                               help = 'Size of payload')
 
-        sweepParamsGrp.add_argument('-G',
-                                    metavar = 'SWEEP_MAX_SIZE',
-                                    dest = 'swpMaxSize',
-                                    type = int,
-                                    help = 'Maximum size of payload when sweeping'
-        )
-        sweepParamsGrp.add_argument('-g',
-                                    metavar = 'SWEEP_MIN_SIZE',
-                                    dest = 'swpMinSize',
-                                    type = int,
-                                    help = 'Size of payload to start sweeping')
-        sweepParamsGrp.add_argument('-H',
-                                    metavar = 'SWEEP_INC_SIZE',
-                                    type = int,
-                                    dest = 'swpIncSize',
-                                    help = 'Payload size increment for each sweep')
+        # sweepParamsGrp.add_argument('-G',
+        #                             metavar = 'SWEEP_MAX_SIZE',
+        #                             dest = 'swpMaxSize',
+        #                             type = int,
+        #                             help = 'Maximum size of payload when sweeping'
+        # )
+        # sweepParamsGrp.add_argument('-g',
+        #                             metavar = 'SWEEP_MIN_SIZE',
+        #                             dest = 'swpMinSize',
+        #                             type = int,
+        #                             help = 'Size of payload to start sweeping')
+        # sweepParamsGrp.add_argument('-H',
+        #                             metavar = 'SWEEP_INC_SIZE',
+        #                             type = int,
+        #                             dest = 'swpIncSize',
+        #                             help = 'Payload size increment for each sweep')
         parser.add_argument('-i',
                             metavar = "WAIT_TIME",
                             dest = 'waitSend',
                             type = float,
                             help = 'Time to wait between sending ping')
-        parser.add_argument('-D',
-                            #                             metavar = "DON'T_FRAGMENT",
-                            dest = 'df',
-                            action = 'store_true',
-                            help = "Set the don't fragment bit")
+        # parser.add_argument('-D',
+        #                     #                             metavar = "DON'T_FRAGMENT",
+        #                     dest = 'df',
+        #                     action = 'store_true',
+        #                     help = "Set the don't fragment bit")
 
         try:
             opts = parser.parse_args(self.opts)
             self.targets = opts.targets
-            self.options = "-c %s" % opts.nPings
-            self.options += self._addOption("-t", opts.timeout)
-            self.options += self._addOption("-T", opts.multicastTtl)
-            self.options += self._addOption("-m", opts.ipTtl)
-            self.options += self._addOption("-W", opts.waitReply)
-            self.options += self._addOption("-s", opts.packetSize)
-            self.options += self._addOption("-G", opts.swpMaxSize)
-            self.options += self._addOption("-g", opts.swpMinSize)
-            self.options += self._addOption("-h", opts.swpIncSize)
-            self.options += self._addOption("-i", opts.waitSend)
+            self.options = {
+                'count': opts.nPings,
+                'deadline': opts.timeout,
+                'ttl': opts.ipTtl,
+                'packetSize': opts.packetSize,
+                'timeout': opts.waitReply,
+            }
             self.parallelPing = opts.parallel
-            if opts.df:
-                self.options += " -D"
-            if opts.swpIncSize or opts.swpMaxSize or opts.swpMinSize:
-                self.isSweep = True
         except (argparse.ArgumentError, SystemExit):
             raise TestArgumentError(parser.format_usage())
-
-    def _addOption(self, opt, value):
-        if value is not None:
-            return " %s %s" % (opt, value)
-        return ""
-
-    @classmethod
-    def makePing(cls, ip, pingOptions, isSweep):
-        stdout, stderr = TestServices.runCmd('ping %s %s' % (pingOptions, ip))
-        if isSweep:
-            return cls._parseSweepPing(str(stdout.decode()))
-        return cls._parsePing(str(stdout.decode()))
-
-    @classmethod
-    def _parsePing(cls, pingOutput):
-        # Parse ping output and return all data.
-        #         errorTuple = (1, 0, 0, 0, 0, 0)
-        # Check for downed link
-        r = r'[uU]nreachable'
-        m = re.search(r, pingOutput)
-        if m is not None:
-            raise PingFail('Destination unreachable')
-        r = r'(\d+) (?:packets? )?transmitted, (\d+) (?:packets? )?received'
-        m = re.search(r, pingOutput)
-        if m is None:
-            raise PingParseError("Can not parse sent/received output %s" % pingOutput)
-        sent, received = int(m.group(1)), int(m.group(2))
-        r = r'(?:(?:rtt)|(?:round-trip)) min/avg/max/(?:m|(?:std))dev = '
-        r += r'(\d+\.\d+)/(\d+\.\d+)/(\d+\.\d+)/(\d+\.\d+) ms'
-        m = re.search(r, pingOutput)
-        if m is None:
-            raise PingParseError('Could not parse ping summary output: %s' % pingOutput)
-        try:
-            rttmin = float(m.group(1))
-            rttavg = float(m.group(2))
-            rttmax = float(m.group(3))
-            rttdev = float(m.group(4))
-        except:
-            raise PingParseError(
-                'Could not parse ping numbers : %s/%s/%s/%s' % (m.group(1), m.group(2), m.group(3), m.group(4)))
-        return sent, received, rttmin, rttavg, rttmax, rttdev
-
-    @classmethod
-    def _parseSweepPing(cls, pingOutput):
-        # Parse ping output and return all data.
-        #         errorTuple = (1, 0, 0, 0, 0, 0)
-        # Check for downed link
-        r = r'[uU]nreachable'
-        m = re.search(r, pingOutput)
-        if m is not None:
-            raise PingFail('Destination unreachable')
-        r = r'(\d+) packets transmitted, (\d+) (?:packets)? received'
-        m = re.search(r, pingOutput)
-        if m is None:
-            raise PingParseError("Can not parse output %s" % pingOutput)
-        sent, received = int(m.group(1)), int(m.group(2))
-        r = r'(\d+) bytes from .*: icmp_seq=(\d+)'
-        m = re.findall(r, pingOutput)
-        sweep = []
-        if m is not None:
-            for line in m:
-                sweep.append((int(line[1]), int(line[0])))
-        return sent, received, sweep
-
 
     rformat = "Ping statistics for %s : %s\n"
     eformat = "Ping failed %s"
@@ -239,12 +161,17 @@ class Sping(Test):
 
 
     def makeAPing(self, probeIp):
-        r = self.makePing(probeIp, self.options, self.isSweep)
-        if self.isSweep:
-            self.stats[probeIp] = SweepStats(*r)
-        else:
+        try:
+            r = delay.Ping.makePing(probeIp, **self.options)
+            # if self.isSweep:
+            #     self.stats[probeIp] = SweepStats(*r)
+            # else:
             self.stats[probeIp] = PingStats(*r)
-        self.psuccess[probeIp] = True
+            self.psuccess[probeIp] = True
+        except delay.PingFail as e:
+            raise PingFail(e)
+        except delay.PingParseError as e:
+            raise PingParseError(e)
 
     ###
     ###    Generate the result of the test given the set of reports from the tested probes
