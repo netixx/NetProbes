@@ -90,6 +90,8 @@ if __name__ == '__main__':
             commander = interfaceFactory(args.interface_type)(args.ip_probe)
         commander.start()
         commander.quit()
+    except ImportError as e:
+        logging.getLogger().error("Could not find interface to use : %s", e)
     except ProbeConnectionFailed as e:
         logging.getLogger().error("Could not connect to probe %s : (%s)", args.ip_probe, e)
     except Exception as e:
