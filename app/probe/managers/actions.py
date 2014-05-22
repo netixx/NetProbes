@@ -13,7 +13,6 @@ from threading import Thread
 import logging
 from queue import PriorityQueue
 from ipaddress import ip_network
-import copy
 
 from calls.messages import Hello, Bye, AddToOverlay, Add
 from consts import Identification
@@ -105,24 +104,35 @@ class ActionMan(Thread):
 
     @classmethod
     def manageAddToOverlay(cls, action):
+        assert isinstance(action, a.AddToOverlay)
         cls.logger.ddebug("Add probe to overlay")
         try:
-            probeId = Client.getRemoteId(action.getTargetIp())
+            probeId = Client.getRemoteId(action.probeIp)
+            cls.logger.info("Adding probe %s at %s to overlay", probeId, action.probeIp)
             addMessage = Add(Identification.PROBE_ID, probeId, action.probeIp)
-            selfAddMessage = copy.deepcopy(addMessage)
-            selfAddMessage.hello = Hello(probeId,
-                                         list(ProbeStorage.getAllOtherProbes()),
-                                         Identification.PROBE_ID,
-                                         echo = Identification.PROBE_ID)
+            #use action directly because of timing issues
+            selfAddAction = a.Add(action.probeIp, probeId, Hello(probeId,
+                                                                 list(ProbeStorage.getAllOtherProbes()),
+                                                                 Identification.PROBE_ID,
+                                                                 echo = Identification.PROBE_ID if action.mergeOverlays else None)
+            )
+            # selfAddMessage = copy.deepcopy(addMessage)
+            # selfAddAction.hello = Hello(probeId,
+            #                              list(ProbeStorage.getAllOtherProbes()),
+            #                              Identification.PROBE_ID,
+            #                              echo = Identification.PROBE_ID if action.mergeOverlays else None)
 
             # Do broadcast before adding the probe so that it doesn't receive unnecessary message
             # addMessage = m.Add(Identification.PROBE_ID, probeId, message.targetIp, hello=True)
+            # print(ProbeStorage.getIdAllOtherProbes())
             Client.broadcast(addMessage)
             #treat message after so that the new guy does not receive bogus add message
-            Client.send(selfAddMessage)
+            #treat the add for this addToOverlay before any other AddToOverlay
+            # import calls.messagetoaction as MTA
+            cls.addTask(selfAddAction)
             cls.logger.debug("Probe %s added to overlay", probeId)
         except ProbeConnectionException as e:
-            cls.logger.info("Adding probe failed %s : %s", action.probeIp, e)
+            cls.logger.warning("Adding probe failed %s : %s", action.probeIp, e)
 
     @classmethod
     def manageAddPrefix(cls, action):
@@ -217,7 +227,10 @@ class ActionMan(Thread):
         assert isinstance(action, a.Quit)
         cls.logger.debug("Managing Quit task")
         cls.logger.info("Exiting the overlay")
-        Client.broadcast(Bye("", Identification.PROBE_ID), toMyself = False)
+        try:
+            Client.broadcast(Bye("", Identification.PROBE_ID), toMyself = False)
+        except ProbeConnectionException as e:
+            cls.logger.warning("Could not sent Bye message %s", e)
         # Other commands to close all connections, etc
         Client.allMessagesSent()
         ProbeStorage.clearAllProbes()

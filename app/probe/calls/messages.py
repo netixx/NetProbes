@@ -40,7 +40,7 @@ class Message(object):
 class AddToOverlay(Message):
     """Add probe with given IP to overlay"""
 
-    def __init__(self, targetId, probeIp, mergeRemoteOverlay = True):
+    def __init__(self, targetId, probeIp, mergeRemoteOverlay = False):
         super().__init__(targetId)
         self.probeIp = probeIp
         self.mergeOverlays = mergeRemoteOverlay

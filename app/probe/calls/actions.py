@@ -31,26 +31,29 @@ class Action(object):
 class Add(Action):
     """Add action : adds a probe to the currently known probes"""
 
-    def __init__(self, ipSonde, idSonde, hello = None):
+    def __init__(self, probeIp, probeId, hello = None):
         super().__init__()
-        self.ipSonde = ipSonde
-        self.idSonde = idSonde
+        self.probeIp = probeIp
+        self.probeId = probeId
         self.hello = hello
+        #must ABSOLUTELY be lower than AddToOverlay
         self.priority = 3
 
     def getIpSonde(self):
         """Returns the Ip of the probe to add"""
-        return self.ipSonde
+        return self.probeIp
 
     def getIdSonde(self):
         """Returns the Id of the probe to add"""
-        return self.idSonde
+        return self.probeId
 
 
 class AddToOverlay(Action):
-    def __init__(self, probeIp):
+    def __init__(self, probeIp, mergeOverlays = False):
         super().__init__()
+        self.priority = 4
         self.probeIp = probeIp
+        self.mergeOverlays = mergeOverlays
 
 
 class AddPrefix(Action):
@@ -73,7 +76,7 @@ class UpdateProbes(Action):
         super().__init__()
         self.probeList = probeList
         self.echo = echo
-        self.priority = 3
+        self.priority = 2
 
     def getProbeList(self):
         """Returns the list of probes to add"""

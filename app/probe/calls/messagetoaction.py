@@ -66,4 +66,5 @@ def _toDo(message):
     return Do(message.getTestName(), message.getTestOptions(), message.getResultCallback(), message.getErrorCallback())
 
 def _toAddToOverlay(message):
-    return AddToOverlay(message.getTarget())
+    assert isinstance(message, m.AddToOverlay)
+    return AddToOverlay(message.getProbeIp(), mergeOverlays = message.mergeOverlays)

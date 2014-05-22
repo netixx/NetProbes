@@ -192,7 +192,7 @@ class ProbeConnections(object):
         try:
             Params.PROTOCOL.connect(probe.connection)
             probe.connected = True
-        except:
+        except ProbeConnectionException:
             raise ProbeConnectionException("Connection to probe %s:%s failed" % (probe.id, probe.address))
 
 

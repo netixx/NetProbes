@@ -73,7 +73,7 @@ class CommanderServer(Thread):
         """
         msg = None
         if isinstance(message, Add):
-            msg = m.AddToOverlay(message.targetId, message.targetIp, mergeRemoteOverlay = True)
+            msg = m.AddToOverlay(message.targetId, message.targetIp, mergeRemoteOverlay = message.merge)
         elif isinstance(message, Delete):
             cls.logger.info("Received command delete probe with ID %s", message.targetId)
             msg = m.Bye(message.targetId, message.targetId)
