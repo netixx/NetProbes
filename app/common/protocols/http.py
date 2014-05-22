@@ -179,7 +179,7 @@ class Listener(ThreadingMixIn, HTTPServer, Thread):
             # transform our bytes into an object
             message = Params.CODEC.decode(message)
 
-            response = self.server.helper.handleResponse(self, message)
+            response = self.server.helper.handleResponse(message)
 
             self._reply(response.encode(Parameters.POST_MESSAGE_ENCODING))
 
