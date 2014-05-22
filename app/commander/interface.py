@@ -158,6 +158,10 @@ class Parser(object):
         subp1 = subp.add_parser('add')
         subp1.add_argument('ip', metavar = 'ip',
                            help = 'The ip you want to add')
+        subp1.add_argument("-m", '--merge-overlays',
+                           dest = 'merge_overlays',
+                           action = "store_true",
+                           help = "Merge the overlay of the added probe with this one")
         subp1.set_defaults(func = self.setAdd)
 
         # parser for the do command
@@ -203,7 +207,8 @@ class Parser(object):
     def setAdd(self):
         """Set what should be done when the command is add"""
         self.message = Add(self.command.target_probe,
-                           self.command.ip)
+                           self.command.ip,
+                           self.command.merge_overlays)
 
     def setDo(self):
         """Set what should be done when the command is do"""

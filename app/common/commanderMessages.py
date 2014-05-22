@@ -14,9 +14,10 @@ class CommanderMessage(object):
 class Add(CommanderMessage):
     """Tell the target probe to add the probe located at this IP"""
 
-    def __init__(self, targetId, targetIp):
+    def __init__(self, targetId, targetIp, mergeOverlays = False):
         super().__init__(targetId)
         self.targetIp = targetIp
+        self.merge = mergeOverlays
 
 
 class Do(CommanderMessage):
