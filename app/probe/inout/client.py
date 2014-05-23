@@ -59,8 +59,9 @@ class Client(Thread):
 
     @classmethod
     def _terminate(cls):
-        cls.messageStack.put(None)
+        #wait until all messages are treated before stopping to listen
         cls.messageStack.join()
+        cls.messageStack.put(None)
 
     @classmethod
     def quit(cls):

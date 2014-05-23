@@ -224,9 +224,10 @@ if __name__ == '__main__':
         ActionMan.addTask(Quit())
         if server is not None:
             server.quit()
-        if client is not None:
-            client.quit()
         if actionMan is not None:
             actionMan.quit()
+        #everybody might need the client so stop it last
+        if client is not None:
+            client.quit()
         logging.getLogger().info("Shutdown complete")
 
