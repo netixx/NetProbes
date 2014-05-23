@@ -14,7 +14,7 @@ class Action(object):
 
     def __init__(self):
         # low priority
-        self.priority = 10
+        self.priority = 100
         from .messagetoaction import treatedAction
 
         self.actionNumber = treatedAction
@@ -37,7 +37,7 @@ class Add(Action):
         self.probeId = probeId
         self.hello = hello
         #must ABSOLUTELY be lower than AddToOverlay
-        self.priority = 3
+        self.priority = 30
 
     def getIpSonde(self):
         """Returns the Ip of the probe to add"""
@@ -51,7 +51,7 @@ class Add(Action):
 class AddToOverlay(Action):
     def __init__(self, probeIp, mergeOverlays = False):
         super().__init__()
-        self.priority = 4
+        self.priority = 40
         self.probeIp = probeIp
         self.mergeOverlays = mergeOverlays
 
@@ -76,7 +76,7 @@ class UpdateProbes(Action):
         super().__init__()
         self.probeList = probeList
         self.echo = echo
-        self.priority = 2
+        self.priority = 20
 
     def getProbeList(self):
         """Returns the list of probes to add"""
@@ -89,7 +89,7 @@ class Remove(Action):
     def __init__(self, idSonde):
         super().__init__()
         self.idSonde = idSonde
-        self.priority = 5
+        self.priority = 50
 
     def getIdSonde(self):
         """Returns the Id of the probe to remove"""
@@ -99,7 +99,7 @@ class Remove(Action):
 class Do(Action):
     """Do action : does a test"""
 
-    priority = 2
+    priority = 20
 
     def __init__(self, testClass, testOptions, resultCallback, errorCallback):
         super().__init__()
@@ -107,7 +107,7 @@ class Do(Action):
         self.testOptions = testOptions
         self.resultCallback = resultCallback
         self.errorCallback = errorCallback
-        self.priority = 4
+        self.priority = 40
         self.testId = None
 
     def getTestName(self):
@@ -146,7 +146,7 @@ class Prepare(Action):
         self.testName = testName
         self.sourceId = sourceId
         self.testOptions = testOptions
-        self.priority = 1
+        self.priority = 10
 
     def getTestId(self):
         """Returns the Id of the test to prepare for"""
@@ -173,4 +173,4 @@ class Quit(Action):
 
     def __init__(self):
         super().__init__()
-        self.priority = 10
+        self.priority = 1000
