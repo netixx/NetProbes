@@ -15,7 +15,7 @@ class Gui(Interface):
     a window using tk
     """
 
-    TREE_COLUMNS = ("Probe id", "Probe ip", "Status")
+    TREE_COLUMNS = ("Number of probes : {nProbes}", "Probe address", "Status")
     RESULT_DIPLAY_HEIGHT = 10
 
     def __init__(self, ip):
@@ -52,8 +52,10 @@ class Gui(Interface):
         txtStatus = Label(self.mainWin, textvariable = self.status, wraplength = 600, justify = CENTER)
         txtStatus.grid(row = 1, column = 1, sticky = N + S + E + W)
 
-        self.probesDisplay = Treeview(self.mainWin, columns = Gui.TREE_COLUMNS, show = "headings")
+        self.probesDisplay = Treeview(self.mainWin, columns = self.TREE_COLUMNS, show = "headings")
         self.probesDisplay.grid(row = 2, columnspan = 2, sticky = N + S + E + W)
+        for i in range(0, len(self.TREE_COLUMNS)):
+            self.updateHeading(i, nProbes = 0)
 
         self.result = Text(self.mainWin, textvariable = self.result, height = self.RESULT_DIPLAY_HEIGHT, wrap = WORD)
         self.result.configure(state = DISABLED)
@@ -118,6 +120,7 @@ class Gui(Interface):
             try:
                 probes = self.probesToItems(self.fetchProbes())
                 self.probesDisplay.set_children("")
+                self.updateHeading(0, nProbes = len(probes))
                 for item in probes:
                     self.probesDisplay.insert('', 'end', values = item)
                 #             self.probesDisplay.set_children('', probes)
@@ -126,6 +129,10 @@ class Gui(Interface):
                 self.logger.error("Error while getting list of probes : connection failed", exc_info = 1)
             finally:
                 self.doFetchProbes.wait()
+
+    def updateHeading(self, index, **kw):
+        self.probesDisplay.heading(index, anchor = W, text = self.TREE_COLUMNS[index].format(**kw))
+
 
     @staticmethod
     def probesToItems(probes):

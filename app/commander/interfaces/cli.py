@@ -55,14 +55,15 @@ class Cli(Interface):
 
     def getCommands(self):
         """Return available commands"""
-        return "Commands : %s"% ', '.join([self.CMD_PREFIX, self.DISP_CMD, self.EXIT_CMD])
+        return "Commands : %s" % ', '.join([self.CMD_PREFIX, self.DISP_CMD, self.EXIT_CMD])
 
 
     def getProbes(self):
         """Get probe from remote commander server and prints them as string"""
         try:
             p = self.fetchProbes()
-            probes = self.HEADING.format(wi = self.COL_WIDTHS, names = self.COL_NAMES)
+            probes = "Number of probes : %s\n" % len(p)
+            probes += self.HEADING.format(wi = self.COL_WIDTHS, names = self.COL_NAMES)
             for probe in p:
                 probes += self.PROBE_TEMPLATE.format(names = (probe.getId(), probe.getIp(), probe.getStatus()), wi = self.COL_WIDTHS)
             return probes
