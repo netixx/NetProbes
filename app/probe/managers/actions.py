@@ -130,6 +130,9 @@ class ActionMan(Thread):
             #treat the add for this addToOverlay before any other AddToOverlay
             # import calls.messagetoaction as MTA
             cls.addTask(selfAddAction)
+            #try to fix adding host too quickly
+            import time
+            time.sleep(1)
             cls.logger.debug("Probe %s added to overlay", probeId)
         except ProbeConnectionException as e:
             cls.logger.warning("Adding probe failed %s : %s", action.probeIp, e)
