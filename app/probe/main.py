@@ -36,6 +36,8 @@ WATCHERS_LOGS_DIR = os.path.join(LOGS_DIR, "watchers")
 LOG_FORMAT = Consts.DEFAULT_LOG_FORMAT
 TEST_LOGS_FORMAT = "%(levelname)s\t%(asctime)s %(name)s (%(module)s)\t: %(message)s"
 
+from threading import Lock
+import signal
 import time
 from interfaces.watcher import WatcherError
 from managers.probetests import TEST_LOGGER
@@ -96,6 +98,43 @@ def addLogs():
 
 
 if __name__ == '__main__':
+    stopped = False
+    stopLock = Lock()
+
+    def shutdown(signum = None, frame = None):
+        with stopLock:
+            global stopped
+            if stopped:
+                return
+            else:
+                stopped = True
+        logging.getLogger().info("Shutting down probe")
+        if Params.COMMANDER and commander is not None:
+            commander.quit()
+        from calls.actions import Quit
+
+        if Params.WATCHERS:
+            WatcherManager.stopWatchers()
+        from managers.probetests import TestManager, TestResponder
+
+        TestManager.stopTests()
+        TestResponder.stopTests()
+        if actionMan is not None:
+            ActionMan.addTask(Quit())
+        if server is not None:
+            server.quit()
+        if actionMan is not None:
+            actionMan.quit()
+        #everybody might need the client so stop it last
+        if client is not None:
+            client.quit()
+
+    def catchSignals():
+        # SIGFPE, SIGILL, SIGSEGV
+        for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGHUP, signal.SIGQUIT, signal.SIGABRT]:
+            signal.signal(sig, shutdown)
+
+
     parser = argparse.ArgumentParser(description = 'Starts the commander for a probe')
     parser.add_argument('-id', '--probe-id',
                         dest = 'probe_id',
@@ -167,6 +206,7 @@ if __name__ == '__main__':
     actionMan = None
     client = None
     commander = None
+    catchSignals()
     try:
         time.sleep(args.wait)
         logging.getLogger().info("Starting probe with id : %s, pid : %s", Identification.PROBE_ID, os.getpid())
@@ -211,23 +251,6 @@ if __name__ == '__main__':
     except:
         logging.getLogger().critical("Critical error in probe", exc_info = 1)
     finally:
-        if Params.COMMANDER and commander is not None:
-            commander.quit()
-        from calls.actions import Quit
-
-        if Params.WATCHERS:
-            WatcherManager.stopWatchers()
-        from managers.probetests import TestManager, TestResponder
-
-        TestManager.stopTests()
-        TestResponder.stopTests()
-        ActionMan.addTask(Quit())
-        if server is not None:
-            server.quit()
-        if actionMan is not None:
-            actionMan.quit()
-        #everybody might need the client so stop it last
-        if client is not None:
-            client.quit()
+        shutdown()
         logging.getLogger().info("Shutdown complete")
 
