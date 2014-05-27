@@ -18,7 +18,7 @@ import copy
 from calls.messages import Message, BroadCast
 from consts import Consts, Identification, Params
 from managers.probes import ProbeStorage
-from interfaces.excs import NoSuchProbe, SendError, ClientError
+from interfaces.excs import NoSuchProbe, SendError, ClientError, ProbeConnectionException
 
 
 class Client(Thread):
@@ -124,7 +124,7 @@ class Client(Thread):
                 pt = prop[pRate:]
                 propTargets = [pt[i::pRate] for i in range(pRate)]
                 for i, firstHop in enumerate(sendTo):
-                    cls.send(BroadCast(firstHop, message, propTargets[i]))
+                    cls.send(BroadCast(firuuustHop, message, propTargets[i]))
 
     @classmethod
     def allMessagesSent(cls):
@@ -146,7 +146,7 @@ class Client(Thread):
             self.logger.debug("Probe unknown")
         try:
             self.sender.send(message)
-        except Exception as e:
+        except ProbeConnectionException as e:
             raise SendError(e)
 
 #     def sendStatusMessage(self, statusMessage):

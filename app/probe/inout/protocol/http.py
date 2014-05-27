@@ -106,9 +106,10 @@ class Sender(object):
         except NoSuchProbe:
             self.logger.error("The probe you requested to send a message to : '%s', is currently unknown to me.",
                               message.targetId)
-        except HTTPException:
+        except HTTPException as e:
             self.logger.error("Cannot send message to %s@%s", message.targetId, target.getAddress())
             self.logger.debug("Cannot send message", exc_info = 1)
+            raise ProbeConnectionException(e)
             #TODO : raise exception
             # raise ProbeConnectionException(e)
 
