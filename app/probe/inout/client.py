@@ -124,7 +124,7 @@ class Client(Thread):
                 pt = prop[pRate:]
                 propTargets = [pt[i::pRate] for i in range(pRate)]
                 for i, firstHop in enumerate(sendTo):
-                    cls.send(BroadCast(firuuustHop, message, propTargets[i]))
+                    cls.send(BroadCast(firstHop, message, propTargets[i]))
 
     @classmethod
     def allMessagesSent(cls):
