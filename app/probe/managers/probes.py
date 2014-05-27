@@ -163,6 +163,7 @@ class Probe(object):
         self.id = idProbe
         self.connection = None
         self.connected = False
+        self.getAddress = self.getIp
 
     def getIp(self):
         """Returns this probe's (ip) address"""
