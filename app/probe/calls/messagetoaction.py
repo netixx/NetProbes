@@ -10,7 +10,7 @@ import logging
 
 from . import messages as m
 from consts import Identification
-from .actions import Add, Quit, Remove, Prepare, UpdateProbes, Do, AddToOverlay
+from .actions import Add, Quit, Remove, Prepare, UpdateProbes, Do, AddToOverlay, Broadcast
 from managers.probes import Probe
 
 
@@ -19,6 +19,7 @@ treatedAction = 0
 """Matches message class to its corresponding method"""
 prefix = '_to'
 logger = logging.getLogger()
+
 
 def toAction(message):
     """Transform given message into an action
@@ -65,6 +66,12 @@ def _toDo(message):
     assert isinstance(message, m.Do)
     return Do(message.getTestName(), message.getTestOptions(), message.getResultCallback(), message.getErrorCallback())
 
+
 def _toAddToOverlay(message):
     assert isinstance(message, m.AddToOverlay)
     return AddToOverlay(message.getProbeIp(), mergeOverlays = message.mergeOverlays)
+
+
+def _toBroadcast(message):
+    assert isinstance(message, m.BroadCast)
+    return Broadcast(broadcast = message)

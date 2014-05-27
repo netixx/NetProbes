@@ -4,9 +4,15 @@ Actions that our probes can perform
 Each Action has a priority, the lower the priority, the faster the action will be executed
 Action class and subclasses are not sent over the network, only messages are (cf messages.py)
 
+priorities:
+max : 10000 (quit)
+tests (start): 100 < p < 200
+overlay management : add p < 50, remove p > 500
+addPrefix : > 100
+default : 100
 """
 __all__ = ['Action', 'Add', 'AddPrefix', 'UpdateProbes', 'Remove',
-           'Do', 'Prepare', 'Quit', ]
+           'Do', 'Prepare', 'Quit', 'Broadcast', 'AddToOverlay' ]
 
 
 class Action(object):
@@ -16,7 +22,6 @@ class Action(object):
         # low priority
         self.priority = 100
         from .messagetoaction import treatedAction
-
         self.actionNumber = treatedAction
 
     def __lt__(self, other):
@@ -27,6 +32,12 @@ class Action(object):
     def __str__(self):
         return "%s action no %d" % (self.__class__.__name__, self.actionNumber)
 
+class Broadcast(Action):
+    """Encapsulation of a broadcast message"""
+    def __init__(self, broadcast):
+        super().__init__()
+        self.priority = 100
+        self.broadcast = broadcast
 
 class Add(Action):
     """Add action : adds a probe to the currently known probes"""
@@ -63,6 +74,7 @@ class AddPrefix(Action):
     def __init__(self, addPrefix):
         super().__init__()
         self.addPrefix = addPrefix
+        self.priority = 110
 
     def getPrefix(self):
         """Returns the prefix = set of addresses to add"""
@@ -76,7 +88,7 @@ class UpdateProbes(Action):
         super().__init__()
         self.probeList = probeList
         self.echo = echo
-        self.priority = 20
+        self.priority = 10
 
     def getProbeList(self):
         """Returns the list of probes to add"""
@@ -89,7 +101,7 @@ class Remove(Action):
     def __init__(self, idSonde):
         super().__init__()
         self.idSonde = idSonde
-        self.priority = 50
+        self.priority = 501
 
     def getIdSonde(self):
         """Returns the Id of the probe to remove"""
@@ -99,15 +111,13 @@ class Remove(Action):
 class Do(Action):
     """Do action : does a test"""
 
-    priority = 20
-
     def __init__(self, testClass, testOptions, resultCallback, errorCallback):
         super().__init__()
         self.testClass = testClass
         self.testOptions = testOptions
         self.resultCallback = resultCallback
         self.errorCallback = errorCallback
-        self.priority = 40
+        self.priority = 120
         self.testId = None
 
     def getTestName(self):
@@ -146,7 +156,7 @@ class Prepare(Action):
         self.testName = testName
         self.sourceId = sourceId
         self.testOptions = testOptions
-        self.priority = 10
+        self.priority = 110
 
     def getTestId(self):
         """Returns the Id of the test to prepare for"""
@@ -173,4 +183,4 @@ class Quit(Action):
 
     def __init__(self):
         super().__init__()
-        self.priority = 1000
+        self.priority = 10000

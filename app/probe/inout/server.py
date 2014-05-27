@@ -11,19 +11,18 @@ from managers.watchers import WatcherManager
 
 __all__ = ['Server']
 
-import copy
 from threading import Thread, Event, RLock
 import logging
 
 from .client import Client
 from calls.messages import Message, TesterMessage, TesteeAnswer, BroadCast, \
-    TestMessage, Hello, Add, AddToOverlay, WatcherMessage
+    TestMessage, Hello, WatcherMessage
 import calls.messagetoaction as MTA
 from consts import Params, Identification
 from managers.probes import ProbeStorage
 from managers.probetests import TestManager, TestResponder
 from managers.actions import ActionMan
-from interfaces.excs import ActionError, ProbeConnectionException
+from interfaces.excs import ActionError
 
 
 class Server(Thread):
@@ -40,6 +39,7 @@ class Server(Thread):
 
     logger = logging.getLogger()
     _addLock = RLock()
+
     def __init__(self):
         self.helper = self.Helper(self)
         self.listener = Params.PROTOCOL.Listener(self.helper)
@@ -88,7 +88,8 @@ class Server(Thread):
             except ActionError:
                 pass
             # be sure to propagate broadcast if a reasonable error occurs
-            Client.broadcast(message)
+            ActionMan.addTask(MTA.toAction(message))
+            # Client.broadcast(message)
         else:
             # handles everything else, including Do messages
             ActionMan.addTask(MTA.toAction(message))
@@ -123,6 +124,7 @@ class Server(Thread):
 
     class Helper(object):
         """Helper object to enable interaction with Server from the protocol"""
+
         def __init__(self, server):
             self.server = server
 

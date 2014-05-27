@@ -223,6 +223,11 @@ class ActionMan(Thread):
                              exc_info = 1)
 
     @classmethod
+    def manageBroadcast(cls, action):
+        assert isinstance(action, a.BroadCast)
+        Client.send(action.broadcast)
+
+    @classmethod
     def manageQuit(cls, action):
         """Quit the overlay nicely
         Tells everyone about this
