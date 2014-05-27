@@ -22,6 +22,7 @@ import calls.actions as a
 from .probetests import TestResponder, TestManager
 from interfaces.excs import TestError, ActionError, \
     NoSuchProbe, ToManyTestsInProgress, ProbeConnectionException
+from .scheduler import Scheduler
 
 
 class ActionMan(Thread):
@@ -131,11 +132,11 @@ class ActionMan(Thread):
             # import calls.messagetoaction as MTA
             cls.addTask(selfAddAction)
             #try to fix adding host too quickly
-            import time
-            time.sleep(1)
+            Scheduler.addToOverlay()
             cls.logger.debug("Probe %s added to overlay", probeId)
         except ProbeConnectionException as e:
             cls.logger.warning("Adding probe failed %s : %s", action.probeIp, e)
+
 
     @classmethod
     def manageAddPrefix(cls, action):

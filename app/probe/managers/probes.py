@@ -120,6 +120,11 @@ class ProbeStorage(object):
         """Add the local probe to the index"""
         cls.addProbe(cls.newProbe(Identification.PROBE_ID, Consts.LOCAL_IP_ADDR))
 
+    @classmethod
+    def getNumberOfProbes(cls):
+        with cls.__knownProbesLock:
+            return len(cls.knownProbes)
+
     ###Connection methods
 
     @classmethod
@@ -182,6 +187,7 @@ from interfaces.excs import ProbeConnectionException
 
 class ProbeConnections(object):
     """Manages connection to probes. Connects and disconnect basically"""
+
     @classmethod
     def connectToProbe(cls, probe):
         """Connect to this probe

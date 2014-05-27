@@ -52,6 +52,7 @@ import tools.logs as logs
 import logging
 from managers.watchers import WATCHER_LOGGER
 from logging import Formatter
+from managers.scheduler import Scheduler
 DDEBUG = 9
 
 wlogger = logging.getLogger(WATCHER_LOGGER)
@@ -109,6 +110,7 @@ if __name__ == '__main__':
             else:
                 stopped = True
         logging.getLogger().info("Shutting down probe")
+        Scheduler.quit()
         if Params.COMMANDER and commander is not None:
             commander.quit()
         from calls.actions import Quit
