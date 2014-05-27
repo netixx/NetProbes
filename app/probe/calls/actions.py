@@ -7,7 +7,7 @@ Action class and subclasses are not sent over the network, only messages are (cf
 priorities:
 max : 10000 (quit)
 tests (start): 100 < p < 200
-overlay management : add p < 50, remove p > 500
+overlay management : add p < 50, remove p < 50
 addPrefix : > 100
 default : 100
 """
@@ -101,7 +101,7 @@ class Remove(Action):
     def __init__(self, idSonde):
         super().__init__()
         self.idSonde = idSonde
-        self.priority = 501
+        self.priority = 51
 
     def getIdSonde(self):
         """Returns the Id of the probe to remove"""
