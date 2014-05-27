@@ -72,6 +72,6 @@ def _toAddToOverlay(message):
     return AddToOverlay(message.getProbeIp(), mergeOverlays = message.mergeOverlays)
 
 
-def _toBroadcast(message):
+def _toBroadCast(message):
     assert isinstance(message, m.BroadCast)
     return Broadcast(broadcast = message)
