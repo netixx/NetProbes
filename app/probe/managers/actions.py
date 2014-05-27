@@ -224,7 +224,7 @@ class ActionMan(Thread):
 
     @classmethod
     def manageBroadcast(cls, action):
-        assert isinstance(action, a.BroadCast)
+        assert isinstance(action, a.Broadcast)
         Client.send(action.broadcast)
 
     @classmethod
