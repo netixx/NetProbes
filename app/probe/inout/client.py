@@ -104,6 +104,7 @@ class Client(Thread):
         if isinstance(message, BroadCast):
             prop = message.getNextTargets()
             message = message.getMessage()
+            cls.logger.debug("Propagating message %s to %s", message.__class__.__name__, repr(prop))
         else:
             prop = ProbeStorage.getIdAllOtherProbes()
             if toMyself:

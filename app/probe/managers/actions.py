@@ -224,8 +224,9 @@ class ActionMan(Thread):
 
     @classmethod
     def manageBroadcast(cls, action):
+        """Decapsulate broadcast message"""
         assert isinstance(action, a.Broadcast)
-        Client.send(action.broadcast)
+        Client.broadcast(action.broadcast)
 
     @classmethod
     def manageQuit(cls, action):
