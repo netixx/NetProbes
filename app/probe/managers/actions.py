@@ -63,7 +63,7 @@ class ActionMan(Thread):
 
     @classmethod
     def _terminate(cls):
-        cls.actionQueue.put((100000, None))
+        cls.actionQueue.put((1000000, None))
         cls.actionQueue.join()
 
     def run(self):

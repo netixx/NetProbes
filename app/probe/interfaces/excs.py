@@ -63,3 +63,9 @@ class TestArgumentError(TestError):
 class TestAborted(TestError):
     """The test was aborted early"""
     pass
+
+class ClientError(Exception):
+    pass
+
+class SendError(ClientError):
+    pass

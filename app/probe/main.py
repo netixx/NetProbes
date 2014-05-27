@@ -89,12 +89,12 @@ def addLogs():
     logs.addStdoutAndStdErr(logLevel, logger, formatter)
 
     # TODO: readd file logs when tests are done
-    logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, Identification.PROBE_ID+"_probe.log"), 30, logger, formatter)
+    logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, Identification.PROBE_ID+"_probe.log"), logLevel, logger, formatter)
 
     testLogger = logging.getLogger(TEST_LOGGER)
     testFormatter = Formatter(TEST_LOGS_FORMAT)
 
-    logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, Identification.PROBE_ID+"_tests.log"), 30, testLogger, testFormatter)
+    logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, Identification.PROBE_ID+"_tests.log"), logLevel, testLogger, testFormatter)
     testLogger.propagate = True
 
 

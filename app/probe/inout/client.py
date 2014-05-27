@@ -18,7 +18,7 @@ import copy
 from calls.messages import Message, BroadCast
 from consts import Consts, Identification, Params
 from managers.probes import ProbeStorage
-from interfaces.excs import NoSuchProbe
+from interfaces.excs import NoSuchProbe, SendError, ClientError
 
 
 class Client(Thread):
@@ -53,6 +53,10 @@ class Client(Thread):
                 #                     self.sendStatusMessage(message)
                 #                 else:
                 self.sendMessage(message)
+            except ClientError as e:
+                self.logger.warning("Error while sending message to %s: %s", message.targetId, e)
+            except Exception as e:
+                self.logger.error("Unexpected error while sending message to %s : %s", message.targetId, e, exc_info = 1)
             finally:
                 self.messageStack.task_done()
 
@@ -118,7 +122,7 @@ class Client(Thread):
                 # take targets for first hop out of the list
                 sendTo = prop[0:pRate]
                 pt = prop[pRate:]
-                propTargets = [ pt[i::pRate] for i in range(pRate) ]
+                propTargets = [pt[i::pRate] for i in range(pRate)]
                 for i, firstHop in enumerate(sendTo):
                     cls.send(BroadCast(firstHop, message, propTargets[i]))
 
@@ -140,7 +144,10 @@ class Client(Thread):
                               ProbeStorage.getProbeById(message.getTarget()).getIp())
         except NoSuchProbe:
             self.logger.debug("Probe unknown")
-        self.sender.send(message)
+        try:
+            self.sender.send(message)
+        except Exception as e:
+            raise SendError(e)
 
 #     def sendStatusMessage(self, statusMessage):
 #         try :
