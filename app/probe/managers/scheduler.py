@@ -3,14 +3,14 @@ import threading as th
 
 from .probes import ProbeStorage
 
-
+MAX_SCHED_DELAY=3.0
 class Scheduler(object):
     timers = []
 
     @classmethod
     def addToOverlay(cls):
         n = ProbeStorage.getNumberOfProbes()
-        wait = math.log10(math.pow(n, 1.0 / 3.0) + 1)
+        wait = min(MAX_SCHED_DELAY, math.log10(math.pow(n, 1.0 / 3.0) + 1))
         cls._wait(wait)
 
 
