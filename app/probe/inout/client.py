@@ -119,6 +119,7 @@ class Client(Thread):
                 for p in prop:
                     mes = copy.deepcopy(payload)
                     mes.targetId = p
+                    mes.recipientId = p
                     #if we know the target, send the message
                     if ProbeStorage.isKnownId(p):
                         cls.send(mes)
