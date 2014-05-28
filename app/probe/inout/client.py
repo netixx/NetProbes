@@ -164,9 +164,9 @@ class Client(Thread):
             if len(prop) <= Consts.PROPAGATION_RATE:
                 for p in prop:
                     mes = copy.deepcopy(message)
-                    if ProbeStorage.isKnownId(p):
-                        mes.targetId = p
-                        cls.send(mes)
+                    mes.targetId = p
+                    mes.recipientId = p
+                    cls.send(mes)
             else:
                 pRate = Consts.PROPAGATION_RATE
                 # take targets for first hop out of the list
