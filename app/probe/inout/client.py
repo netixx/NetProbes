@@ -100,24 +100,34 @@ class Client(Thread):
 
         """
         cls.logger.debug("Broadcasting the message : %s", message.__class__.__name__)
-        # propagation phase
         if isinstance(message, BroadCast):
-            prop = message.getNextTargets()
-            message = message.getMessage()
-            cls.logger.debug("Propagating message %s to %s", message.__class__.__name__, repr(prop))
+            cls._propagateBroadcast(message)
         else:
-            prop = ProbeStorage.getIdAllOtherProbes()
-            if toMyself:
-                # make sure we are the first on our list
-                prop.insert(0, Identification.PROBE_ID)
+            cls._initiateBroadcast(message, toMyself)
+
+    @classmethod
+    def _propagateBroadcast(cls, broadcast):
+        assert isinstance(broadcast, BroadCast)
+        prop = broadcast.getNextTargets()
+        payload = broadcast.getMessage()
+        cls.logger.debug("Propagating message %s to %s", broadcast.__class__.__name__, repr(prop))
 
         #Only do something if there is something to do
         if len(prop) > 0:
             if len(prop) <= Consts.PROPAGATION_RATE:
+                #in the end, send the actual message
                 for p in prop:
-                    mes = copy.deepcopy(message)
-                    mes.targetId = p
-                    cls.send(mes)
+                    mes = copy.deepcopy(payload)
+                    #if we know the target, send the message
+                    if ProbeStorage.isKnownId(p):
+                        mes.targetId = p
+                        cls.send(mes)
+                    else:
+                        #try to avoid breaking the chain during broadcasts
+                        #send back the payload to the initial source of the broadcast if we don't know this recipient
+                        # (forwarding at initial host will work)
+                        payload.targetId = broadcast.sourceId
+                        cls.send(payload)
             else:
                 pRate = Consts.PROPAGATION_RATE
                 # take targets for first hop out of the list
@@ -125,7 +135,39 @@ class Client(Thread):
                 pt = prop[pRate:]
                 propTargets = [pt[i::pRate] for i in range(pRate)]
                 for i, firstHop in enumerate(sendTo):
-                    cls.send(BroadCast(firstHop, message, propTargets[i]))
+                    nextHops = propTargets[i]
+                    if ProbeStorage.isKnownId(firstHop):
+                        #copy the sourceId of the original message when chaining
+                        cls.send(BroadCast(firstHop, broadcast.sourceId, payload, nextHops))
+                    else:
+                        cls.send(BroadCast(broadcast.sourceId, Identification.PROBE_ID, payload, nextHops))
+
+    @classmethod
+    def _initiateBroadcast(cls, message, toMyself):
+        cls.logger.debug("Initiating broadcast message %s", message.__class__.__name__)
+        # propagation phase
+        prop = ProbeStorage.getIdAllOtherProbes()
+        if toMyself:
+            # make sure we are the first on our list
+            prop.insert(0, Identification.PROBE_ID)
+
+        #Only do something if there is something to do
+        if len(prop) > 0:
+            if len(prop) <= Consts.PROPAGATION_RATE:
+                for p in prop:
+                    mes = copy.deepcopy(message)
+                    if ProbeStorage.isKnownId(p):
+                        mes.targetId = p
+                        cls.send(mes)
+            else:
+                pRate = Consts.PROPAGATION_RATE
+                # take targets for first hop out of the list
+                sendTo = prop[0:pRate]
+                pt = prop[pRate:]
+                propTargets = [pt[i::pRate] for i in range(pRate)]
+                for i, firstHop in enumerate(sendTo):
+                    cls.send(BroadCast(firstHop, Identification.PROBE_ID, message, propTargets[i]))
+
 
     @classmethod
     def allMessagesSent(cls):

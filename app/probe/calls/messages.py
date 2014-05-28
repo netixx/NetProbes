@@ -110,10 +110,11 @@ class BroadCast(Message):
 
     """
 
-    def __init__(self, targetId, payload, propagateTo = None):
+    def __init__(self, targetId, sourceId, payload, propagateTo = None):
         super().__init__(targetId)
         self.propagate = propagateTo if propagateTo is not None else []
         self.payload = payload
+        self.sourceId = sourceId
 
     def getNextTargets(self):
         """Returns the remaining targets for this broadcast"""
