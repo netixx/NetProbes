@@ -126,11 +126,11 @@ class Client(Thread):
                         #try to avoid breaking the chain during broadcasts
                         #send back the payload to the initial source of the broadcast if we don't know this recipient
                         # (forwarding at initial host will work)
-                        mes.targetId = p
                         mes.recipientId = broadcast.sourceId
-                        cls.send(payload)
+                        cls.send(mes)
                     else:
-                        payload.targetId = ProbeStorage.getIdAllOtherProbes()
+                        mes.recipientId = ProbeStorage.getOtherRandomId()
+                        cls.send(mes)
             else:
                 pRate = Consts.PROPAGATION_RATE
                 # take targets for first hop out of the list
