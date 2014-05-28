@@ -118,16 +118,19 @@ class Client(Thread):
                 #in the end, send the actual message
                 for p in prop:
                     mes = copy.deepcopy(payload)
+                    mes.targetId = p
                     #if we know the target, send the message
                     if ProbeStorage.isKnownId(p):
-                        mes.targetId = p
                         cls.send(mes)
-                    else:
+                    elif ProbeStorage.isKnownId(broadcast.sourceId):
                         #try to avoid breaking the chain during broadcasts
                         #send back the payload to the initial source of the broadcast if we don't know this recipient
                         # (forwarding at initial host will work)
-                        payload.targetId = broadcast.sourceId
+                        mes.targetId = p
+                        mes.recipientId = broadcast.sourceId
                         cls.send(payload)
+                    else:
+                        payload.targetId = ProbeStorage.getIdAllOtherProbes()
             else:
                 pRate = Consts.PROPAGATION_RATE
                 # take targets for first hop out of the list
@@ -136,11 +139,16 @@ class Client(Thread):
                 propTargets = [pt[i::pRate] for i in range(pRate)]
                 for i, firstHop in enumerate(sendTo):
                     nextHops = propTargets[i]
+                    #copy the sourceId of the original message when chaining
+                    m = BroadCast(firstHop, broadcast.sourceId, payload, nextHops)
                     if ProbeStorage.isKnownId(firstHop):
-                        #copy the sourceId of the original message when chaining
-                        cls.send(BroadCast(firstHop, broadcast.sourceId, payload, nextHops))
+                        cls.send(m)
+                    elif ProbeStorage.isKnownId(broadcast.sourceId):
+                        m.recipientId = broadcast.sourceId
+                        cls.send(m)
                     else:
-                        cls.send(BroadCast(broadcast.sourceId, Identification.PROBE_ID, payload, nextHops))
+                        m.recipientId = ProbeStorage.getOtherRandomId()
+                        cls.send(m)
 
     @classmethod
     def _initiateBroadcast(cls, message, toMyself):
@@ -180,13 +188,13 @@ class Client(Thread):
         """Send this message using the Params.PROTOCOL
         :param message: The message to send
         """
-        try:
-            self.logger.debug("Sending the message : %s to %s with ip %s",
-                              message.__class__.__name__,
-                              message.getTarget(),
-                              ProbeStorage.getProbeById(message.getTarget()).getIp())
-        except NoSuchProbe:
-            self.logger.debug("Probe unknown")
+        if not ProbeStorage.isKnownId(message.targetId):
+            self.logger.warning("The probe %s is not currently known to me, message will not be sent", message.targetId)
+            return
+        self.logger.debug("Sending the message : %s to %s with ip %s",
+                          message.__class__.__name__,
+                          message.getTarget(),
+                          ProbeStorage.getProbeById(message.getTarget()).getIp())
         try:
             self.sender.send(message)
         except ProbeConnectionException as e:

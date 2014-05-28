@@ -6,6 +6,7 @@ ProbeConnections = methods to create, open and close a connection to a probe
 @author: francois
 """
 from threading import RLock
+import random
 
 from consts import Consts, Identification
 from interfaces.excs import NoSuchProbe
@@ -82,6 +83,10 @@ class ProbeStorage(object):
         with cls.__knownProbesLock:
             return [p.getIp() for p in cls.knownProbes.values() if p.getId() != Identification.PROBE_ID]
 
+    @classmethod
+    def getOtherRandomId(cls):
+        with cls.__knownProbesLock:
+            return random.sample(cls.knownProbes.keys(), 1)[0]
     ###Table manipulation methods
 
     @classmethod

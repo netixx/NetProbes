@@ -22,6 +22,7 @@ class Message(object):
 
     def __init__(self, targetId):
         self.targetId = targetId
+        self.recipientId = targetId
 
     def setTarget(self, targetId):
         """Sets the recipient of the message

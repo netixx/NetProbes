@@ -83,7 +83,7 @@ class Sender(object):
         :param message: Message instance to send
         """
         try:
-            target = ProbeStorage.getProbeById(message.targetId)
+            target = ProbeStorage.getProbeById(message.recipientId)
             # serialize our message
             serializedMessage = Params.CODEC.encode(message)
             # put it in a dictionary
@@ -105,9 +105,9 @@ class Sender(object):
                 # self.send(message)
         except NoSuchProbe:
             self.logger.error("The probe you requested to send a message to : '%s', is currently unknown to me.",
-                              message.targetId)
+                              message.recipientId)
         except HTTPException as e:
-            self.logger.error("Cannot send message to %s@%s", message.targetId, target.getAddress())
+            self.logger.error("Cannot send message to %s@%s", message.recipientId, target.getAddress())
             self.logger.debug("Cannot send message", exc_info = 1)
             raise ProbeConnectionException(e)
             #TODO : raise exception
