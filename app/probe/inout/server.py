@@ -74,18 +74,18 @@ class Server(Thread):
         assert isinstance(message, Message)
         # forwarding mechanism
         if message.targetId != Identification.PROBE_ID:
-            cls.logger.info("Forwarding message %s to id %s", message.__class__.__name__, message.targetId)
             if ProbeStorage.isKnownId(message.targetId):
                 message.recipientId = message.targetId
-                Client.send(message)
             else:
-                #if we already forwarded it, stop here
+                #if we already forwarded it before , stop here
                 if message.hash in cls.forwardedMessages:
+                    cls.logger.warning("Throwing message %s in forward because message was previously forwarded.", message.__class__.__name__)
                     return
                 Scheduler.forward()
                 message.recipientId = ProbeStorage.getOtherRandomId()
-                Client.send(message)
+            cls.logger.info("Forwarding message %s for %s to id %s", message.__class__.__name__, message.targetId, message.recipientId)
             cls.forwardedMessages.append(message.hash)
+            Client.send(message)
             return
         # handle special class of messages separately
         if isinstance(message, TestMessage):
