@@ -7,7 +7,7 @@ be performed for this probe.
 
 @author: francois
 """
-from managers.watchers import WatcherManager
+
 
 __all__ = ['Server']
 
@@ -23,7 +23,8 @@ from managers.probes import ProbeStorage
 from managers.probetests import TestManager, TestResponder
 from managers.actions import ActionMan
 from interfaces.excs import ActionError
-
+from managers.watchers import WatcherManager
+from managers.scheduler import Scheduler
 
 class Server(Thread):
     """
@@ -39,6 +40,7 @@ class Server(Thread):
 
     logger = logging.getLogger()
     _addLock = RLock()
+    forwardedMessages = []
 
     def __init__(self):
         self.helper = self.Helper(self)
@@ -73,7 +75,17 @@ class Server(Thread):
         # forwarding mechanism
         if message.targetId != Identification.PROBE_ID:
             cls.logger.info("Forwarding message %s to id %s", message.__class__.__name__, message.targetId)
-            Client.send(message)
+            if ProbeStorage.isKnownId(message.targetId):
+                message.recipientId = message.targetId
+                Client.send(message)
+            else:
+                #if we already forwarded it, stop here
+                if message.hash in cls.forwardedMessages:
+                    return
+                Scheduler.forward()
+                message.recipientId = ProbeStorage.getOtherRandomId()
+                Client.send(message)
+            cls.forwardedMessages.append(message.hash)
             return
         # handle special class of messages separately
         if isinstance(message, TestMessage):

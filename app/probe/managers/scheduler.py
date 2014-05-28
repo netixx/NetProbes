@@ -5,7 +5,9 @@ import threading as th
 
 from .probes import ProbeStorage
 
-MAX_SCHED_DELAY=3.0
+
+MAX_SCHED_DELAY = 3.0
+
 
 class Scheduler(object):
     """Scheduler makes people wait for a moment"""
@@ -14,9 +16,12 @@ class Scheduler(object):
     @classmethod
     def addToOverlay(cls):
         n = ProbeStorage.getNumberOfProbes()
-        wait = min(MAX_SCHED_DELAY, math.log10(math.pow(n, 0.7) + 1)/2.0)
+        wait = min(MAX_SCHED_DELAY, math.log10(math.pow(n, 0.7) + 1) / 2.0)
         cls._wait(wait)
 
+    @classmethod
+    def forward(cls):
+        cls._wait(MAX_SCHED_DELAY * 2)
 
     @classmethod
     def _wait(cls, time):

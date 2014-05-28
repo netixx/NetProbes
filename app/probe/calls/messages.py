@@ -7,6 +7,8 @@ They are then matched to the corresponding Action by the messagetoaction module
 when received at the end host
 
 """
+import random
+
 __all__ = ['Message', 'Add', 'Hello', 'Bye',
            'BroadCast', 'TestMessage', 'Prepare',
            'TesterMessage', 'Over', 'Abort',
@@ -23,6 +25,8 @@ class Message(object):
     def __init__(self, targetId):
         self.targetId = targetId
         self.recipientId = targetId
+        self.hash = random.randint(0, 2**30)
+
 
     def setTarget(self, targetId):
         """Sets the recipient of the message
