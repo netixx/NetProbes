@@ -102,9 +102,9 @@ if __name__ == '__main__':
     stopped = False
     stopLock = Lock()
 
-    def printStacks():
-        from tools.debugger import getAllStacks
-        logging.getLogger.info(getAllStacks())
+    def printStacks(*args):
+        from tools.debugger import strStacks
+        logging.getLogger().info(strStacks())
 
     def shutdown(signum = None, frame = None):
         with stopLock:
