@@ -102,6 +102,10 @@ if __name__ == '__main__':
     stopped = False
     stopLock = Lock()
 
+    def printStacks():
+        from tools.debugger import getAllStacks
+        logging.getLogger.info(getAllStacks())
+
     def shutdown(signum = None, frame = None):
         with stopLock:
             global stopped
@@ -132,9 +136,11 @@ if __name__ == '__main__':
             client.quit()
 
     def catchSignals():
-        # SIGFPE, SIGILL, SIGSEGV
+        # other catchable signals : SIGFPE, SIGILL, SIGSEGV
         for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGHUP, signal.SIGQUIT, signal.SIGABRT]:
             signal.signal(sig, shutdown)
+        #catch SIGUSR1 for debugging
+        signal.signal(signal.SIGUSR1, printStacks)
 
 
     parser = argparse.ArgumentParser(description = 'Starts the commander for a probe')
