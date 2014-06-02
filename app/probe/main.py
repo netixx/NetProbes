@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+# !/usr/bin/python3
 # coding=UTF-8
 """A probe is a program that can be used to perform test between nodes
 running the same program. It provides synchronisation needed to perform tests
@@ -53,6 +53,7 @@ import logging
 from managers.watchers import WATCHER_LOGGER
 from logging import Formatter
 from managers.scheduler import Scheduler
+
 DDEBUG = 9
 
 wlogger = logging.getLogger(WATCHER_LOGGER)
@@ -72,7 +73,6 @@ def addLogs():
         wlogger.addHandler(
             logging.FileHandler(os.path.join(WATCHERS_LOGS_DIR, Identification.PROBE_ID + 'watcher.log'), mode = 'w'))
 
-
     logging.addLevelName(DDEBUG, "DDEBUG")
 
     def ddebug(logger, msg, *args, **kwargs):
@@ -89,12 +89,12 @@ def addLogs():
     logs.addStdoutAndStdErr(logLevel, logger, formatter)
 
     # TODO: readd file logs when tests are done
-    logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, Identification.PROBE_ID+"_probe.log"), 30, logger, formatter, logLevel = logLevel)
+    logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, Identification.PROBE_ID + "_probe.log"), 30, logger, formatter, logLevel = logLevel)
 
     testLogger = logging.getLogger(TEST_LOGGER)
     testFormatter = Formatter(TEST_LOGS_FORMAT)
 
-    logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, Identification.PROBE_ID+"_tests.log"), 30, testLogger, testFormatter, logLevel = logLevel)
+    logs.addDailyRotatingHandler(os.path.join(LOGS_DIR, Identification.PROBE_ID + "_tests.log"), 30, testLogger, testFormatter, logLevel = logLevel)
     testLogger.propagate = True
 
 
@@ -104,7 +104,11 @@ if __name__ == '__main__':
 
     def printStacks(*args):
         from tools.debugger import strStacks
-        logging.getLogger().info(strStacks())
+
+        out = strStacks()
+        out += "Action queue : %s\n" % repr(ActionMan.actionQueue.queue)
+        out += "Message queue : %s\n" % repr(Client.messageStack.queue)
+        logging.getLogger().info(out)
 
     def shutdown(signum = None, frame = None):
         with stopLock:
