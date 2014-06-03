@@ -19,7 +19,6 @@ class ProbeConnectionException(Exception):
     """
     pass
 
-
 class ToManyTestsInProgress(Exception):
     """Maximum number of allowed test has been reached"""
     pass

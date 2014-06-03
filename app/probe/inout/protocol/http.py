@@ -10,6 +10,7 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 from http.client import HTTPConnection, HTTPException
 from socketserver import ThreadingMixIn
 from threading import Thread
+import socket
 
 import urllib
 
@@ -106,6 +107,9 @@ class Sender(object):
         except NoSuchProbe:
             self.logger.error("The probe you requested to send a message to : '%s', is currently unknown to me.",
                               message.recipientId)
+        except socket.timeout as e:
+            self.logger.warning('Timeout occurred while sending message to %s@%s', message.recipientId, target.getAddress())
+            raise ProbeConnectionException(e)
         except HTTPException as e:
             self.logger.error("Cannot send message to %s@%s", message.recipientId, target.getAddress())
             self.logger.debug("Cannot send message", exc_info = 1)

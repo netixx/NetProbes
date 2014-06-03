@@ -18,7 +18,7 @@ import copy
 from calls.messages import Message, BroadCast
 from consts import Consts, Identification, Params
 from managers.probes import ProbeStorage
-from interfaces.excs import NoSuchProbe, SendError, ClientError, ProbeConnectionException
+from interfaces.excs import SendError, ClientError, ProbeConnectionException
 
 
 class Client(Thread):
@@ -49,11 +49,11 @@ class Client(Thread):
                     self.stop = True
                     return
 
-                #                 if isinstance(message, StatusMessage):
+                # if isinstance(message, StatusMessage):
                 #                     self.sendStatusMessage(message)
                 #                 else:
                 self.sendMessage(message)
-            except ClientError as e:
+            except (ClientError, ProbeConnectionException) as e:
                 self.logger.warning("Error while sending message for %s to %s: %s", message.targetId, message.recipientId, e)
             except Exception as e:
                 self.logger.error("Unexpected error while sending message for %s to %s : %s", message.targetId, message.recipientId, e, exc_info = 1)
@@ -63,7 +63,7 @@ class Client(Thread):
 
     @classmethod
     def _terminate(cls):
-        #wait until all messages are treated before stopping to listen
+        # wait until all messages are treated before stopping to listen
         cls.messageStack.join()
         cls.messageStack.put(None)
 
@@ -112,7 +112,7 @@ class Client(Thread):
         payload = broadcast.getMessage()
         cls.logger.debug("Propagating message %s to %s", broadcast.__class__.__name__, repr(prop))
 
-        #Only do something if there is something to do
+        # Only do something if there is something to do
         if len(prop) > 0:
             if len(prop) <= Consts.PROPAGATION_RATE:
                 #in the end, send the actual message
@@ -160,7 +160,7 @@ class Client(Thread):
             # make sure we are the first on our list
             prop.insert(0, Identification.PROBE_ID)
 
-        #Only do something if there is something to do
+        # Only do something if there is something to do
         if len(prop) > 0:
             if len(prop) <= Consts.PROPAGATION_RATE:
                 for p in prop:
@@ -183,7 +183,7 @@ class Client(Thread):
         """Method that returns when all messages in the stack are sent"""
         cls.messageStack.join()
 
-    ### Inner functions
+    # ## Inner functions
 
     def sendMessage(self, message):
         """Send this message using the Params.PROTOCOL
@@ -202,7 +202,7 @@ class Client(Thread):
         except ProbeConnectionException as e:
             raise SendError(e)
 
-#     def sendStatusMessage(self, statusMessage):
+# def sendStatusMessage(self, statusMessage):
 #         try :
 #             target = ProbeStorage.getProbeById(statusMessage.targetId)
 #             response = self._sendMessage(target, Consts.HTTP_GET_REQUEST, Urls.SRV_STATUS_QUERY)
