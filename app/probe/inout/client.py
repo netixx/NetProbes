@@ -189,7 +189,7 @@ class Client(Thread):
         """Send this message using the Params.PROTOCOL
         :param message: The message to send
         """
-        if not ProbeStorage.isKnownId(message.targetId):
+        if not ProbeStorage.isKnownId(message.recipientId):
             self.logger.warning("The probe %s is not currently known to me, message will not be sent", message.targetId)
             return
         self.logger.debug("Sending the message : %s to %s with ip %s",
