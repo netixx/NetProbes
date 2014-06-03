@@ -54,9 +54,9 @@ class Client(Thread):
                 #                 else:
                 self.sendMessage(message)
             except ClientError as e:
-                self.logger.warning("Error while sending message to %s: %s", message.targetId, e)
+                self.logger.warning("Error while sending message for %s to %s: %s", message.targetId, message.recipientId, e)
             except Exception as e:
-                self.logger.error("Unexpected error while sending message to %s : %s", message.targetId, e, exc_info = 1)
+                self.logger.error("Unexpected error while sending message for %s to %s : %s", message.targetId, message.recipientId, e, exc_info = 1)
             finally:
                 self.messageStack.task_done()
 
@@ -192,10 +192,11 @@ class Client(Thread):
         if not ProbeStorage.isKnownId(message.recipientId):
             self.logger.warning("The probe %s is not currently known to me, message will not be sent", message.targetId)
             return
-        self.logger.debug("Sending the message : %s to %s with ip %s",
+        self.logger.debug("Sending the message : %s for %s to %s with ip %s",
                           message.__class__.__name__,
                           message.getTarget(),
-                          ProbeStorage.getProbeById(message.getTarget()).getIp())
+                          message.recipientId,
+                          ProbeStorage.getProbeById(message.recipientId).getIp())
         try:
             self.sender.send(message)
         except ProbeConnectionException as e:
