@@ -234,7 +234,10 @@ if __name__ == '__main__':
             commander.start()
 
         if Params.WATCHERS:
-            WatcherManager.setOutputDir(os.path.join(DATA_DIR, WATCHERS_OUTPUT_DIR))
+            wd = os.path.join(DATA_DIR, WATCHERS_OUTPUT_DIR)
+            if not os.path.exists(wd):
+                os.mkdir(wd)
+            WatcherManager.setOutputDir(wd)
             for watcher in args.watchers:
                 parts = watcher.partition('=')
                 try:
