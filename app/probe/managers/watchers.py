@@ -6,12 +6,14 @@ WatcherServices provides a API to watchers
 """
 import importlib
 import logging
+import os
 
 from interfaces.watcher import WatcherError, WatcherArgumentError
 
 WATCHER_PACKAGE = 'watchers'
 WATCHER_PREFIX = 'Watcher'
 WATCHER_LOGGER = 'watchers'
+
 logger = logging.getLogger(WATCHER_LOGGER)
 
 from managers.probetests import TestManager as ProbeTestManager
@@ -28,6 +30,10 @@ class WatcherManager(object):
     """Manager for Watchers
     registers, starts and stop watchers"""
     watchers = []
+
+    @classmethod
+    def setOutputDir(cls, outputDir):
+        cls.out_dir = outputDir
 
     @classmethod
     def registerWatcher(cls, watcher, options, logger):
@@ -70,6 +76,12 @@ class WatcherManager(object):
                 break
 
 class WatcherServices(object):
+
+    @classmethod
+    def writeOutput(cls, file, output):
+        with open(os.path.join(WatcherManager.out_dir, file), 'a') as f:
+            f.write(output)
+
     @classmethod
     def getAllOtherProbes(cls):
         return ProbeStorage.getAllOtherProbes()

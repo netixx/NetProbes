@@ -32,7 +32,7 @@ sys.path.append(os.path.abspath(os.path.join(directory, "..", "..", "lib", 'tool
 DATA_DIR = os.path.join(directory, "..", "..", "data")
 LOGS_DIR = os.path.join(DATA_DIR, "logs")
 WATCHERS_LOGS_DIR = os.path.join(LOGS_DIR, "watchers")
-
+WATCHERS_OUTPUT_DIR = 'watcher-output'
 LOG_FORMAT = Consts.DEFAULT_LOG_FORMAT
 TEST_LOGS_FORMAT = "%(levelname)s\t%(asctime)s %(name)s (%(module)s)\t: %(message)s"
 
@@ -234,6 +234,7 @@ if __name__ == '__main__':
             commander.start()
 
         if Params.WATCHERS:
+            WatcherManager.setOutputDir(os.path.join(DATA_DIR, WATCHERS_OUTPUT_DIR))
             for watcher in args.watchers:
                 parts = watcher.partition('=')
                 try:
