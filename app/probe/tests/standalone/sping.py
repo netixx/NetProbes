@@ -31,9 +31,9 @@ class Sping(Test):
         self.options = None
         self.stats = None
         self.isSweep = False
+        self.parallelPing = False
         self.parseOptions()
         self.errors = {}
-        self.parallelPing = False
 
 
     def parseOptions(self):
