@@ -78,8 +78,8 @@ class WatcherManager(object):
 class WatcherServices(object):
 
     @classmethod
-    def writeOutput(cls, file, output):
-        with open(os.path.join(WatcherManager.out_dir, file), 'a') as f:
+    def writeOutput(cls, file, output, mode = 'a'):
+        with open(os.path.join(WatcherManager.out_dir, file), mode) as f:
             f.write(output)
 
     @classmethod
