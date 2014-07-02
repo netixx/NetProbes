@@ -24,14 +24,20 @@ class TestServices(object):
         """Returns the Ids of all the other known probes"""
         return ProbeStorage.getIdAllOtherProbes()
 
-    @staticmethod
-    def runCmd(cmd, **popenParams):
+    @classmethod
+    def runCmd(cls, cmd, **popenParams):
         """Run a command and return stdout and stdin to communicate with it
         Uses the Popen methods
         :param cmd : command string to run
         :param popenParams : param to merge with Popen params
         """
+        process = cls.popen(cmd, **popenParams)
+        out, err = process.communicate()
+        exitcode = process.wait()
+        return out, err, exitcode
+
+    @staticmethod
+    def popen(cmd, **popenParams):
         defaultPopenParams = {'stdout': PIPE}
         defaultPopenParams.update(popenParams)
-        process = Popen(shlex.split(cmd), **defaultPopenParams)
-        return process.communicate()
+        return Popen(shlex.split(cmd), **defaultPopenParams)

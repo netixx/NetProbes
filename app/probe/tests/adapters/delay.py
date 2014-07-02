@@ -45,7 +45,7 @@ class Ping(object):
         opstr = ''
         for opt, val in opts.items():
             opstr += cls._addOption(opt, val)
-        stdout, stderr = TestServices.runCmd(cls._ping_cmd.format(opts = opstr, ip = ip))
+        stdout, stderr, code = TestServices.runCmd(cls._ping_cmd.format(opts = opstr, ip = ip))
         # if isSweep:
         #     return cls._parseSweepPing(str(stdout.decode()))
         return cls._parsePing(str(stdout.decode()))

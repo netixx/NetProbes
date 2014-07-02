@@ -331,6 +331,7 @@ class _TestResponder(Thread):
 
     def run(self):
         """Start replying to test"""
+        #TODO : remove replyTest ??
         try:
             self.replyPrepare()
             self.prepared = True
