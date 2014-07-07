@@ -277,7 +277,12 @@ class WatcherMessage(Message):
 
 class InitializeWatcher(WatcherMessage):
     """Start the init phase of the watcher"""
-    pass
+    def __init__(self, targetId, watcherId, watcherOptions = None):
+        super().__init__(targetId, watcherId)
+        self.watcherOptions = watcherOptions
+
+    def getWatcherOptions(self):
+        return self.watcherOptions
 
 
 class RunWatcher(WatcherMessage):

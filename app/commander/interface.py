@@ -183,6 +183,8 @@ class Parser(object):
         watcher.add_argument('watcherId')
         watcher.add_argument('signal',
                              choices = ['init', 'run'])
+        watcher.add_argument('--options',
+                             dest = 'watcherOptions')
         watcher.set_defaults(func = self.setWatcherMessage)
         try:
             self.command = args.parse_args(shlex.split(command))
@@ -224,7 +226,8 @@ class Parser(object):
         """Function for command watcher"""
         if self.command.signal == 'init':
             self.message = InitializeWatcher(self.command.target_probe,
-                                             self.command.watcherId)
+                                             self.command.watcherId,
+                                             self.command.watcherOptions)
         elif self.command.signal == 'run':
             self.message = RunWatcher(self.command.target_probe,
                                       self.command.watcherId)

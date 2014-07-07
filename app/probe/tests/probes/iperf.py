@@ -140,7 +140,6 @@ class TesterIperf(TesterTest, Iperf):
     def doTest(self):
         """Does the actual test"""
         for target in self.targets:
-            target = self.options.targets[0]
             targetIp = TestServices.getProbeIpById(target)
             if self.options.protocol == self.PROTO_TCP:
                 attempts = 0

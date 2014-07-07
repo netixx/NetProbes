@@ -85,7 +85,7 @@ class CommanderServer(Thread):
                 msg.errorCallback = cls.addError
         elif isinstance(message, WatcherCommand):
             if isinstance(message, InitializeWatcher):
-                msg = m.InitializeWatcher(message.targetId, message.watcherId)
+                msg = m.InitializeWatcher(message.targetId, message.watcherId, message.watcherOptions)
             elif isinstance(message, RunWatcher):
                 msg = m.RunWatcher(message.targetId, message.watcherId)
         if msg is None:

@@ -72,6 +72,8 @@ class WatcherManager(object):
                 if isinstance(message, RunWatcher):
                     wa.workEvent.set()
                 elif isinstance(message, InitializeWatcher):
+                    if message.getWatcherOptions() is not None:
+                        wa.opts = message.getWatcherOptions()
                     wa.initializeEvent.set()
                 break
 

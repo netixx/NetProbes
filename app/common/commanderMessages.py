@@ -43,7 +43,9 @@ class WatcherCommand(CommanderMessage):
 
 
 class InitializeWatcher(WatcherCommand):
-    pass
+    def __init__(self, targetId, watcherId, watcherOptions = None):
+        super().__init__(targetId, watcherId)
+        self.watcherOptions = watcherOptions
 
 
 class RunWatcher(WatcherCommand):
