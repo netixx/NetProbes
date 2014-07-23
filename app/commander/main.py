@@ -92,7 +92,10 @@ if __name__ == '__main__':
         commander.quit()
     except ImportError as e:
         logging.getLogger().error("Could not find interface to use : %s", e)
+        exit(1)
     except ProbeConnectionFailed as e:
         logging.getLogger().error("Could not connect to probe %s : (%s)", args.ip_probe, e)
+        exit(1)
     except Exception as e:
         logging.getLogger().critical("Could not start commander : %s", e, exc_info = 1)
+        exit(1)
