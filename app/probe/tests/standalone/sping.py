@@ -6,7 +6,7 @@ Protocols tcp and udp are supported
 __all__ = ['Ping']
 
 import argparse
-from threading import Thread
+from threading import Thread, Semaphore
 
 from interfaces.standalonetest import Test
 from interfaces.excs import TestError, TestArgumentError
@@ -25,6 +25,7 @@ class PingParseError(TestError):
 
 class Sping(Test):
     npings = 1
+    maxThreads = 100
 
     def __init__(self, options):
         super().__init__(options)
@@ -34,6 +35,7 @@ class Sping(Test):
         self.parallelPing = False
         self.parseOptions()
         self.errors = {}
+        self.semaphore = Semaphore(self.maxThreads)
 
 
     def parseOptions(self):
@@ -139,12 +141,13 @@ class Sping(Test):
         self.stats = {}
         self.psuccess = {}
         self.perrors = {}
-        self.threads = []
+        # self.threads = []
         for target in self.targets:
             try:
                 if self.parallelPing:
+                    self.semaphore.acquire()
                     t = Thread(target = self.makeAPing, args = [target], name = "Ping-%s" % target)
-                    self.threads.append(t)
+                    # self.threads.append(t)
                     t.start()
                 else:
                     self.makeAPing(target)
@@ -156,8 +159,10 @@ class Sping(Test):
                 self.psuccess[target] = False
                 self.perrors[target] = TestError(e)
         if self.parallelPing:
-            for t in self.threads:
-                t.join()
+            for _ in range(self.maxThreads):
+                self.semaphore.acquire()
+            # for t in self.threads:
+            #     t.join()
 
 
     def makeAPing(self, probeIp):
@@ -172,6 +177,8 @@ class Sping(Test):
             raise PingFail(e)
         except delay.PingParseError as e:
             raise PingParseError(e)
+        finally:
+            self.semaphore.release()
 
     ###
     ###    Generate the result of the test given the set of reports from the tested probes

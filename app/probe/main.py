@@ -11,9 +11,10 @@ Main launcher for the probe
 
 @author: francois
 todo: catcher connexions impossibles
-todo: security
 todo: Do availability index with : current queue sizes, current number of tests
 @todo: overlay id (take part to multiple overlays)
+todo: security
+todo: point system : +1 for test response, -10 for test performed counted at remote hosts/ban strategy
 """
 
 import os
