@@ -15,11 +15,11 @@ from managers.watchers import WatcherServices
 class WatcherBandwidth(LinkDetection):
     """Watch the network for delay changes wrt baseline"""
 
-    BW_TEST_NAME = 'iperf'
+    BW_TEST_NAME = 'igi'
 
     def __init__(self, options, logger):
         super().__init__(options, logger)
-        self.name = 'delay'
+        self.name = 'bandwidth'
         self.measureClass = BwStats
 
     def newProbe(self, *args, **kwargs):
@@ -37,7 +37,7 @@ class WatcherBandwidth(LinkDetection):
         parser.add_argument('--bw-metric-weight',
                             dest = 'bwMetricWeight',
                             type = float,
-                            default = 1)
+                            default = 0)
         # parser.add_argument('args', nargs = REMAINDER)
 
         args, rest = parser.parse_known_args(opts)
@@ -60,7 +60,7 @@ class WatcherBandwidth(LinkDetection):
         ab = rb.bw
         db = rb.sdev
 
-        return abs(aw - ab) - (db + dw) / 2.0 > 2 * self.options.x
+        return abs(aw - ab) - (db + dw) > self.options.x
 
     def makeMeasures(self, s):
         opts = [probe.id for probe in s]
