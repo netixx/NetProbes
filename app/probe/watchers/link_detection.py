@@ -210,6 +210,7 @@ class LinkDetection(Watcher):
             self.setLp()
             time.sleep(2)
         self.makeBaseline(self.lp.keys())
+        #TODO : replace with iterables
         self.logger.info("Parameters : \n%s", "\n".join(["%s : %s" % (k, v) for k, v in vars(self.options).items()]))
         self.logger.info("Baseline done : %s", ", ".join(["%s: %s" % (p.address, p.baseline.printAvgDev()) for p in self.lp.values()]))
         self.maxIpDistance = max([ip2int(p.address) for p in self.lp.values()]) - min([ip2int(p.address) for p in self.lp.values()])

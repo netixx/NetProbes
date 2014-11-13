@@ -92,6 +92,9 @@ class TesterIgi(TesterTest, Igi):
         self.outputs = {}
         self.bws = {}
         self.cmd = self.cliCmd.format(exec = self._EXEC,
+                                      nprobes = self.options.nProbes,
+                                      ntrains = self.options.nTrains,
+                                      packetSize = self.options.packetSize,
                                       serverIp = "{ip}")
 
     def doTest(self):
