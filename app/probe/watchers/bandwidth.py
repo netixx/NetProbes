@@ -33,6 +33,7 @@ class WatcherBandwidth(LinkDetection):
         self.clustering = KMeans(clusterClass = Group, distanceThreshold = BwStats(bw = self.options.x), logger = self.logger, axes = ['bw'])
 
     def parseOptions(self, opts, nameSpace = None):
+        self.logger.info("options : >%s<\n" % opts)
         parser = ArgumentParser()
         parser.add_argument('--bw-metric-weight',
                             dest = 'bwMetricWeight',
