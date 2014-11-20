@@ -73,6 +73,11 @@ class TesterIgi(TesterTest, Igi):
     Tester is the Client for Igi : do nothing for prepare
     """
 
+    # prepareTimeout = DEFAULT_PREPARE_TIMEOUT
+    doTimeout = 600
+    # resultTimeout = DEFAULT_RESULT_TIMEOUT
+
+
     _EXEC = 'ptr-client'
     cliCmd = '{exec} -n {nprobes} -s {packetSize} -k {ntrains} {serverIp}'
 
@@ -150,6 +155,9 @@ class TesterIgi(TesterTest, Igi):
 
 class TesteeIgi(TesteeTest, Igi):
     """Methods for the probe(s) which receive the test"""
+
+    overTimeout = 300
+
 
     _EXEC = 'ptr-server'
 
