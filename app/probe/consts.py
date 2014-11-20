@@ -17,6 +17,11 @@ class Consts(object):
     PROPAGATION_RATE = 5
     LOCAL_IP_ADDR = "localhost"
     DEFAULT_LOG_FORMAT = "%(levelname)s\t%(asctime)s %(threadName)s (%(module)s)\t: %(message)s"
+    GET_REMOTE_ID_RETRY=4
+    GET_REMOVE_ID_RETRY_INTERVAL=2
+    SEND_RETRY=2
+    SEND_RETRY_INTERVAL=1
+
 
 
 class Params(object):

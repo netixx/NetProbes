@@ -15,14 +15,14 @@ from queue import PriorityQueue
 from ipaddress import ip_network
 
 from calls.messages import Hello, Bye, AddToOverlay, Add
-from consts import Identification
+from consts import Identification, Consts
 from inout.client import Client
 from managers.probes import ProbeStorage
 import calls.actions as a
 from .probetests import TestResponder, TestManager
 from interfaces.excs import TestError, ActionError, \
     NoSuchProbe, ToManyTestsInProgress, ProbeConnectionException
-from .scheduler import Scheduler
+from .scheduler import Scheduler, Retry
 
 
 class ActionMan(Thread):
@@ -108,7 +108,11 @@ class ActionMan(Thread):
         assert isinstance(action, a.AddToOverlay)
         cls.logger.ddebug("Add probe to overlay")
         try:
-            probeId = Client.getRemoteId(action.probeIp)
+            probeId = Retry.retry(times = Consts.GET_REMOTE_ID_RETRY,
+                                  interval = Consts.GET_REMOVE_ID_RETRY_INTERVAL,
+                                  failure = ProbeConnectionException,
+                                  eraise = ProbeConnectionException)(Client.getRemoteId)(action.probeIp)
+            # probeId = Client.getRemoteId(action.probeIp)
             cls.logger.info("Adding probe %s at %s to overlay", probeId, action.probeIp)
             addMessage = Add(Identification.PROBE_ID, probeId, action.probeIp)
             #use action directly because of timing issues

@@ -19,7 +19,7 @@ from calls.messages import Message, BroadCast
 from consts import Consts, Identification, Params
 from managers.probes import ProbeStorage
 from interfaces.excs import SendError, ClientError, ProbeConnectionException
-
+from managers.scheduler import Retry
 
 class Client(Thread):
     """
@@ -198,7 +198,12 @@ class Client(Thread):
                           message.recipientId,
                           ProbeStorage.getProbeById(message.recipientId).getIp())
         try:
-            self.sender.send(message)
+
+            Retry.retry(times = Consts.SEND_RETRY,
+                        interval = Consts.SEND_RETRY_INTERVAL,
+                        failure = ProbeConnectionException,
+                        eraise = ProbeConnectionException
+            )(self.sender.send)(message)
         except ProbeConnectionException as e:
             raise SendError(e)
 

@@ -8,6 +8,8 @@ from .probes import ProbeStorage
 
 MAX_SCHED_DELAY = 3.0
 
+DEFAULT_RETRY=3
+DEFAULT_RETRY_INTERVAL=3
 
 class Scheduler(object):
     """Scheduler makes people wait for a moment"""
@@ -52,3 +54,23 @@ class Waiter(th.Thread):
     def wait(self):
         self.start()
         self.join()
+
+
+class Retry(object):
+
+    @classmethod
+    def retry(cls, times = DEFAULT_RETRY, interval = DEFAULT_RETRY_INTERVAL, failure = Exception, eraise = Exception):
+        def tryIt(func):
+            def f(*args, **kwargs):
+                attempts = 0
+                while attempts < times:
+                    try:
+                        return func(*args, **kwargs)
+                    except failure:
+                        if interval > 0:
+                            Scheduler._wait(interval)
+                        attempts += 1
+                raise eraise()
+
+            return f
+        return tryIt
