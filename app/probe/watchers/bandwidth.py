@@ -67,9 +67,10 @@ class WatcherBandwidth(LinkDetection):
         opts = [probe.id for probe in s]
         id2ip = {v.id:v.address for v in s}
         resContainer = self.TestResult()
-        WatcherServices.doTest(self.BW_TEST_NAME, opts, resContainer.addResult, resContainer.addError)
+        self._makeMeasure(opts, resContainer)
+        # WatcherServices.doTest(self.BW_TEST_NAME, opts, resContainer.addResult, resContainer.addError)
         # protect against tests hanging
-        resContainer.resultCollected.wait(20*len(s))
+        # resContainer.resultCollected.wait(20*len(s))
         if not resContainer.resultCollected.is_set():
             self.makeMeasures(s)
             return
@@ -88,8 +89,8 @@ class WatcherBandwidth(LinkDetection):
         opts = [self.lp[host].id for host in hosts]
         id2ip = {self.lp[host].id: self.lp[host].address for host in hosts}
         resContainer = self.TestResult()
-        WatcherServices.doTest(self.BW_TEST_NAME, opts, resContainer.addResult, resContainer.addError)
-        resContainer.resultCollected.wait()
+        res = {}
+        self._makeMeasure(opts, resContainer)
         # redoBl = []
         for host, bw in resContainer.results.items():
             self.lp[id2ip[host]].baseline = bw
@@ -97,6 +98,13 @@ class WatcherBandwidth(LinkDetection):
         #     self.logger.info("Retaking baseline for %s", repr(redoBl))
         #     print("Retaking baseline for %s" % repr(redoBl))
         #     self.makeBaseline(redoBl)
+
+    def _makeMeasure(self, probes, resContainer):
+        for probe in probes:
+            WatcherServices.doTest(self.BW_TEST_NAME, probe, resContainer.addResult, resContainer.addError)
+            resContainer.resultCollected.wait()
+            resContainer.resultCollected.clear()
+        resContainer.resultCollected.set()
 
     def metricBw(self, host):
         # TODO : reduce f in noisy measures ?
