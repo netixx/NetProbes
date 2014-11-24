@@ -10,6 +10,7 @@ MAX_SCHED_DELAY = 3.0
 
 DEFAULT_RETRY=3
 DEFAULT_RETRY_INTERVAL=3
+_LOG_POWER_ADD = 2
 
 class Scheduler(object):
     """Scheduler makes people wait for a moment"""
@@ -18,7 +19,7 @@ class Scheduler(object):
     @classmethod
     def addToOverlay(cls):
         n = ProbeStorage.getNumberOfProbes()
-        wait = min(MAX_SCHED_DELAY, math.log10(math.pow(n, 0.7) + 1) / 2.0)
+        wait = min(MAX_SCHED_DELAY, math.log(n + 1, _LOG_POWER_ADD))
         cls._wait(wait)
 
     @classmethod
@@ -62,15 +63,21 @@ class Retry(object):
     def retry(cls, times = DEFAULT_RETRY, interval = DEFAULT_RETRY_INTERVAL, failure = Exception, eraise = Exception):
         def tryIt(func):
             def f(*args, **kwargs):
+                fail = None
                 attempts = 0
                 while attempts < times:
                     try:
                         return func(*args, **kwargs)
-                    except failure:
+                    except failure as curfail:
+                        fail = curfail
                         if interval > 0:
                             Scheduler._wait(interval)
                         attempts += 1
-                raise eraise()
+                if type(fail) is Exception:
+                    message = fail.getMessage()
+                else:
+                    message = "Retry loop ended"
+                raise eraise(message)
 
             return f
         return tryIt
