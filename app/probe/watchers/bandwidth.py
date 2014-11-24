@@ -16,6 +16,7 @@ class WatcherBandwidth(LinkDetection):
     """Watch the network for delay changes wrt baseline"""
 
     BW_TEST_NAME = 'igi'
+    # BW_TEST_NAME = 'iperf'
 
     def __init__(self, options, logger):
         super().__init__(options, logger)
@@ -30,7 +31,10 @@ class WatcherBandwidth(LinkDetection):
 
     def _resetWork(self):
         super()._resetWork()
-        self.clustering = KMeans(clusterClass = Group, distanceThreshold = BwStats(bw = self.options.x), logger = self.logger, axes = ['bw'])
+        self.clustering = KMeans(clusterClass = Group,
+                                 distanceThreshold = BwStats(bw = self.options.x * BwStats.NORM_FACTOR_MB),
+                                 logger = self.logger,
+                                 axes = ['bw'])
 
     def parseOptions(self, opts, nameSpace = None):
         self.logger.info("options : >%s<\n" % opts)
@@ -39,16 +43,15 @@ class WatcherBandwidth(LinkDetection):
                             dest = 'bwMetricWeight',
                             type = float,
                             default = 0)
-        # parser.add_argument('args', nargs = REMAINDER)
 
         args, rest = parser.parse_known_args(opts)
         if args.bwMetricWeight > 0:
             self.metrics.append((args.bwMetricWeight, self.metricBw))
         super().parseOptions(rest, args)
+        self.options.bytesThreshold = 10**20
 
     def initialize(self):
         super().initialize()
-        # self.maxDelay = max([p.baseline.rttavg for p in self.lp.values()])
         self.maxBw = max(p.baseline.bw for p in self.lp.values())
 
     def isSeparated(self, sets):
@@ -65,46 +68,47 @@ class WatcherBandwidth(LinkDetection):
 
     def makeMeasures(self, s):
         opts = [probe.id for probe in s]
-        id2ip = {v.id:v.address for v in s}
+        id2ip = {v.id: v.address for v in s}
         resContainer = self.TestResult()
         self._makeMeasure(opts, resContainer)
-        # WatcherServices.doTest(self.BW_TEST_NAME, opts, resContainer.addResult, resContainer.addError)
-        # protect against tests hanging
-        # resContainer.resultCollected.wait(20*len(s))
-        if not resContainer.resultCollected.is_set():
-            self.makeMeasures(s)
-            return
+        # if not resContainer.resultCollected.is_set():
+        #     self.makeMeasures(s)
+        #     return
         # redoMeasure = []
         for host, bw in resContainer.results.items():
             # if ping.rttdev > self.options.rttdevThreshold:
-            #     redoMeasure.append(self.lp[host])
+            # redoMeasure.append(self.lp[host])
             self.lp[id2ip[host]].add(bw)
-        # if len(redoMeasure) > 0:
-        #     self.logger.info("Retaking measure for %s", repr(redoMeasure))
-        #     print("Retaking measure for %s" % repr(redoMeasure))
-        #     self.makeMeasures(redoMeasure)
+            # if len(redoMeasure) > 0:
+            # self.logger.info("Retaking measure for %s", repr(redoMeasure))
+            #     print("Retaking measure for %s" % repr(redoMeasure))
+            #     self.makeMeasures(redoMeasure)
 
     def makeBaseline(self, hosts):
         super().makeBaseline(hosts)
+        # remapping to host id
         opts = [self.lp[host].id for host in hosts]
         id2ip = {self.lp[host].id: self.lp[host].address for host in hosts}
         resContainer = self.TestResult()
-        res = {}
         self._makeMeasure(opts, resContainer)
         # redoBl = []
         for host, bw in resContainer.results.items():
             self.lp[id2ip[host]].baseline = bw
-        # if len(redoBl) > 0:
-        #     self.logger.info("Retaking baseline for %s", repr(redoBl))
-        #     print("Retaking baseline for %s" % repr(redoBl))
-        #     self.makeBaseline(redoBl)
+            # if len(redoBl) > 0:
+            # self.logger.info("Retaking baseline for %s", repr(redoBl))
+            #     print("Retaking baseline for %s" % repr(redoBl))
+            #     self.makeBaseline(redoBl)
 
     def _makeMeasure(self, probes, resContainer):
+        import datetime
+
         for probe in probes:
-            WatcherServices.doTest(self.BW_TEST_NAME, probe, resContainer.addResult, resContainer.addError)
+            WatcherServices.doTest(self.BW_TEST_NAME, [probe], resContainer.addResult, resContainer.addError)
             resContainer.resultCollected.wait()
+            self.logger.info("%s : Bw checked for probe %s\n" % (datetime.datetime.now(), probe))
             resContainer.resultCollected.clear()
         resContainer.resultCollected.set()
+        self.logger.info("Results in : %s" % (" ".join(["%s:%s" % (repr(host), bw.printAvg()) for host, bw in resContainer.results.items()])))
 
     def metricBw(self, host):
         # TODO : reduce f in noisy measures ?
@@ -112,15 +116,8 @@ class WatcherBandwidth(LinkDetection):
         f = 1
         m = 1
         tested = self.tested
-        # le = 0
-        # if len(tested) == 0:
-        # return f, self._MAX_METRIC
         # TODO : silence hosts with high rttdev ??
         m = self.getTotalMetric(host, tested, hostBwDistance, self.maxBw)
-        # for p in tested:
-        # m += self.setDistance(p.baseline.rttavg - host.baseline.rttavg, self.maxDelay)
-        # le += 1
-        # m /= le
         return f, m * self.MAX_METRIC
 
     class TestResult(object):
@@ -133,13 +130,13 @@ class WatcherBandwidth(LinkDetection):
             if result is not None:
                 for h, r in result.items():
                     self.results[h] = BwStats(sent = r.sent,
-                                            received = r.received,
-                                            transfer = r.transfer,
-                                            bw = r.bw,
-                                            jitter = r.jitter,
-                                            errors = r.errors,
-                                            loss = r.loss,
-                                            outoforder = r.outoforder)
+                                              received = r.received,
+                                              transfer = r.transfer,
+                                              bw = r.bw,
+                                              jitter = r.jitter,
+                                              errors = r.errors,
+                                              loss = r.loss,
+                                              outoforder = r.outoforder)
             self.resultCollected.set()
 
         def addError(self, testId, error):
@@ -167,8 +164,8 @@ class Probe(abstractProbe):
         # TODO : check baseline stddev
         p = self.measures[-1]
         return BwStats(sent = p.sent,
-                         received = p.received,
-                         bw = (p.bw - self.baseline.bw))
+                       received = p.received,
+                       bw = (p.bw - self.baseline.bw))
 
     @property
     def nPackets(self):
@@ -182,10 +179,12 @@ class Probe(abstractProbe):
     def __str__(self):
         return "%s:%s" % (str(self.address), '{:.2f}'.format(self.getMeasure().bw) if len(self.measures) > 0 else 'none')
 
+
 class Group(list):
     @property
     def representative(self):
         import math
+
         if not len(self) > 0:
             return BwStats()
 
@@ -195,13 +194,15 @@ class Group(list):
             sdev = math.sqrt(sum((p.getMeasure().bw - mean) ** 2 for p in self) / len(self)))
 
     def printRepresentative(self):
-        return "{:.2f}".format(float(self.representative.bw))
+        return "{:.2f}".format(float(self.representative.bw)/BwStats.NORM_FACTOR_MB)
 
     def __str__(self):
         return "%s: %s" % (self.printRepresentative(), super().__repr__())
 
 
 class BwStats(object):
+    NORM_FACTOR_MB = 1000.0 ** 2
+
     def __init__(self, sent = 0.0, received = 0.0, transfer = 0.0, bw = 0.0, jitter = 0.0, errors = 0.0,
                  loss = 0.0, outoforder = 0.0, sdev = 0.0):
         self.sent = sent
@@ -215,23 +216,23 @@ class BwStats(object):
         self.sdev = sdev
 
     def printAvg(self):
-        return "{:.2f}".format(self.bw)
+        return "{:.3f}".format(self.bw / self.NORM_FACTOR_MB)
 
     def printAvgDev(self):
         return self.printAvg()
 
     # def printAvgDev(self):
-    #     return "{:.2f}@{:.2f}".format(self.rttavg, self.rttdev)
+    # return "{:.2f}@{:.2f}".format(self.rttavg, self.rttdev)
 
     def printAll(self):
         return """
         sent : %d, received %d
         bw : %.2f
-        """ % (self.sent, self.received, self.bw)
+        """ % (self.sent, self.received, self.bw / self.NORM_FACTOR_MB)
 
     def toDict(self):
         return {
             'sent': self.sent,
             'received': self.received,
-            'bw' : self.bw
+            'bw': self.bw / self.NORM_FACTOR_MB
         }
