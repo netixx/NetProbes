@@ -14,7 +14,7 @@ from tests.adapters import delay
 
 name = "Sping"
 
-
+#TODO: enable either IPs or names
 class PingFail(TestError):
     pass
 

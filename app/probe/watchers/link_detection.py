@@ -17,7 +17,7 @@ from consts import Identification
 from interfaces.watcher import Watcher, WatcherArgumentError
 from managers.watchers import WatcherServices
 
-
+#TODO: replace ip with names
 class LinkDetection(Watcher):
     """Watch the network for delay changes wrt baseline"""
 
@@ -283,6 +283,7 @@ class LinkDetection(Watcher):
                 self.logger.info("")
 
                 if self.hasConverged(self.sets):
+                    self.logger.info("Algorithm has converged...")
                     break
 
             print("Terminating :\n  white (%s): %s\n  black (%s): %s\n  grey : %s" % (

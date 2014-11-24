@@ -11,7 +11,7 @@ from .link_detection import LinkDetection, KMeans
 from .link_detection import Probe as abstractProbe
 from managers.watchers import WatcherServices
 
-
+#TODO: replace ip with names
 class WatcherDelay(LinkDetection):
     """Watch the network for delay changes wrt baseline"""
 
