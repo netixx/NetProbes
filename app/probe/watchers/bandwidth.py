@@ -48,7 +48,7 @@ class WatcherBandwidth(LinkDetection):
         if args.bwMetricWeight > 0:
             self.metrics.append((args.bwMetricWeight, self.metricBw))
         super().parseOptions(rest, args)
-        self.options.bytesThreshold = 10**20
+        self.options.bytesThreshold = 10 ** 20
 
     def initialize(self):
         super().initialize()
@@ -72,7 +72,7 @@ class WatcherBandwidth(LinkDetection):
         resContainer = self.TestResult()
         self._makeMeasure(opts, resContainer)
         # if not resContainer.resultCollected.is_set():
-        #     self.makeMeasures(s)
+        # self.makeMeasures(s)
         #     return
         # redoMeasure = []
         for host, bw in resContainer.results.items():
@@ -96,7 +96,7 @@ class WatcherBandwidth(LinkDetection):
             self.lp[id2ip[host]].baseline = bw
             # if len(redoBl) > 0:
             # self.logger.info("Retaking baseline for %s", repr(redoBl))
-            #     print("Retaking baseline for %s" % repr(redoBl))
+            # print("Retaking baseline for %s" % repr(redoBl))
             #     self.makeBaseline(redoBl)
 
     def _makeMeasure(self, probes, resContainer):
@@ -177,7 +177,7 @@ class Probe(abstractProbe):
 
 
     def __str__(self):
-        return "%s:%s" % (str(self.address), '{:.2f}'.format(self.getMeasure().bw) if len(self.measures) > 0 else 'none')
+        return "%s:%s" % (str(self.address), '{:.2f}'.format(self.getMeasure().bw / BwStats.NORM_FACTOR_MB) if len(self.measures) > 0 else 'none')
 
 
 class Group(list):
@@ -194,7 +194,7 @@ class Group(list):
             sdev = math.sqrt(sum((p.getMeasure().bw - mean) ** 2 for p in self) / len(self)))
 
     def printRepresentative(self):
-        return "{:.2f}".format(float(self.representative.bw)/BwStats.NORM_FACTOR_MB)
+        return "{:.2f}".format(float(self.representative.bw) / BwStats.NORM_FACTOR_MB)
 
     def __str__(self):
         return "%s: %s" % (self.printRepresentative(), super().__repr__())
