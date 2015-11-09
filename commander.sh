@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#commander startiup script
+#commander startup script
 
 CUR_DIR=$(pwd)
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
