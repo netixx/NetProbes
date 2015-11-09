@@ -7,6 +7,10 @@ from interfaces.probetest import TesterTest, TesteeTest, Report
 from interfaces.excs import TestArgumentError
 from managers.tests import TestServices
 
+#reason for IGI selection can be found in 
+# Espinet, François, Joumblatt, Diana and Rossi, Dario, 
+# Zen and the art of network troubleshooting: a hands on experimental study
+#. In Traffic Monitoring and Analysis (TMA'15), Barcellona, Spain, Apr 2015. 
 
 name = 'igi'
 
