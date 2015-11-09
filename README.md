@@ -1,16 +1,31 @@
-NetProbes : distributed troubleshooting
+NetProbes : distributed troubleshooting 
 =========
 
-This project intends to propose a way to test your network in a distributed fashion. The idea is to be able to cooperate with other peers running the NetProbes program in order to inspect the state of the network.
+This project intends to propose a way to test your network in a distributed fashion. The idea is to be able to cooperate with other nodes running the NetProbes program in order to inspect the state of the network, performing a distributed network troubleshooting via active measurement.
 
-It does so by establishing a overlay of probes running on each node you wish to test.
-Once probes are up and running, it is up to you to connect the probes together and start the test.
+NetProbes performs distributed troubleshooting so by establishing a overlay of probes running on each node you wish to potentially participate in the test. Once probes are up and running, upon dection of an anomaly, you can leverage the established overlay to connect the relevant probes together and start the test. 
+
+NetProbes perform measurement that can then be clustered (in absence of topology information) or classified (in presence of topology information). Clustering allows to 
+
+
+
+
+##Notice##
+
+Implementation is based on python 3 and does not require (as of today) any external package other than the basic python installation.
+
+Development is in progress and thorough tests have been performed. Shall you wish to have an idea of experimental results, please refer to :
+
+François Espinet, Diana Joumblatt and Dario Rossi, "Zen and the art of network troubleshooting: a hands on experimental study". In Traffic Monitoring and Analysis (TMA'15), Barcellona, Spain, Apr 2015. 
+
+
+##Technical details##
 
 General workflow is as follows :
 
 1. install the application on the computers/servers you wish to test
-2. use the commander to command one probe with add, do and remove commands
-3. launch tests an get the results !
+2. use the commander to control any given probe (with add, do and remove commands)
+3. launch the tests an get the results
 
 You can write your own tests in the `(probe.)tests` package. There are two kinds of tests:
 
@@ -19,18 +34,9 @@ You can write your own tests in the `(probe.)tests` package. There are two kinds
 
 Those tests should respectively be placed in the `(probe.)tests.standalone` and `(probe.)tests.probes` packages. They can both use methods provided by the `(probe.)WatcherServices` and must implement the prescripted interfaces.
 
-
-##Notice##
-
-Developpment is in progress and results are currently unknown!!
-
-Implementation is based on python 3 and does not require (as of today) any external package other than the basic python installation.
-
-
-##Technical details##
-
 Communication between the probes is done via the classes in `(probe.)inout.protocol` and `(probe.)inout.codec` which are respectively in charge of sending/receiving data accross the network and translating python objects into data suitable for transmission. The both have interfaces defined in the `(probe.)interfaces.inout` package.
 
-In the current implementation, synchronisation between the probes is done via http (as it is the least blocked protocol), so be sure that this is allowed between probes. **This is required for the project to work!!**
+In the current implementation, overlay communication  is done via HTTP (as it is generally available in any network settings and it is the less blocked protocol in a world where the IP narrow waist has liftet up to HTTP).
+Be sure that HTTP communication is allowed between probes -- as otherwise no test can be run!
 
 
