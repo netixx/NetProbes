@@ -5,16 +5,14 @@ This project intends to propose a way to test your network in a distributed fash
 
 NetProbes performs distributed troubleshooting so by establishing a overlay of probes running on each node you wish to potentially participate in the test. Once probes are up and running, upon dection of an anomaly, you can leverage the established overlay to connect the relevant probes together and start the test. 
 
-NetProbes perform measurement that can then be clustered (in absence of topology information) or classified (in presence of topology information). Clustering allows to 
-
-
+NetProbes perform measurement that can then be clustered (in absence of topology information) or classified (in presence of topology information). Clustering allows to assess the severity of an impairment, whereas classification helps identifying the problem root cause.
 
 
 ##Notice##
 
 Implementation is based on python 3 and does not require (as of today) any external package other than the basic python installation.
 
-Development is in progress and thorough tests have been performed. Shall you wish to have an idea of experimental results, please refer to :
+Development is in progress and thorough tests have been performed of the current codebase. Shall you wish to have an idea of experimental results, please refer to:
 
 François Espinet, Diana Joumblatt and Dario Rossi, "Zen and the art of network troubleshooting: a hands on experimental study". In Traffic Monitoring and Analysis (TMA'15), Barcellona, Spain, Apr 2015. 
 
@@ -39,4 +37,5 @@ Communication between the probes is done via the classes in `(probe.)inout.proto
 In the current implementation, overlay communication  is done via HTTP (as it is generally available in any network settings and it is the less blocked protocol in a world where the IP narrow waist has liftet up to HTTP).
 Be sure that HTTP communication is allowed between probes -- as otherwise no test can be run!
 
+Further information can be found under the docs/rapport/pdfs folder (french only)
 
